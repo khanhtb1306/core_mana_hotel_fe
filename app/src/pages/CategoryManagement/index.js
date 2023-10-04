@@ -4,67 +4,139 @@ import FilterStatus from "../../components/FilterStatus";
 import RoomRootLayout from "../RoomRootLayout";
 import Button from "../../components/UI/Button";
 
-import Box from '@mui/material/Box';
-import { DataGrid } from '@mui/x-data-grid';
+import Box from "@mui/material/Box";
+import { DataGrid } from "@mui/x-data-grid";
 
 const columns = [
-  { field: 'id', headerName: 'ID', width: 90 },
   {
-    field: 'firstName',
-    headerName: 'First name',
+    field: "id",
+    headerName: "Mã hàng hoá",
     width: 150,
-    editable: true,
+    headerClassName: "bg-blue-300",
   },
   {
-    field: 'lastName',
-    headerName: 'Last name',
-    width: 150,
-    editable: true,
+    field: "name",
+    headerName: "Tên hạng phòng",
+    sortable: true,
+    width: 300,
+    // valueGetter: (params) =>
+    //   `${params.row.firstName || ""} ${params.row.lastName || ""}`,
   },
   {
-    field: 'age',
-    headerName: 'Age',
-    type: 'number',
+    field: "amount",
+    headerName: "SL phòng",
     width: 110,
     editable: true,
   },
   {
-    field: 'fullName',
-    headerName: 'Full name',
-    description: 'This column has a value getter and is not sortable.',
-    sortable: false,
-    width: 160,
-    valueGetter: (params) =>
-      `${params.row.firstName || ''} ${params.row.lastName || ''}`,
+    field: "priceHour",
+    headerName: "Giá theo giờ",
+    type: "number",
+    width: 110,
+    editable: true,
   },
-];
-
-const rows = [
-  { id: 1, lastName: 'Snow', firstName: 'Jon', age: 35 },
-  { id: 2, lastName: 'Lannister', firstName: 'Cersei', age: 42 },
-  { id: 3, lastName: 'Lannister', firstName: 'Jaime', age: 45 },
-  { id: 4, lastName: 'Stark', firstName: 'Arya', age: 16 },
-  { id: 5, lastName: 'Targaryen', firstName: 'Daenerys', age: null },
-  { id: 6, lastName: 'Melisandre', firstName: null, age: 150 },
-  { id: 7, lastName: 'Clifford', firstName: 'Ferrara', age: 44 },
-  { id: 8, lastName: 'Frances', firstName: 'Rossini', age: 36 },
-  { id: 9, lastName: 'Roxie', firstName: 'Harvey', age: 65 },
+  {
+    field: "priceDay",
+    headerName: "Giá theo ngày",
+    //description: "This column has a value getter and is not sortable.",
+    type: "number",
+    width: 110,
+    editable: true,
+  },
+  {
+    field: "priceNight",
+    headerName: "Giá qua đêm",
+    type: "number",
+    width: 110,
+    editable: true,
+  },
+  {
+    field: "status",
+    headerName: "Trạng thái",
+    width: 150,
+    sortable: false,
+    valueGetter: (params) =>
+      `${params.row.firstName || ""} ${params.row.lastName || ""}`,
+  },
 ];
 
 const DUMMY_CATEGORY_ROOM = [
   {
     id: "Double Bedroom",
     name: "Phong 1 giuong doi cho 2 nguoi",
-    amount: "2",
+    amount: 3,
+    priceHour: 170000,
+    priceDay: 620000,
+    priceNight: 620000,
+    status: "Dang kinh doanh",
+  },
+  {
+    id: "Double1 Bedroom",
+    name: "Phong 1 giuong doi cho 2 nguoi 3 nguoi 4 nguoi 5 nguoi 6 nguoi ",
+    amount: 2,
     priceHour: 180000,
     priceDay: 720000,
     priceNight: 720000,
     status: "Dang kinh doanh",
   },
   {
-    id: "Double1 Bedroom",
+    id: "Double2 Bedroom",
     name: "Phong 1 giuong doi cho 2 nguoi 3 nguoi 4 nguoi 5 nguoi 6 nguoi ",
-    amount: "2",
+    amount: 2,
+    priceHour: 180000,
+    priceDay: 720000,
+    priceNight: 720000,
+    status: "Dang kinh doanh",
+  },
+  {
+    id: "Double3 Bedroom",
+    name: "Phong 1 giuong doi cho 2 nguoi 3 nguoi 4 nguoi 5 nguoi 6 nguoi ",
+    amount: 2,
+    priceHour: 180000,
+    priceDay: 720000,
+    priceNight: 720000,
+    status: "Dang kinh doanh",
+  },
+  {
+    id: "Double4 Bedroom",
+    name: "Phong 1 giuong doi cho 2 nguoi 3 nguoi 4 nguoi 5 nguoi 6 nguoi ",
+    amount: 2,
+    priceHour: 180000,
+    priceDay: 720000,
+    priceNight: 720000,
+    status: "Dang kinh doanh",
+  },
+  {
+    id: "Double5 Bedroom",
+    name: "Phong 1 giuong doi cho 2 nguoi 3 nguoi 4 nguoi 5 nguoi 6 nguoi ",
+    amount: 2,
+    priceHour: 180000,
+    priceDay: 720000,
+    priceNight: 720000,
+    status: "Dang kinh doanh",
+  },
+  {
+    id: "Double6 Bedroom",
+    name: "Phong 1 giuong doi cho 2 nguoi 3 nguoi 4 nguoi 5 nguoi 6 nguoi ",
+    amount: 2,
+    priceHour: 180000,
+    priceDay: 720000,
+    priceNight: 720000,
+    status: "Dang kinh doanh",
+  },
+  {
+    id: "Double7 Bedroom",
+    name: "Phong 1 giuong doi cho 2 nguoi 3 nguoi 4 nguoi 5 nguoi 6 nguoi ",
+    amount: 2,
+    priceHour: 180000,
+    priceDay: 720000,
+    priceNight: 720000,
+    status: "Dang kinh doanh",
+  },
+  {
+    id: "Double8 Bedroom",
+    name: "Phong 1 giuong doi cho 2 nguoi 3 nguoi 4 nguoi 5 nguoi 6 nguoi ",
+    amount: 2,
     priceHour: 180000,
     priceDay: 720000,
     priceNight: 720000,
@@ -129,8 +201,8 @@ function CategoryManagementPage() {
               ]}
             />
           </div>
-          <RoomRootLayout />
-          <table className="table-auto w-full">
+          <RoomRootLayout isActive={true} />
+          {/* <table className="table-auto w-full">
             <thead className="bg-blue-200">
               <tr className="border-blue-300 border">
                 <td className="p-2">
@@ -149,23 +221,13 @@ function CategoryManagementPage() {
               </tr>
             </thead>
             <tbody>{listCate}</tbody>
-          </table>
-          <Box sx={{ height: 400, width: '100%' }}>
-      <DataGrid
-        rows={rows}
-        columns={columns}
-        initialState={{
-          pagination: {
-            paginationModel: {
-              pageSize: 5,
-            },
-          },
-        }}
-        pageSizeOptions={[5]}
-        checkboxSelection
-        disableRowSelectionOnClick
-      />
-    </Box>
+          </table> */}
+          <Box sx={{ height: 600, width: "100%" }}>
+            <DataGrid
+              rows={DUMMY_CATEGORY_ROOM}
+              columns={columns}
+            />
+          </Box>
         </div>
       </div>
     </>

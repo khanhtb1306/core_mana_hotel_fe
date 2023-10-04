@@ -3,8 +3,8 @@ import { useState } from "react";
 function Button(props) {
   const [showAction, setShowAction] = useState(false);
   const list = props.names.map((item) => (
-    <div className="py-2 px-4 hover:bg-gray-200">
-      <i key={item.name} class={`${item.icon} pr-4`}></i>
+    <div key={item.name} className="py-2 px-4 hover:bg-gray-200" onClick={item.action}>
+      <i className={`${item.icon} pr-4`}></i>
       {item.name}
       <br />
     </div>
@@ -22,7 +22,7 @@ function Button(props) {
       </button>
       {showAction ? (
         <>
-          <div className="absolute bg-white ml-auto w-60 py-3">
+          <div className="absolute bg-white ml-auto w-60 py-3 z-10">
             {list}
           </div>
         </>

@@ -1,10 +1,10 @@
 import { Outlet } from "react-router-dom";
 import RoomNavigation from "../../components/RoomNavigation";
 
-function RoomRootLayout() {
+function RoomRootLayout(props) {
   return (
     <>
-      <RoomNavigation />
+      <RoomNavigation isActive={props.isActive} />
       <Outlet />
     </>
   );
