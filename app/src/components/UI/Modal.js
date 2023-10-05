@@ -1,4 +1,4 @@
-function Modal({ open, onClose, size , children }) {
+function Modal({ open, onClose, reset, size, children }) {
   return (
     <div
       onClick={onClose}
@@ -13,12 +13,31 @@ function Modal({ open, onClose, size , children }) {
         }`}
       >
         <button
-          onClick={onClose}
+          onClick={() => {
+            onClose();
+            reset();
+          }}
           className="absolute top-2 right-2 p-1 rounded-lg text-gray-400 bg-white hover:bg-gray-50 hover:text-gray-600"
         >
-          <i class="fa-solid fa-x"></i>
+          <i className="fa-solid fa-x"></i>
         </button>
         {children}
+        <div className="flex pt-5">
+          <div className="ml-auto">
+            <button className="bg-green-500 mr-10 py-2 px-6 text-white rounded">
+              Lưu
+            </button>
+            <button
+              className="bg-gray-400 py-2 px-6 text-white rounded"
+              onClick={() => {
+                onClose();
+                reset();
+              }}
+            >
+              Bỏ qua
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

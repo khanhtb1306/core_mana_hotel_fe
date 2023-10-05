@@ -4,6 +4,9 @@ import { useState } from "react";
 import RoomRootLayout from "../RoomRootLayout";
 import Button from "../../components/UI/Button";
 import Modal from "../../components/UI/Modal";
+import Image from "../../components/UI/Image";
+import NewRoom from "../../components/NewRoom";
+import NewCategoryRoom from "../../components/NewCategoryRoom";
 
 const rows = [
   {
@@ -56,6 +59,7 @@ const rows = [
 function RoomManagementPage() {
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openNewRoomModal, setOpenNewRoomModal] = useState(false);
+  const [openNewCateRoomModal, setOpenNewCateRoomModal] = useState(false);
 
   const columns = [
     { field: "name", headerName: "Name" },
@@ -65,7 +69,7 @@ function RoomManagementPage() {
       headerName: "Actions",
       type: "actions",
       getActions: ({ id }) => {
-        console.log(rows[id]);
+        //console.log(rows[id]);
         return [
           <GridActionsCellItem
             icon={<i className="fa-solid fa-eye"></i>}
@@ -81,7 +85,7 @@ function RoomManagementPage() {
   ];
 
   const newCateRoomHandler = () => {
-    console.log("category room");
+    setOpenNewCateRoomModal(true);
   };
 
   const newRoomHandler = () => {
@@ -147,95 +151,14 @@ function RoomManagementPage() {
           slots={{ toolbar: GridToolbar }}
         />
       </Box>
-      <Modal open={openNewRoomModal} onClose={() => setOpenNewRoomModal(false)} size="w-8/12 h-4/6">
-        <div className="p-2">
-          <h1 className="text-lg">Thêm phòng mới</h1>
-          <div className="flex w-full">
-            <table className="ml-auto w-7/12">
-              <tr>
-                <td>
-                  <h2>Tên phòng</h2>
-                </td>
-                <td>
-                  <input type="text" />
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <h2>Khu vực</h2>
-                </td>
-                <td>
-                  <input type="text" />
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <h2>Hạng phòng</h2>
-                </td>
-                <td>
-                  <input type="text" />
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <h2>Bắt đầu sử dụng</h2>
-                </td>
-                <td>
-                  <input type="text" />
-                </td>
-              </tr>
-            </table>
-            <table className="ml-auto w-5/12">
-              <tr>
-                <td>
-                  <h2>Giá theo giờ</h2>
-                </td>
-                <td>
-                  <input type="text" />
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <h2>Giá theo ngày</h2>
-                </td>
-                <td>
-                  <input type="text" />
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <h2>Giá theo đêm</h2>
-                </td>
-                <td>
-                  <input type="text" />
-                </td>
-              </tr>
-            </table>
-          </div>
-          <div className="flex">
-            <img
-              className="w-20 h-20"
-              src="https://media.architecturaldigest.com/photos/5eac5fa22105f13b72dede45/4:3/w_1420,h_1065,c_limit/111LexowAve_Aug18-1074.jpg"
-            />
-            <img
-              className="w-20 h-20"
-              src="https://media.architecturaldigest.com/photos/5eac5fa22105f13b72dede45/4:3/w_1420,h_1065,c_limit/111LexowAve_Aug18-1074.jpg"
-            />
-            <img
-              className="w-20 h-20"
-              src="https://media.architecturaldigest.com/photos/5eac5fa22105f13b72dede45/4:3/w_1420,h_1065,c_limit/111LexowAve_Aug18-1074.jpg"
-            />
-            <img
-              className="w-20 h-20"
-              src="https://media.architecturaldigest.com/photos/5eac5fa22105f13b72dede45/4:3/w_1420,h_1065,c_limit/111LexowAve_Aug18-1074.jpg"
-            />
-          </div>
-          <div>
-            <button className="bg-green-500">Luu</button>
-            <button className="bg-gray-300">Bo luu</button>
-          </div>
-        </div>
-      </Modal>
+      <NewRoom
+        open={openNewRoomModal}
+        onClose={() => setOpenNewRoomModal(false)}
+      />
+      <NewCategoryRoom
+        open={openNewCateRoomModal}
+        onClose={() => setOpenNewCateRoomModal(false)}
+      />
     </>
   );
 }
