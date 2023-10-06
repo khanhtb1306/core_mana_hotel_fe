@@ -1,8 +1,8 @@
 import { useState } from "react";
-import Image from "./UI/Image";
-import Modal from "./UI/Modal";
-import NewCategoryRoom from "./NewCategoryRoom";
-import NewArea from "./NewArea";
+import Image from "../UI/Image";
+import Modal from "../UI/Modal";
+import NewCategoryRoom from "../CategoryRoom/NewCategoryRoom";
+import NewArea from "../NewArea";
 
 function NewRoom(props) {
   const dateNow = new Date();

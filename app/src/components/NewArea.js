@@ -31,7 +31,7 @@ function NewArea(props) {
       size="w-5/12 h-2/6"
     >
       <div className="p-2 w-full">
-        <h1 className="text-lg pb-10 font-bold">Thêm phòng mới</h1>
+        <h1 className="text-lg pb-10 font-bold">Thêm khu vực mới</h1>
           <table className="ml-auto mr-5 w-full">
             <tbody>
               <tr>

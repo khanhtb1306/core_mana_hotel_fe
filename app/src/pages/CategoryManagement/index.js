@@ -1,9 +1,6 @@
 import { useState } from "react";
-import FilterSearch from "../../components/FilterSearch";
-import FilterStatus from "../../components/FilterStatus";
 import RoomRootLayout from "../RoomRootLayout";
 import Button from "../../components/UI/Button";
-
 import Box from "@mui/material/Box";
 import { DataGrid } from "@mui/x-data-grid";
 
@@ -173,13 +170,6 @@ function CategoryManagementPage() {
     <>
       <div className="flex">
         <div className="w-2/12 mr-10 ml-10 mt-5">
-          <FilterSearch
-            name="Tìm kiếm"
-            subName="Tìm kiếm hạng phòng"
-            all={all}
-          />
-          <FilterSearch name="Hang phong" subName="Tìm kiếm hạng phòng" />
-          <FilterStatus />
         </div>
 
         <div className="w-10/12 pt-5 pl-5 mr-10">
@@ -202,26 +192,6 @@ function CategoryManagementPage() {
             />
           </div>
           <RoomRootLayout isActive={true} />
-          {/* <table className="table-auto w-full">
-            <thead className="bg-blue-200">
-              <tr className="border-blue-300 border">
-                <td className="p-2">
-                  <input
-                    type="checkbox"
-                    className="w-5 h-5 border-gray-300 focus:ring-green-200 text-green-500"
-                  />
-                </td>
-                <td className="p-2">Mã hạng phòng</td>
-                <td className="p-2">Tên hạng phòng</td>
-                <td className="p-2">SL phòng</td>
-                <td className="p-2">Giá theo giờ</td>
-                <td className="p-2">Giá theo ngày</td>
-                <td className="p-2">Giá qua đêm</td>
-                <td className="p-2">Trạng thái</td>
-              </tr>
-            </thead>
-            <tbody>{listCate}</tbody>
-          </table> */}
           <Box sx={{ height: 600, width: "100%" }}>
             <DataGrid
               rows={DUMMY_CATEGORY_ROOM}

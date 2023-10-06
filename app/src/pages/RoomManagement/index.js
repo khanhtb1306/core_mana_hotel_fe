@@ -3,10 +3,10 @@ import { DataGrid, GridActionsCellItem, GridToolbar } from "@mui/x-data-grid";
 import { useState } from "react";
 import RoomRootLayout from "../RoomRootLayout";
 import Button from "../../components/UI/Button";
-import Modal from "../../components/UI/Modal";
-import Image from "../../components/UI/Image";
-import NewRoom from "../../components/NewRoom";
-import NewCategoryRoom from "../../components/NewCategoryRoom";
+import NewRoom from "../../components/Room/NewRoom";
+import NewCategoryRoom from "../../components/CategoryRoom/NewCategoryRoom";
+import DeleteRoom from "../../components/Room/DeleteRoom";
+import DetailsRoom from "../../components/Room/DetailsRoom";
 
 const rows = [
   {
@@ -59,7 +59,21 @@ const rows = [
 function RoomManagementPage() {
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openNewRoomModal, setOpenNewRoomModal] = useState(false);
+  const [openDeleetRoomModal, setOpenDeleetRoomModal] = useState(false);
   const [openNewCateRoomModal, setOpenNewCateRoomModal] = useState(false);
+
+  const [openDetailsRoom, setOpenDetailsRoom] = useState(false);
+
+  const handleDetailsRoom = (id) => {
+    setOpenDetailsRoom(true);
+    console.log(id);
+    // return (
+    //   <DetailsRoom
+    //     open={openDetailsRoom}
+    //     onClose={() => setOpenDetailsRoom(false)}
+    //   />
+    // );
+  };
 
   const columns = [
     { field: "name", headerName: "Name" },
@@ -69,11 +83,11 @@ function RoomManagementPage() {
       headerName: "Actions",
       type: "actions",
       getActions: ({ id }) => {
-        //console.log(rows[id]);
         return [
           <GridActionsCellItem
             icon={<i className="fa-solid fa-eye"></i>}
             label="Xem chi tiết"
+            onClick={() => handleDetailsRoom(id)}
           />,
           <GridActionsCellItem
             icon={<i className="fa-solid fa-pen-to-square"></i>}
@@ -92,6 +106,10 @@ function RoomManagementPage() {
     setOpenNewRoomModal(true);
   };
 
+  const deleteRoomHandler = () => {
+    setOpenDeleetRoomModal(true);
+  };
+
   return (
     <>
       <Box className="h-full w-10/12 mx-auto mt-10">
@@ -107,7 +125,7 @@ function RoomManagementPage() {
                     {
                       name: "Xoá phòng",
                       icon: "fa-solid fa-trash",
-                      action: newCateRoomHandler,
+                      action: deleteRoomHandler,
                     },
                   ]}
                 />
@@ -158,6 +176,14 @@ function RoomManagementPage() {
       <NewCategoryRoom
         open={openNewCateRoomModal}
         onClose={() => setOpenNewCateRoomModal(false)}
+      />
+      <DeleteRoom
+        open={openDeleetRoomModal}
+        onClose={() => setOpenDeleetRoomModal(false)}
+      />
+      <DetailsRoom
+        open={openDetailsRoom}
+        onClose={() => setOpenDetailsRoom(false)}
       />
     </>
   );
