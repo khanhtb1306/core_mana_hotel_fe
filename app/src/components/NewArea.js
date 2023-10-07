@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Image from "./UI/Image";
+import Image from "./UI/ImageInput";
 import Modal from "./UI/Modal";
 
 function NewArea(props) {

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Image from "../UI/Image";
+import Image from "../UI/ImageInput";
 import Modal from "../UI/Modal";
 import NewCategoryRoom from "../CategoryRoom/NewCategoryRoom";
 import NewArea from "../NewArea";
@@ -75,6 +75,7 @@ function NewRoom(props) {
         onClose={props.onClose}
         reset={handleReset}
         size="w-8/12 h-4/6"
+        isButton={false}
       >
         <div className="p-2 w-full">
           <h1 className="text-lg pb-10 font-bold">Thêm phòng mới</h1>

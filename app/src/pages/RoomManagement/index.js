@@ -8,54 +8,6 @@ import NewCategoryRoom from "../../components/CategoryRoom/NewCategoryRoom";
 import DeleteRoom from "../../components/Room/DeleteRoom";
 import DetailsRoom from "../../components/Room/DetailsRoom";
 
-const rows = [
-  {
-    id: 1,
-    name: "1",
-    age: 25,
-  },
-  {
-    id: 2,
-    name: "2",
-    age: 36,
-  },
-  {
-    id: 3,
-    name: "3",
-    age: 19,
-  },
-  {
-    id: 4,
-    name: "4",
-    age: 28,
-  },
-  {
-    id: 5,
-    name: "5",
-    age: 23,
-  },
-  {
-    id: 6,
-    name: "5",
-    age: 23,
-  },
-  {
-    id: 7,
-    name: "5",
-    age: 23,
-  },
-  {
-    id: 8,
-    name: "5",
-    age: 23,
-  },
-  {
-    id: 9,
-    name: "5",
-    age: 23,
-  },
-];
-
 function RoomManagementPage() {
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openNewRoomModal, setOpenNewRoomModal] = useState(false);
@@ -63,21 +15,21 @@ function RoomManagementPage() {
   const [openNewCateRoomModal, setOpenNewCateRoomModal] = useState(false);
 
   const [openDetailsRoom, setOpenDetailsRoom] = useState(false);
+  const [selectedRoomId, setSelectedRoomId] = useState(null);
 
   const handleDetailsRoom = (id) => {
     setOpenDetailsRoom(true);
-    console.log(id);
-    // return (
-    //   <DetailsRoom
-    //     open={openDetailsRoom}
-    //     onClose={() => setOpenDetailsRoom(false)}
-    //   />
-    // );
+    setSelectedRoomId(id);
   };
 
   const columns = [
-    { field: "name", headerName: "Name" },
-    { field: "age", headerName: "Age", type: "number" },
+    { field: "name", headerName: "Tên phòng", width: 100 },
+    { field: "cateRoom", headerName: "Hạng phòng", width: 300 },
+    { field: "area", headerName: "Khu vực", width: 120 },
+    { field: "priceHour", headerName: "Giá theo giờ", width: 120 },
+    { field: "priceDay", headerName: "Giá theo ngày", width: 120 },
+    { field: "priceNight", headerName: "Giá theo đêm", width: 120 },
+    { field: "status", headerName: "Trạng thái", width: 150 },
     {
       field: "actions",
       headerName: "Actions",
@@ -96,6 +48,49 @@ function RoomManagementPage() {
         ];
       },
     },
+  ];
+
+  const rows = [
+    {
+      id: 1,
+      name: "P.201",
+      cateRoom: "Phòng 1 giường đôi",
+      area: "Tầng 2",
+      priceHour: 180000,
+      priceDay: 250000,
+      priceNight: 250000,
+      status: "Đang hoạt động",
+    },
+    {
+        id: 2,
+        name: "P.202",
+        cateRoom: "Phòng 1 giường đôi",
+        area: "Tầng 2",
+        priceHour: 180000,
+        priceDay: 250000,
+        priceNight: 250000,
+        status: "Đang hoạt động",
+      },
+      {
+        id: 3,
+        name: "P.203",
+        cateRoom: "Phòng 1 giường đôi",
+        area: "Tầng 2",
+        priceHour: 180000,
+        priceDay: 250000,
+        priceNight: 250000,
+        status: "Đang hoạt động",
+      },
+      {
+        id: 4,
+        name: "P.204",
+        cateRoom: "Phòng 1 giường đôi",
+        area: "Tầng 2",
+        priceHour: 180000,
+        priceDay: 250000,
+        priceNight: 250000,
+        status: "Đang hoạt động",
+      },
   ];
 
   const newCateRoomHandler = () => {
@@ -181,10 +176,13 @@ function RoomManagementPage() {
         open={openDeleetRoomModal}
         onClose={() => setOpenDeleetRoomModal(false)}
       />
-      <DetailsRoom
-        open={openDetailsRoom}
-        onClose={() => setOpenDetailsRoom(false)}
-      />
+      {openDetailsRoom && selectedRoomId && (
+        <DetailsRoom
+          open={openDetailsRoom}
+          onClose={() => setOpenDetailsRoom(false)}
+          roomId={selectedRoomId}
+        />
+      )}
     </>
   );
 }
