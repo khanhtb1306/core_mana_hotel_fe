@@ -23,13 +23,13 @@ function CategoryManagementPage() {
   };
 
   const columns = [
-    { field: "idCateRoom", headerName: "Mã hạng phòng" },
-    { field: "name", headerName: "Tên hạng phòng" },
-    { field: "amount", headerName: "SL phòng" },
-    { field: "priceHour", headerName: "Giá theo giờ" },
-    { field: "priceDay", headerName: "Giá theo ngày" },
-    { field: "priceNight", headerName: "Giá theo đêm" },
-    { field: "status", headerName: "Trạng thái" },
+    { field: "idCateRoom", headerName: "Mã hạng phòng", width: 150 },
+    { field: "name", headerName: "Tên hạng phòng", width: 200 },
+    { field: "amount", headerName: "SL phòng", width: 100 },
+    { field: "priceHour", headerName: "Giá theo giờ", width: 100 },
+    { field: "priceDay", headerName: "Giá theo ngày", width: 100 },
+    { field: "priceNight", headerName: "Giá theo đêm", width: 100 },
+    { field: "status", headerName: "Trạng thái", width: 200 },
     {
       field: "actions",
       headerName: "Actions",
