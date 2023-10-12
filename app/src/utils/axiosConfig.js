@@ -1,6 +1,16 @@
-import axios from 'axios';
-const BASE_URL = 'https:localhost:0000';
+import axios from "axios";
+import { getAuthToken } from "../contexts/auth";
 
-export default axios.create({
-    baseURL: BASE_URL
+const BASE_URL = "http://localhost:3000/";
+
+export const axiosPublic = axios.create({
+  baseURL: BASE_URL,
+});
+
+export const axiosPrivate = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    Authorization: `Bearer ${getAuthToken()}`,
+  },
+  withCredentials: true,
 });

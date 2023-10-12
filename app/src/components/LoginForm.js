@@ -1,8 +1,13 @@
-import { Form, Link } from "react-router-dom";
+import { Form, Link, useNavigate, useSearchParams } from "react-router-dom";
 import logo from "../assets/images/logohotel.png";
 import background from "../assets/images/background-login.jpg";
+import { Button } from "@mui/material";
 
 function LoginForm() {
+  const navigation = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isSubmitting = navigation.state === 'submitting';
+
   return (
     <>
       <div
@@ -19,48 +24,50 @@ function LoginForm() {
           <h2 className="text-center text-gray-500 text-2xl font-mono p-10">
             Welcome to ManaHotel
           </h2>
-          <Form method="post" class="bg-white px-8 pt-6 pb-8 mb-4">
-            <div class="mb-4">
+          <Form method="post" className="bg-white px-8 pt-6 pb-8 mb-4">
+            <div className="mb-4">
               <label
-                class="block text-gray-400 text-sm font-bold mb-2"
-                for="username"
+                className="block text-gray-400 text-sm font-bold mb-2"
+                htmlFor="username"
               >
-                Username or email
+                Tên người dùng
               </label>
               <input
-                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 id="username"
+                name="username"
                 type="text"
               />
             </div>
-            <div class="mb-6">
+            <div className="mb-6">
               <label
-                class="block text-gray-400 text-sm font-bold mb-2"
-                for="password"
+                className="block text-gray-400 text-sm font-bold mb-2"
+                htmlFor="password"
               >
-                Password
+                Mật khẩu
               </label>
               <input
-                class="shadow appearance-none border border-red-500 rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none border border-red-500 rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
                 id="password"
+                name="password"
                 type="password"
               />
-              <p class="text-red-500 text-xs italic">
-                Please choose a password.
+              <p className="text-red-500 text-xs italic">
+                Xin hãy nhập mật khẩu
               </p>
             </div>
-            <div class="flex items-center justify-between">
+            <div className="flex items-center justify-between">
+              <button
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Đang kiểm tra' : 'Đăng nhập'}
+              </button>
               <Link
-                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
                 to="/"
               >
-                Sign In
-              </Link>
-              <Link
-                class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
-                to="/"
-              >
-                Forgot Password?
+                Quên mật khẩu?
               </Link>
             </div>
           </Form>

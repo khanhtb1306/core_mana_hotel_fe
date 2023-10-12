@@ -79,7 +79,7 @@ function NewCategoryRoom(props) {
       open={props.open}
       onClose={props.onClose}
       reset={handleReset}
-      size="w-8/12 h-4/6"
+      size="w-8/12 h-.5/6"
     >
       <div className="p-2 w-full">
         <div>

@@ -1,9 +1,16 @@
 import { Box } from "@mui/material";
-import { DataGrid, GridActionsCellItem, GridToolbar } from "@mui/x-data-grid";
+import {
+  DataGrid,
+  GridActionsCellItem,
+  GridToolbar,
+  viVN,
+} from "@mui/x-data-grid";
 import { useState } from "react";
 import Button from "../../components/UI/Button";
 import NewProduct from "../../components/Product/NewProduct";
 import NewService from "../../components/Service/NewService";
+import DetailsProduct from "../../components/Product/DetailsProduct";
+import DetailsService from "../../components/Service/DetailsService";
 
 function ProductManagementPage() {
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
@@ -54,7 +61,7 @@ function ProductManagementPage() {
       cateProduct: "Dịch vụ",
       sellingPrice: 25000,
       capitalPrice: 18000,
-      quantityInStock: 100
+      quantityInStock: 100,
     },
     {
       id: 2,
@@ -63,7 +70,7 @@ function ProductManagementPage() {
       cateProduct: "Hàng hoá",
       sellingPrice: 25000,
       capitalPrice: 18000,
-      quantityInStock: 100
+      quantityInStock: 100,
     },
     {
       id: 3,
@@ -72,7 +79,7 @@ function ProductManagementPage() {
       cateProduct: "Hàng hoá",
       sellingPrice: 25000,
       capitalPrice: 18000,
-      quantityInStock: 100
+      quantityInStock: 100,
     },
     {
       id: 4,
@@ -81,7 +88,7 @@ function ProductManagementPage() {
       cateProduct: "Hàng hoá",
       sellingPrice: 25000,
       capitalPrice: 18000,
-      quantityInStock: 100
+      quantityInStock: 100,
     },
     {
       id: 5,
@@ -90,7 +97,7 @@ function ProductManagementPage() {
       cateProduct: "Hàng hoá",
       sellingPrice: 25000,
       capitalPrice: 18000,
-      quantityInStock: 100
+      quantityInStock: 100,
     },
   ];
 
@@ -160,6 +167,7 @@ function ProductManagementPage() {
             setRowSelectionModel(newRowSelectionModel);
           }}
           rowSelectionModel={rowSelectionModel}
+          localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
           slots={{ toolbar: GridToolbar }}
         />
       </Box>
@@ -170,6 +178,18 @@ function ProductManagementPage() {
       <NewService
         open={openNewServiceModal}
         onClose={() => setOpenNewServiceModal(false)}
+      />
+      {/* {openDetailsProduct && selectedProductId && (
+        <DetailsProduct
+          open={openDetailsProduct}
+          onClose={() => setOpenDetailsProduct(false)}
+          roomId={selectedProductId}
+        />
+      )} */}
+      <DetailsService
+        open={openDetailsProduct}
+        onClose={() => setOpenDetailsProduct(false)}
+        roomId={selectedProductId}
       />
     </>
   );

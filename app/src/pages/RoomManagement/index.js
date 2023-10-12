@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { DataGrid, GridActionsCellItem, GridToolbar } from "@mui/x-data-grid";
+import { DataGrid, GridActionsCellItem, GridToolbar, viVN } from "@mui/x-data-grid";
 import { useState } from "react";
 import RoomRootLayout from "../RoomRootLayout";
 import Button from "../../components/UI/Button";
@@ -161,6 +161,7 @@ function RoomManagementPage() {
             setRowSelectionModel(newRowSelectionModel);
           }}
           rowSelectionModel={rowSelectionModel}
+          localeText={viVN  .components.MuiDataGrid.defaultProps.localeText}
           slots={{ toolbar: GridToolbar }}
         />
       </Box>

@@ -1,24 +1,28 @@
 import { Box } from "@mui/material";
-import { DataGrid, GridActionsCellItem, GridToolbar } from "@mui/x-data-grid";
+import { DataGrid, GridActionsCellItem, GridToolbar, viVN } from "@mui/x-data-grid";
 import { useState } from "react";
 import RoomRootLayout from "../RoomRootLayout";
 import Button from "../../components/UI/Button";
 import NewRoom from "../../components/Room/NewRoom";
 import NewCategoryRoom from "../../components/CategoryRoom/NewCategoryRoom";
 import DeleteRoom from "../../components/Room/DeleteRoom";
-import DetailsRoom from "../../components/Room/DetailsRoom";
+import DetailsCategoryRoom from "../../components/CategoryRoom/DetailsCategoryRoom";
+import { axiosPublic } from '../../utils/axiosConfig';
 
 function CategoryManagementPage() {
+
+  axiosPublic.get('/');
+
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openNewRoomModal, setOpenNewRoomModal] = useState(false);
   const [openDeleetRoomModal, setOpenDeleetRoomModal] = useState(false);
   const [openNewCateRoomModal, setOpenNewCateRoomModal] = useState(false);
 
-  const [openDetailsRoom, setOpenDetailsRoom] = useState(false);
+  const [openDetailsCateRoom, setOpenDetailsCateRoom] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState(null);
 
-  const handleDetailsRoom = (id) => {
-    setOpenDetailsRoom(true);
+  const handleDetailsCateRoom = (id) => {
+    setOpenDetailsCateRoom(true);
     setSelectedRoomId(id);
   };
 
@@ -32,14 +36,14 @@ function CategoryManagementPage() {
     { field: "status", headerName: "Trạng thái", width: 200 },
     {
       field: "actions",
-      headerName: "Actions",
+      headerName: "Hoạt động",
       type: "actions",
       getActions: ({ id }) => {
         return [
           <GridActionsCellItem
             icon={<i className="fa-solid fa-eye"></i>}
             label="Xem chi tiết"
-            onClick={() => handleDetailsRoom(id)}
+            onClick={() => handleDetailsCateRoom(id)}
           />,
           <GridActionsCellItem
             icon={<i className="fa-solid fa-pen-to-square"></i>}
@@ -211,6 +215,7 @@ function CategoryManagementPage() {
             setRowSelectionModel(newRowSelectionModel);
           }}
           rowSelectionModel={rowSelectionModel}
+          localeText={viVN  .components.MuiDataGrid.defaultProps.localeText}
           slots={{ toolbar: GridToolbar }}
         />
       </Box>
@@ -226,10 +231,10 @@ function CategoryManagementPage() {
         open={openDeleetRoomModal}
         onClose={() => setOpenDeleetRoomModal(false)}
       />
-      {openDetailsRoom && selectedRoomId && (
-        <DetailsRoom
-          open={openDetailsRoom}
-          onClose={() => setOpenDetailsRoom(false)}
+      {openDetailsCateRoom && selectedRoomId && (
+        <DetailsCategoryRoom
+          open={openDetailsCateRoom}
+          onClose={() => setOpenDetailsCateRoom(false)}
           roomId={selectedRoomId}
         />
       )}

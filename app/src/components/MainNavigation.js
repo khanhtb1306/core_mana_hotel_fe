@@ -43,7 +43,7 @@ function MainNavigation() {
             </li>
           </div>
           <ButtonHeader
-            name="Hàng hoá"
+            name="Danh mục"
             icon="fa-solid fa-box"
             isActive={
               location.pathname === "/productManagement" ||
@@ -51,7 +51,7 @@ function MainNavigation() {
             }
             list={[
               {
-                name: "Danh mục",
+                name: "Hàng hoá",
                 icon: "fa-solid fa-table-cells",
                 link: "/productManagement",
                 isActive: location.pathname === "/productManagement",
@@ -68,21 +68,21 @@ function MainNavigation() {
             name="Đối tác"
             icon="fa-solid fa-user-tie"
             isActive={
-              location.pathname === "/customers" ||
-              location.pathname === "/suppliers"
+              location.pathname === "/customerManagement" ||
+              location.pathname === "/supplierManagement"
             }
             list={[
               {
                 name: "Khách hàng",
                 icon: "fa-solid fa-user",
-                link: "/customers",
-                isActive: location.pathname === "/customers",
+                link: "/customerManagement",
+                isActive: location.pathname === "/customerManagement",
               },
               {
                 name: "Nhà cung cấp",
                 icon: "fa-solid fa-users",
-                link: "/suppliers",
-                isActive: location.pathname === "/suppliers",
+                link: "/supplierManagement",
+                isActive: location.pathname === "/supplierManagement",
               },
             ]}
           />

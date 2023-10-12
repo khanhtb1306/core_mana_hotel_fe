@@ -1,11 +1,12 @@
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import RootLayout from './pages/RootLayout';
 import ErrorPage from './pages/Error';
-import LoginPage from './pages/Login';
+import LoginPage, { action as authAction } from './pages/Login';
 import RoomManagementPage from './pages/RoomManagement';
 import CategoryManagementPage from './pages/CategoryManagement';
 import ProductManagementPage from './pages/ProductManagement';
-import StocktakeManagement from './pages/StocktakeManagement';
+import CustomerManagementPage from './pages/CustomerManagement';
+import StocktakeManagementPage from './pages/StocktakeManagement';
 
 const router = createBrowserRouter([
   {
@@ -29,13 +30,18 @@ const router = createBrowserRouter([
       },
       {
         path: '/stocktakeManagement',
-        element: <StocktakeManagement />,
+        element: <StocktakeManagementPage />,
+      },
+      {
+        path: '/customerManagement',
+        element: <CustomerManagementPage />,
       }
     ],
   },
   {
     path: '/login',
     element: <LoginPage />,
+    action: authAction,
     errorElement: <ErrorPage />,
   },
   {

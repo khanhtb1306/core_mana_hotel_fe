@@ -1,11 +1,10 @@
 import { useState } from "react";
-import Image from "./UI/ImageInput";
-import Modal from "./UI/Modal";
+import Image from "../UI/ImageInput";
+import Modal from "../UI/Modal";
 
-function NewArea(props) {
+function NewStocktakeRoom(props) {
   const [inputValues, setInputValues] = useState({
-    idArea: 0,
-    nameArea: "",
+    name: "",
   });
 
   const handleInputChange = (e) => {
@@ -18,8 +17,7 @@ function NewArea(props) {
 
   const handleReset = () => {
     setInputValues({
-      idArea: 0,
-      nameArea: "",
+        name: ""
     });
   };
 
@@ -28,31 +26,35 @@ function NewArea(props) {
       open={props.open}
       onClose={props.onClose}
       reset={handleReset}
-      size="w-5/12 h-.5/6"
+      size="w-8/12 h-.5/6"
     >
       <div className="p-2 w-full">
-        <h1 className="text-lg pb-10 font-bold">Thêm khu vực mới</h1>
-          <table className="ml-auto mr-5 w-full">
+        <div>
+          <h1 className="text-lg pb-5 font-bold">Thêm phiếu kiểm kho mới</h1>
+        </div>
+        <div className="flex w-full">
+          <table className="w-8/12 mr-5">
             <tbody>
               <tr>
                 <td className="w-3/12">
-                  <h2>Khu vực</h2>
+                  <h2>Tìm hàng hoá</h2>
                 </td>
                 <td className="w-9/12">
                   <input
                     className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                     type="text"
-                    name="nameArea"
-                    value={inputValues.nameArea}
+                    name="name"
+                    value={inputValues.name}
                     onChange={handleInputChange}
                   />
                 </td>
               </tr>
             </tbody>
           </table>
+        </div>
       </div>
     </Modal>
   );
 }
 
-export default NewArea;
+export default NewStocktakeRoom;

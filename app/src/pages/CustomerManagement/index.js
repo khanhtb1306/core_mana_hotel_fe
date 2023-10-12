@@ -3,10 +3,12 @@ import { DataGrid, GridActionsCellItem, GridToolbar, viVN } from "@mui/x-data-gr
 import { useState } from "react";
 import Button from "../../components/UI/Button";
 import NewStocktakeRoom from "../../components/Stocktake/NewStocktake";
+import NewCustomer from "../../components/Customer/NewCustomer";
+import DetailsCustomer from "../../components/Customer/DetailsCustomer";
 
-function StocktakeManagementPage() {
+function CustomerManagementPage() {
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
-  const [openNewStockModal, setOpenNewStocktModal] = useState(false);
+  const [openNewCustomerModal, setOpenNewCustomerModal] = useState(false);
 
   const [openDetailsStocktake, setOpenDetailsStocktake] = useState(false);
   const [selectedStocktakeId, setSelectedStocktakeId] = useState(null);
@@ -17,17 +19,18 @@ function StocktakeManagementPage() {
   };
 
   const columns = [
-    { field: "code", headerName: "Mã kiểm kho", width: 150 },
-    { field: "time", headerName: "Thời gian", width: 150 },
-    { field: "totalDif", headerName: "Tổng chênh lệch", width: 100 },
-    { field: "totalPriceDif", headerName: "Tổng giá trị lệnh", width: 150 },
-    { field: "incDif", headerName: "SL lệch tăng", width: 100 },
-    { field: "incPriceDif", headerName: "Tổng giá trị tăng", width: 150 },
-    { field: "decDif", headerName: "SL lệch giảm", width: 100 },
-    { field: "decPriceDif", headerName: "Tổng giá trị giảm", width: 150 },
+    { field: "code", headerName: "Mã khách hàng", width: 150 },
+    { field: "nameCus", headerName: "Tên khách hàng", width: 150 },
+    { field: "IC", headerName: "CMND", width: 150 },
+    { field: "address", headerName: "Địa chỉ", width: 200 },
+    { field: "phoneNumber", headerName: "Số điện thoại", width: 150 },
+    { field: "DOB", headerName: "Năm sinh", width: 100 },
+    { field: "gender", headerName: "Giới tính", width: 100 },
+    { field: "email", headerName: "Thư điện tử", width: 200 },
+    { field: "status", headerName: "Trạng thái", width: 150 },
     {
       field: "actions",
-      headerName: "Actions",
+      headerName: "Hoạt động",
       type: "actions",
       getActions: ({ id }) => {
         return [
@@ -38,7 +41,7 @@ function StocktakeManagementPage() {
           />,
           <GridActionsCellItem
             icon={<i className="fa-solid fa-pen-to-square"></i>}
-            label="Edit"
+            label="Sửa đổi"
           />,
         ];
       },
@@ -48,37 +51,27 @@ function StocktakeManagementPage() {
   const rows = [
     {
       id: 1,
-      code: "KK000001",
-      time: "26/10/2022",
-      totalDif: -2,
-      totalPriceDif: -71000,
-      incDif: 7,
-      incPriceDif: 91000,
-      decDif: -9,
-      decPriceDif: -162000
-    },
-    {
-      id: 2,
-      code: "KK000002",
-      time: "26/11/2022",
-      totalDif: -13,
-      totalPriceDif: -182000,
-      incDif: 0,
-      incPriceDif: 0,
-      decDif: -13,
-      decPriceDif: -182000
+      code: "KH000001",
+      nameCus: "dinh van tien",
+      IC: "123456789",
+      address: "Yen Khanh / Ninh Binh",
+      phoneNumber: "0981987625",
+      DOB: "26/10/2001",
+      gender: "Nam",
+      email: "dinhvantiendev@gmail.com",
+      status: "Dang hoat dong"
     },
   ];
 
-  const newStockHandler = () => {
-    setOpenNewStocktModal(true);
+  const newCustomerHandler = () => {
+    setOpenNewCustomerModal(true);
   };
 
   return (
     <>
       <Box className="h-full w-10/12 mx-auto mt-10">
         <div className="flex mb-10">
-          <h1 className="text-4xl">Phiếu kiểm kho</h1>
+          <h1 className="text-4xl">Khách hàng</h1>
           <div className="ml-auto flex">
             <div className="mx-2">
               <Button
@@ -86,9 +79,9 @@ function StocktakeManagementPage() {
                 iconAction="fa-solid fa-plus"
                 names={[
                   {
-                    name: "Kiểm kho",
+                    name: "Khách hàng",
                     icon: "fa-solid fa-plus",
-                    action: newStockHandler,
+                    action: newCustomerHandler,
                   }
                 ]}
               />
@@ -113,12 +106,19 @@ function StocktakeManagementPage() {
           slots={{ toolbar: GridToolbar }}
         />
       </Box>
-      <NewStocktakeRoom
-        open={openNewStockModal}
-        onClose={() => setOpenNewStocktModal(false)}
+      <NewCustomer
+        open={openNewCustomerModal}
+        onClose={() => setOpenNewCustomerModal(false)}
       />
+      {openDetailsStocktake && selectedStocktakeId && (
+        <DetailsCustomer
+          open={openDetailsStocktake}
+          onClose={() => setOpenDetailsStocktake(false)}
+          roomId={selectedStocktakeId}
+        />
+      )}
     </>
   );
 }
 
-export default StocktakeManagementPage;
+export default CustomerManagementPage;
