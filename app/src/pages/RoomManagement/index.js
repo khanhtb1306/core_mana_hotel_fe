@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import { DataGrid, GridActionsCellItem, GridToolbar, viVN } from "@mui/x-data-grid";
 import { useState } from "react";
-import RoomRootLayout from "../RoomRootLayout";
+import RoomRootLayout from "../RoomLayout";
 import Button from "../../components/UI/Button";
 import NewRoom from "../../components/Room/NewRoom";
 import NewCategoryRoom from "../../components/CategoryRoom/NewCategoryRoom";
