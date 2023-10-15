@@ -10,10 +10,11 @@ function ImageDisplay(props) {
   const handleImageDiplay = (src) => {
     setImageDisplay(src);
   };
-
+  
+  let keyCounter = 0;
   const images = DUMMY_IMAGES.map((img) => (
     <img
-      key={randomNumberBetween(1, 5)}
+      key={keyCounter++}
       className="m-2 rounded"
       src={img}
       onClick={() => handleImageDiplay(img)}

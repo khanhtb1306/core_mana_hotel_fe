@@ -1,29 +1,53 @@
 import { Box } from "@mui/material";
-import { DataGrid, GridActionsCellItem, GridToolbar, viVN } from "@mui/x-data-grid";
-import { useState } from "react";
+import {
+  DataGrid,
+  GridActionsCellItem,
+  GridToolbar,
+  viVN,
+} from "@mui/x-data-grid";
+import { useEffect, useState } from "react";
 import RoomRootLayout from "../RoomLayout";
 import Button from "../../components/UI/Button";
 import NewRoom from "../../components/Room/NewRoom";
 import NewCategoryRoom from "../../components/CategoryRoom/NewCategoryRoom";
 import DeleteRoom from "../../components/Room/DeleteRoom";
 import DetailsCategoryRoom from "../../components/CategoryRoom/DetailsCategoryRoom";
-import { axiosPublic } from '../../utils/axiosConfig';
+import { axiosConfig, axiosPrivate } from "../../utils/axiosConfig";
+import { useRouteLoaderData } from "react-router-dom";
+import EditCategoryRoom from "../../components/CategoryRoom/EditCategoryRoom";
 
 function CategoryManagementPage() {
-
-  // axiosPublic.get('/');
+  const token = useRouteLoaderData("root");
 
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openNewRoomModal, setOpenNewRoomModal] = useState(false);
   const [openDeleetRoomModal, setOpenDeleetRoomModal] = useState(false);
   const [openNewCateRoomModal, setOpenNewCateRoomModal] = useState(false);
-
   const [openDetailsCateRoom, setOpenDetailsCateRoom] = useState(false);
-  const [selectedRoomId, setSelectedRoomId] = useState(null);
+  const [openEditCateRoom, setOpenEditCateRoom] = useState(false);
+  const [selectedCateRoomId, setSelectedCateRoomId] = useState(null);
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const response = await axiosConfig.get("room-class");
+        setCategories(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchCategories();
+  }, []);
 
   const handleDetailsCateRoom = (id) => {
     setOpenDetailsCateRoom(true);
-    setSelectedRoomId(id);
+    setSelectedCateRoomId(id);
+  };
+
+  const handleEditCateRoom = (id) => {
+    setOpenEditCateRoom(true);
+    setSelectedCateRoomId(id);
   };
 
   const columns = [
@@ -47,105 +71,27 @@ function CategoryManagementPage() {
           />,
           <GridActionsCellItem
             icon={<i className="fa-solid fa-pen-to-square"></i>}
-            label="Edit"
+            label="Chỉnh sửa"
+            onClick={() => handleEditCateRoom(id)}
           />,
         ];
       },
     },
   ];
-
-  const rows = [
-    {
-      id: 1,
-      idCateRoom: "Double bedroom",
-      name: "Phòng 1 giường đôi",
-      amount: 25,
-      priceHour: 180000,
-      priceDay: 250000,
-      priceNight: 250000,
-      status: "Đang hoạt động",
-    },
-    {
-      id: 2,
-      idCateRoom: "Double bedroom",
-      name: "Phòng 1 giường đôi",
-      amount: 25,
-      priceHour: 180000,
-      priceDay: 250000,
-      priceNight: 250000,
-      status: "Đang hoạt động",
-    },
-    {
-      id: 3,
-      idCateRoom: "Double bedroom",
-      name: "Phòng 1 giường đôi",
-      amount: 25,
-      priceHour: 180000,
-      priceDay: 250000,
-      priceNight: 250000,
-      status: "Đang hoạt động",
-    },
-    {
-      id: 4,
-      idCateRoom: "Double bedroom",
-      name: "Phòng 1 giường đôi",
-      amount: 25,
-      priceHour: 180000,
-      priceDay: 250000,
-      priceNight: 250000,
-      status: "Đang hoạt động",
-    },
-    {
-      id: 5,
-      idCateRoom: "Double bedroom",
-      name: "Phòng 1 giường đôi",
-      amount: 25,
-      priceHour: 180000,
-      priceDay: 250000,
-      priceNight: 250000,
-      status: "Đang hoạt động",
-    },
-    {
-      id: 6,
-      idCateRoom: "Double bedroom",
-      name: "Phòng 1 giường đôi",
-      amount: 25,
-      priceHour: 180000,
-      priceDay: 250000,
-      priceNight: 250000,
-      status: "Đang hoạt động",
-    },
-    {
-      id: 7,
-      idCateRoom: "Double bedroom",
-      name: "Phòng 1 giường đôi",
-      amount: 25,
-      priceHour: 180000,
-      priceDay: 250000,
-      priceNight: 250000,
-      status: "Đang hoạt động",
-    },
-    {
-      id: 8,
-      idCateRoom: "Double bedroom",
-      name: "Phòng 1 giường đôi",
-      amount: 25,
-      priceHour: 180000,
-      priceDay: 250000,
-      priceNight: 250000,
-      status: "Đang hoạt động",
-    },
-    {
-      id: 9,
-      idCateRoom: "Double bedroom",
-      name: "Phòng 1 giường đôi",
-      amount: 25,
-      priceHour: 180000,
-      priceDay: 250000,
-      priceNight: 250000,
-      status: "Đang hoạt động",
-    },
-  ];
+  
+  const rows = categories.map((row) => {
+    const status = row.status ? "Đang hoạt động" : "Ngừng hoạt động";
+    return {
+      id: row.roomCategoryId,
+      idCateRoom: row.roomCategoryId,
+      name: row.roomCategoryName,
+      amount: 10,
+      priceHour: row.priceByHour,
+      priceDay: row.priceByDay,
+      priceNight: row.priceByNight,
+      status: status,
+    };
+  });
 
   const newCateRoomHandler = () => {
     setOpenNewCateRoomModal(true);
@@ -215,7 +161,7 @@ function CategoryManagementPage() {
             setRowSelectionModel(newRowSelectionModel);
           }}
           rowSelectionModel={rowSelectionModel}
-          localeText={viVN  .components.MuiDataGrid.defaultProps.localeText}
+          localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
           slots={{ toolbar: GridToolbar }}
         />
       </Box>
@@ -231,11 +177,18 @@ function CategoryManagementPage() {
         open={openDeleetRoomModal}
         onClose={() => setOpenDeleetRoomModal(false)}
       />
-      {openDetailsCateRoom && selectedRoomId && (
+      {openDetailsCateRoom && selectedCateRoomId && (
         <DetailsCategoryRoom
           open={openDetailsCateRoom}
           onClose={() => setOpenDetailsCateRoom(false)}
-          roomId={selectedRoomId}
+          cateRoomId={selectedCateRoomId}
+        />
+      )}
+      {openEditCateRoom && selectedCateRoomId && (
+        <EditCategoryRoom
+          open={openEditCateRoom}
+          onClose={() => setOpenEditCateRoom(false)}
+          cateRoomId={selectedCateRoomId}
         />
       )}
     </>
