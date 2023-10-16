@@ -8,7 +8,7 @@ function Modal({ open, onClose, reset, size, button, children }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`bg-white rounded-xl shadow p-6 transition-all ${size} ${
+        className={`bg-white absolute top-24 rounded-xl shadow p-6 transition-all ${size} ${
           open ? "scale-100 opacity-100" : "scale-125 opacity-0"
         }`}
       >

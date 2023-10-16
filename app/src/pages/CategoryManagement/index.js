@@ -80,15 +80,16 @@ function CategoryManagementPage() {
   ];
   
   const rows = categories.map((row) => {
-    const status = row.status ? "Đang hoạt động" : "Ngừng hoạt động";
+    const cateRoom = row.roomCategory;
+    const status = cateRoom.status ? "Đang hoạt động" : "Ngừng hoạt động";
     return {
-      id: row.roomCategoryId,
-      idCateRoom: row.roomCategoryId,
-      name: row.roomCategoryName,
-      amount: 10,
-      priceHour: row.priceByHour,
-      priceDay: row.priceByDay,
-      priceNight: row.priceByNight,
+      id: cateRoom.roomCategoryId,
+      idCateRoom: cateRoom.roomCategoryId,
+      name: cateRoom.roomCategoryName,
+      amount: row.roomTotal,
+      priceHour: cateRoom.priceByHour.toLocaleString(),
+      priceDay: cateRoom.priceByDay.toLocaleString(),
+      priceNight: cateRoom.priceByNight.toLocaleString(),
       status: status,
     };
   });
@@ -118,7 +119,7 @@ function CategoryManagementPage() {
                   iconAction="fa-solid fa-ellipsis-vertical"
                   names={[
                     {
-                      name: "Xoá phòng",
+                      name: "Xoá hạng phòng",
                       icon: "fa-solid fa-trash",
                       action: deleteRoomHandler,
                     },

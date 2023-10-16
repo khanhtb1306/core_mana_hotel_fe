@@ -31,8 +31,6 @@ function NewRoom(props) {
   const [openNewCateRoomModal, setOpenNewCateRoomModal] = useState(false);
   const [openNewAreaModal, setOpenNewAreaModal] = useState(false);
 
-  console.log(inputFiles);
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setInputValues({

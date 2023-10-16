@@ -1,21 +1,34 @@
 import { Box } from "@mui/material";
 import { DataGrid, GridActionsCellItem, GridToolbar, viVN } from "@mui/x-data-grid";
-import { useState } from "react";
-import RoomRootLayout from "../RoomLayout";
+import { useEffect, useState } from "react";
 import Button from "../../components/UI/Button";
 import NewRoom from "../../components/Room/NewRoom";
 import NewCategoryRoom from "../../components/CategoryRoom/NewCategoryRoom";
 import DeleteRoom from "../../components/Room/DeleteRoom";
 import DetailsRoom from "../../components/Room/DetailsRoom";
+import { axiosConfig } from "../../utils/axiosConfig";
+import RoomRootLayout from "../RoomLayout";
 
 function RoomManagementPage() {
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openNewRoomModal, setOpenNewRoomModal] = useState(false);
   const [openDeleetRoomModal, setOpenDeleetRoomModal] = useState(false);
   const [openNewCateRoomModal, setOpenNewCateRoomModal] = useState(false);
-
   const [openDetailsRoom, setOpenDetailsRoom] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState(null);
+  const [rooms, setRooms] = useState([]);
+
+  useEffect(() => {
+    async function fetchRooms() {
+      try {
+        const response = await axiosConfig.get("room");
+        setRooms(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchRooms();
+  }, []);
 
   const handleDetailsRoom = (id) => {
     setOpenDetailsRoom(true);
@@ -32,7 +45,7 @@ function RoomManagementPage() {
     { field: "status", headerName: "Trạng thái", width: 150 },
     {
       field: "actions",
-      headerName: "Actions",
+      headerName: "Hành động",
       type: "actions",
       getActions: ({ id }) => {
         return [
@@ -43,55 +56,26 @@ function RoomManagementPage() {
           />,
           <GridActionsCellItem
             icon={<i className="fa-solid fa-pen-to-square"></i>}
-            label="Edit"
+            label="Chỉnh sửa"
           />,
         ];
       },
     },
   ];
 
-  const rows = [
-    {
-      id: 1,
-      name: "P.201",
-      cateRoom: "Phòng 1 giường đôi",
-      area: "Tầng 2",
-      priceHour: 180000,
-      priceDay: 250000,
-      priceNight: 250000,
-      status: "Đang hoạt động",
-    },
-    {
-        id: 2,
-        name: "P.202",
-        cateRoom: "Phòng 1 giường đôi",
-        area: "Tầng 2",
-        priceHour: 180000,
-        priceDay: 250000,
-        priceNight: 250000,
-        status: "Đang hoạt động",
-      },
-      {
-        id: 3,
-        name: "P.203",
-        cateRoom: "Phòng 1 giường đôi",
-        area: "Tầng 2",
-        priceHour: 180000,
-        priceDay: 250000,
-        priceNight: 250000,
-        status: "Đang hoạt động",
-      },
-      {
-        id: 4,
-        name: "P.204",
-        cateRoom: "Phòng 1 giường đôi",
-        area: "Tầng 2",
-        priceHour: 180000,
-        priceDay: 250000,
-        priceNight: 250000,
-        status: "Đang hoạt động",
-      },
-  ];
+  const rows = rooms.map((room) => {
+    const status = room.status ? "Đang hoạt động" : "Ngừng hoạt động"
+    return {
+      id: room.roomId,
+      name: room.roomName,
+      cateRoom: room.roomCategory.roomCategoryName,
+      area: room.floor.floorName,
+      priceHour: room.roomCategory.priceByHour,
+      priceDay: room.roomCategory.priceByDay,
+      priceNight: room.roomCategory.priceByNight,
+      status: status,
+    }
+  })
 
   const newCateRoomHandler = () => {
     setOpenNewCateRoomModal(true);
