@@ -7,7 +7,7 @@ function DeleteRoom(props) {
       open={props.open}
       onClose={props.onClose}
       reset={props.onClose}
-      size="w-5/12 h-2/6"
+      size="w-5/12 h-.5/6"
     >
       <div className="p-2 w-full">
         <h1 className="text-lg pb-10 font-bold">Xoá phòng</h1>

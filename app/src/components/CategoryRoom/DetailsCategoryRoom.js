@@ -52,8 +52,6 @@ function DetailsCategoryRoom(props) {
     });
   }
 
-  console.log(category);
-
   return (
     category && (
       <Modal

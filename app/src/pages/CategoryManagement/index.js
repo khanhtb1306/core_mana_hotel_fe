@@ -10,18 +10,18 @@ import RoomRootLayout from "../RoomLayout";
 import Button from "../../components/UI/Button";
 import NewRoom from "../../components/Room/NewRoom";
 import NewCategoryRoom from "../../components/CategoryRoom/NewCategoryRoom";
-import DeleteRoom from "../../components/Room/DeleteRoom";
 import DetailsCategoryRoom from "../../components/CategoryRoom/DetailsCategoryRoom";
-import { axiosConfig, axiosPrivate } from "../../utils/axiosConfig";
+import { axiosConfig } from "../../utils/axiosConfig";
 import { useRouteLoaderData } from "react-router-dom";
 import EditCategoryRoom from "../../components/CategoryRoom/EditCategoryRoom";
+import DeleteCategoryRoom from "../../components/CategoryRoom/DeleteCategoryRoom";
 
 function CategoryManagementPage() {
   const token = useRouteLoaderData("root");
 
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openNewRoomModal, setOpenNewRoomModal] = useState(false);
-  const [openDeleetRoomModal, setOpenDeleetRoomModal] = useState(false);
+  const [openDeleteCateRoomModal, setOpenDeleteCateRoomModal] = useState(false);
   const [openNewCateRoomModal, setOpenNewCateRoomModal] = useState(false);
   const [openDetailsCateRoom, setOpenDetailsCateRoom] = useState(false);
   const [openEditCateRoom, setOpenEditCateRoom] = useState(false);
@@ -109,7 +109,7 @@ function CategoryManagementPage() {
   };
 
   const deleteRoomHandler = () => {
-    setOpenDeleetRoomModal(true);
+    setOpenDeleteCateRoomModal(true);
   };
 
   return (
@@ -166,6 +166,7 @@ function CategoryManagementPage() {
           disableRowSelectionOnClick
           onRowSelectionModelChange={(newRowSelectionModel) => {
             setRowSelectionModel(newRowSelectionModel);
+            console.log(newRowSelectionModel);
           }}
           rowSelectionModel={rowSelectionModel}
           localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
@@ -178,24 +179,23 @@ function CategoryManagementPage() {
           onClose={() => setOpenNewRoomModal(false)}
         />
       )}
-      {/* {openNewCateRoomModal && ( */}
-        <NewCategoryRoom
-          open={openNewCateRoomModal}
-          onClose={() => setOpenNewCateRoomModal(false)}
-        />
-      {/* )} */}
-      <DeleteRoom
-        open={openDeleetRoomModal}
-        onClose={() => setOpenDeleetRoomModal(false)}
+      <NewCategoryRoom
+        open={openNewCateRoomModal}
+        onClose={() => setOpenNewCateRoomModal(false)}
       />
-      {openDetailsCateRoom && selectedCateRoomId && (
+      <DeleteCategoryRoom
+        open={openDeleteCateRoomModal}
+        onClose={() => setOpenDeleteCateRoomModal(false)}
+        listCateRoomId={rowSelectionModel}
+      />
+      {selectedCateRoomId && (
         <DetailsCategoryRoom
           open={openDetailsCateRoom}
           onClose={() => setOpenDetailsCateRoom(false)}
           cateRoomId={selectedCateRoomId}
         />
       )}
-      {openEditCateRoom && selectedCateRoomId && (
+      {selectedCateRoomId && (
         <EditCategoryRoom
           open={openEditCateRoom}
           onClose={() => setOpenEditCateRoom(false)}
