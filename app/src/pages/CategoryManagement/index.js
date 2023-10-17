@@ -78,7 +78,7 @@ function CategoryManagementPage() {
       },
     },
   ];
-  
+
   const rows = categories.map((row) => {
     const cateRoom = row.roomCategory;
     const status = cateRoom.status ? "Đang hoạt động" : "Ngừng hoạt động";
@@ -87,9 +87,15 @@ function CategoryManagementPage() {
       idCateRoom: cateRoom.roomCategoryId,
       name: cateRoom.roomCategoryName,
       amount: row.roomTotal,
-      priceHour: cateRoom.priceByHour.toLocaleString(),
-      priceDay: cateRoom.priceByDay.toLocaleString(),
-      priceNight: cateRoom.priceByNight.toLocaleString(),
+      priceHour: cateRoom.priceByHour
+        ? cateRoom.priceByHour.toLocaleString()
+        : null,
+      priceDay: cateRoom.priceByDay
+        ? cateRoom.priceByDay.toLocaleString()
+        : null,
+      priceNight: cateRoom.priceByNight
+        ? cateRoom.priceByNight.toLocaleString()
+        : null,
       status: status,
     };
   });
@@ -166,14 +172,18 @@ function CategoryManagementPage() {
           slots={{ toolbar: GridToolbar }}
         />
       </Box>
-      <NewRoom
-        open={openNewRoomModal}
-        onClose={() => setOpenNewRoomModal(false)}
-      />
-      <NewCategoryRoom
-        open={openNewCateRoomModal}
-        onClose={() => setOpenNewCateRoomModal(false)}
-      />
+      {openNewRoomModal && (
+        <NewRoom
+          open={openNewRoomModal}
+          onClose={() => setOpenNewRoomModal(false)}
+        />
+      )}
+      {/* {openNewCateRoomModal && ( */}
+        <NewCategoryRoom
+          open={openNewCateRoomModal}
+          onClose={() => setOpenNewCateRoomModal(false)}
+        />
+      {/* )} */}
       <DeleteRoom
         open={openDeleetRoomModal}
         onClose={() => setOpenDeleetRoomModal(false)}

@@ -1,4 +1,10 @@
-function Modal({ open, onClose, reset, size, button, children }) {
+import { useNavigate } from "react-router-dom";
+
+function Modal({ open, onClose, size, button, children }) {
+  const navigation = useNavigate();
+
+  const isSubmitting = navigation.state === "submitting";
+
   return (
     <div
       onClick={onClose}
@@ -13,9 +19,9 @@ function Modal({ open, onClose, reset, size, button, children }) {
         }`}
       >
         <button
+          type="button"
           onClick={() => {
             onClose();
-            reset();
           }}
           className="absolute top-2 right-2 p-1 rounded-lg text-gray-400 bg-white hover:bg-gray-50 hover:text-gray-600"
         >
@@ -25,15 +31,22 @@ function Modal({ open, onClose, reset, size, button, children }) {
         {!button && (
           <div className="flex pt-5">
             <div className="ml-auto">
-              <button className="bg-green-500 mr-10 py-2 px-6 text-white rounded">
-                Lưu
+              <button
+                className="bg-green-500 mr-10 py-2 px-6 text-white rounded"
+                onClick={() => {
+                  onClose();
+                }}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Đang lưu..." : "Lưu"}
               </button>
               <button
+                type="button"
                 className="bg-gray-400 py-2 px-6 text-white rounded"
                 onClick={() => {
                   onClose();
-                  reset();
                 }}
+                disabled={isSubmitting}
               >
                 Bỏ qua
               </button>
