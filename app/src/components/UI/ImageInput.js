@@ -10,7 +10,7 @@ function Image(props) {
     <div className="m-4">
       <div className="flex items-center justify-center w-full">
         <label className="flex flex-col w-32 h-32 border-2 border-gray-300 border-dashed hover:bg-gray-100 hover:border-gray-300">
-          {props.value ? (
+          {selectedImage ? (
             <img className="w-full h-full" src={selectedImage} />
           ) : (
             <div className="flex flex-col items-center justify-center pt-7">
@@ -25,10 +25,8 @@ function Image(props) {
             className="opacity-0"
             accept="image/*"
             name={props.name}
-            value={props.value}
             onChange={(e) => {
               handleImageUpload(e);
-              props.onChange(e);
             }}
           />
         </label>

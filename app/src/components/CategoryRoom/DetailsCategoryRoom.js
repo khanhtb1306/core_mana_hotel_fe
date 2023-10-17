@@ -52,6 +52,8 @@ function DetailsCategoryRoom(props) {
     });
   }
 
+  console.log(category);
+
   return (
     category && (
       <Modal
@@ -91,7 +93,7 @@ function DetailsCategoryRoom(props) {
             <>
               <div className="flex">
                 <div className="w-4/12">
-                  <ImageDisplay />
+                  <ImageDisplay src={`data:image/png;base64,${category.roomCategory.image}`} />
                 </div>
                 <div className="w-8/12 mx-5">
                   <table className="m-4 w-full">

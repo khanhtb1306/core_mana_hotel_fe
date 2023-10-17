@@ -1,5 +1,4 @@
 import axios from "axios";
-import { getAuthToken } from "../contexts/auth";
 
 const BASE_URL = "http://localhost:8080/";
 

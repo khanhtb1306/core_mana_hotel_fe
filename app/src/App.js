@@ -3,6 +3,7 @@ import RootLayout from "./pages/RootLayout";
 import ErrorPage from "./pages/Error";
 import LoginPage, { action as loginAction } from "./pages/Authentication/login";
 import { action as logoutAction } from "./pages/Authentication/logout";
+import { action as actionCategoryRoom } from './components/UI/CategoryRoomForm';
 import RoomManagementPage from "./pages/RoomManagement";
 import CategoryManagementPage from "./pages/CategoryManagement";
 import ProductManagementPage from "./pages/ProductManagement";
@@ -24,6 +25,7 @@ const routesForManager = [
   {
     path: "categoryRoomManagement",
     element: <CategoryManagementPage />,
+    action: actionCategoryRoom,
   },
   {
     path: "roomManagement",
@@ -74,7 +76,7 @@ const router = createBrowserRouter([
       {
         path: "manager",
         element: <ManagerLayout />,
-        loader: checkAuthLoader,
+        //loader: checkAuthLoader,
         children: [...routesForManager],
       },
 
