@@ -7,19 +7,19 @@ function RoomNavigation(props) {
         {props.isActive ? (
           <>
             <li className="bg-blue-500 text-white px-4 py-2 rounded-t mr-2">
-              <NavLink to="/categoryRoomManagement">Hạng phòng</NavLink>
+              <NavLink to="/manager/categoryRoomManagement">Hạng phòng</NavLink>
             </li>
             <li className="bg-gray-300 px-4 py-2 rounded-t">
-              <NavLink to="/roomManagement">Danh sách phòng</NavLink>
+              <NavLink to="/manager/roomManagement">Danh sách phòng</NavLink>
             </li>
           </>
         ) : (
           <>
             <li className="bg-gray-300 px-4 py-2 rounded-t mr-2">
-              <NavLink to="/categoryRoomManagement">Hạng phòng</NavLink>
+              <NavLink to="/manager/categoryRoomManagement">Hạng phòng</NavLink>
             </li>
             <li className="bg-blue-500 text-white px-4 py-2 rounded-t">
-              <NavLink to="/roomManagement">Danh sách phòng</NavLink>
+              <NavLink to="/manager/roomManagement">Danh sách phòng</NavLink>
             </li>
           </>
         )}

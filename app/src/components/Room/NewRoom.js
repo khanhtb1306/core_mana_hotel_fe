@@ -1,8 +1,8 @@
 import { useState } from "react";
-import Image from "./UI/Image";
-import Modal from "./UI/Modal";
-import NewCategoryRoom from "./NewCategoryRoom";
-import NewArea from "./NewArea";
+import Image from "../UI/ImageInput";
+import Modal from "../UI/Modal";
+import NewCategoryRoom from "../CategoryRoom/NewCategoryRoom";
+import NewArea from "../NewArea";
 
 function NewRoom(props) {
   const dateNow = new Date();
@@ -30,8 +30,6 @@ function NewRoom(props) {
   });
   const [openNewCateRoomModal, setOpenNewCateRoomModal] = useState(false);
   const [openNewAreaModal, setOpenNewAreaModal] = useState(false);
-
-  console.log(inputFiles);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -75,6 +73,7 @@ function NewRoom(props) {
         onClose={props.onClose}
         reset={handleReset}
         size="w-8/12 h-4/6"
+        isButton={false}
       >
         <div className="p-2 w-full">
           <h1 className="text-lg pb-10 font-bold">Thêm phòng mới</h1>
