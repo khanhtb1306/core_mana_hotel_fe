@@ -33,9 +33,6 @@ function Modal({ open, onClose, size, button, children }) {
             <div className="ml-auto">
               <button
                 className="bg-green-500 mr-10 py-2 px-6 text-white rounded"
-                onClick={() => {
-                  onClose();
-                }}
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "Đang lưu..." : "Lưu"}

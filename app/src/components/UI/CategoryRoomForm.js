@@ -20,7 +20,7 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
 
   return (
     cateRoom && (
-      <Form method={method} encType="multipart/form-data">
+      <Form method={method} onSubmit={onClose} encType="multipart/form-data">
         <Modal open={open} onClose={onClose} size="w-8/12 h-.5/6">
           <div className="p-2 w-full">
             <div>
@@ -61,7 +61,7 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                         </td>
                         <td className="w-9/12">
                           <input
-                            disabled
+                            readOnly
                             className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                             type="text"
                             name="roomCategoryId"
@@ -219,18 +219,7 @@ export async function action({ request }) {
   formData.append("description", data.get("description"));
   formData.append("image", data.get("image"));
 
-  if (method === "PUT") {
-    const response = await axiosConfig
-      .put("room-class/" + data.get("roomCategoryId"), formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-    console.log(response);
-  } else {
+  if (method === "POST") {
     const response = await axiosConfig
       .post("room-class", formData, {
         headers: {
@@ -242,5 +231,30 @@ export async function action({ request }) {
       });
     console.log(response);
   }
+  if (method === "PUT") {
+    console.log(data.get("roomCategoryId"));
+    const response = await axiosConfig
+      .put("room-class/" + data.get("roomCategoryId"), formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+    console.log(response);
+  }
+  if (method === "DELETE") {
+    const dataArray = data.get("roomCategoryId").split(",");
+    dataArray.map(async (id) => {
+      const response = await axiosConfig
+        .delete("room-class/" + id)
+        .catch((e) => {
+          console.log(e);
+        });
+      console.log(response);
+    });
+  }
+
   return redirect("/manager/categoryRoomManagement");
 }

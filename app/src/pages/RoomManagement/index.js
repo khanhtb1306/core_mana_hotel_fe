@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import { DataGrid, GridActionsCellItem, GridToolbar, viVN } from "@mui/x-data-grid";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Button from "../../components/UI/Button";
 import NewRoom from "../../components/Room/NewRoom";
 import NewCategoryRoom from "../../components/CategoryRoom/NewCategoryRoom";
@@ -8,27 +8,18 @@ import DeleteRoom from "../../components/Room/DeleteRoom";
 import DetailsRoom from "../../components/Room/DetailsRoom";
 import { axiosConfig } from "../../utils/axiosConfig";
 import RoomRootLayout from "../RoomLayout";
+import { defer, useLoaderData } from "react-router-dom";
 
 function RoomManagementPage() {
+  const { rooms } = useLoaderData();
+  console.log(rooms);
+
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openNewRoomModal, setOpenNewRoomModal] = useState(false);
   const [openDeleetRoomModal, setOpenDeleetRoomModal] = useState(false);
   const [openNewCateRoomModal, setOpenNewCateRoomModal] = useState(false);
   const [openDetailsRoom, setOpenDetailsRoom] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState(null);
-  const [rooms, setRooms] = useState([]);
-
-  useEffect(() => {
-    async function fetchRooms() {
-      try {
-        const response = await axiosConfig.get("room");
-        setRooms(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    }
-    fetchRooms();
-  }, []);
 
   const handleDetailsRoom = (id) => {
     setOpenDetailsRoom(true);
@@ -173,3 +164,14 @@ function RoomManagementPage() {
 }
 
 export default RoomManagementPage;
+
+async function loadRooms() {
+  const response = await axiosConfig.get("room");
+  return response.data;
+}
+
+export async function loader() {
+  return defer({
+    rooms: await loadRooms(),
+  });
+}

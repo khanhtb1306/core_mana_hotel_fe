@@ -3,9 +3,11 @@ import RootLayout from "./pages/RootLayout";
 import ErrorPage from "./pages/Error";
 import LoginPage, { action as loginAction } from "./pages/Authentication/login";
 import { action as logoutAction } from "./pages/Authentication/logout";
-import { action as actionCategoryRoom } from './components/UI/CategoryRoomForm';
-import RoomManagementPage from "./pages/RoomManagement";
-import CategoryManagementPage from "./pages/CategoryManagement";
+import { action as actionCategoryRoom } from "./components/UI/CategoryRoomForm";
+import RoomManagementPage, { loader as loadRoom } from "./pages/RoomManagement";
+import CategoryManagementPage, {
+  loader as loadCateRoom,
+} from "./pages/CategoryManagement";
 import ProductManagementPage from "./pages/ProductManagement";
 import CustomerManagementPage from "./pages/CustomerManagement";
 import StocktakeManagementPage from "./pages/StocktakeManagement";
@@ -25,11 +27,13 @@ const routesForManager = [
   {
     path: "categoryRoomManagement",
     element: <CategoryManagementPage />,
+    loader: loadCateRoom,
     action: actionCategoryRoom,
   },
   {
     path: "roomManagement",
     element: <RoomManagementPage />,
+    loader: loadRoom,
   },
   {
     path: "productManagement",

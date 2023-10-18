@@ -4,7 +4,7 @@ import { useState } from "react";
 
 function ImageDisplay(props) {
   const DUMMY_IMAGES = [props.src, bedroom2, bedroom1];
-  const [imageDisplay, setImageDisplay] = useState(bedroom1);
+  const [imageDisplay, setImageDisplay] = useState(props.src);
 
   const handleImageDiplay = (src) => {
     setImageDisplay(src);

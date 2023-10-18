@@ -5,18 +5,19 @@ import {
   GridToolbar,
   viVN,
 } from "@mui/x-data-grid";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import RoomRootLayout from "../RoomLayout";
 import Button from "../../components/UI/Button";
 import NewRoom from "../../components/Room/NewRoom";
 import NewCategoryRoom from "../../components/CategoryRoom/NewCategoryRoom";
 import DetailsCategoryRoom from "../../components/CategoryRoom/DetailsCategoryRoom";
 import { axiosConfig } from "../../utils/axiosConfig";
-import { useRouteLoaderData } from "react-router-dom";
+import { defer, useLoaderData, useRouteLoaderData } from "react-router-dom";
 import EditCategoryRoom from "../../components/CategoryRoom/EditCategoryRoom";
 import DeleteCategoryRoom from "../../components/CategoryRoom/DeleteCategoryRoom";
 
 function CategoryManagementPage() {
+  const { categories } = useLoaderData();
   const token = useRouteLoaderData("root");
 
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
@@ -26,19 +27,19 @@ function CategoryManagementPage() {
   const [openDetailsCateRoom, setOpenDetailsCateRoom] = useState(false);
   const [openEditCateRoom, setOpenEditCateRoom] = useState(false);
   const [selectedCateRoomId, setSelectedCateRoomId] = useState(null);
-  const [categories, setCategories] = useState([]);
 
-  useEffect(() => {
-    async function fetchCategories() {
-      try {
-        const response = await axiosConfig.get("room-class");
-        setCategories(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    }
-    fetchCategories();
-  }, []);
+  // const [categories, setCategories] = useState([]);
+  // useEffect(() => {
+  //   async function fetchCategories() {
+  //     try {
+  //       const response = await axiosConfig.get("room-class");
+  //       setCategories(response.data);
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   }
+  //   fetchCategories();
+  // }, []);
 
   const handleDetailsCateRoom = (id) => {
     setOpenDetailsCateRoom(true);
@@ -179,23 +180,25 @@ function CategoryManagementPage() {
           onClose={() => setOpenNewRoomModal(false)}
         />
       )}
-      <NewCategoryRoom
-        open={openNewCateRoomModal}
-        onClose={() => setOpenNewCateRoomModal(false)}
-      />
+      {openNewCateRoomModal && (
+        <NewCategoryRoom
+          open={openNewCateRoomModal}
+          onClose={() => setOpenNewCateRoomModal(false)}
+        />
+      )}
       <DeleteCategoryRoom
         open={openDeleteCateRoomModal}
         onClose={() => setOpenDeleteCateRoomModal(false)}
         listCateRoomId={rowSelectionModel}
       />
-      {selectedCateRoomId && (
+      {openDetailsCateRoom && selectedCateRoomId && (
         <DetailsCategoryRoom
           open={openDetailsCateRoom}
           onClose={() => setOpenDetailsCateRoom(false)}
           cateRoomId={selectedCateRoomId}
         />
       )}
-      {selectedCateRoomId && (
+      {openEditCateRoom && selectedCateRoomId && (
         <EditCategoryRoom
           open={openEditCateRoom}
           onClose={() => setOpenEditCateRoom(false)}
@@ -207,3 +210,14 @@ function CategoryManagementPage() {
 }
 
 export default CategoryManagementPage;
+
+async function loadCategories() {
+  const response = await axiosConfig.get("room-class");
+  return response.data;
+}
+
+export async function loader() {
+  return defer({
+    categories: await loadCategories(),
+  });
+}

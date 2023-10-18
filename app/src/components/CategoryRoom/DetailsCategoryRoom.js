@@ -16,6 +16,7 @@ function DetailsCategoryRoom(props) {
           "room-class/" + props.cateRoomId
         );
         setCategory(response.data);
+        console.log(response.data);
       } catch (error) {
         console.log(error);
       }
@@ -112,6 +113,18 @@ function DetailsCategoryRoom(props) {
                         <td className="w-5/12 pt-2">Số lượng phòng:</td>
                         <td className="w-7/12 pt-2">
                           {category.listRoom.length}
+                        </td>
+                      </tr>
+                      <tr className="border-0 border-b">
+                        <td className="w-5/12 pt-2">Sức chứa:</td>
+                        <td className="w-7/12 pt-2">
+                          {category.roomCategory.roomCapacity}
+                        </td>
+                      </tr>
+                      <tr className="border-0 border-b">
+                        <td className="w-5/12 pt-2">Diện tích:</td>
+                        <td className="w-7/12 pt-2">
+                          {category.roomCategory.roomArea}
                         </td>
                       </tr>
                       <tr className="border-0 border-b">
