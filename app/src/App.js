@@ -4,13 +4,16 @@ import ErrorPage from "./pages/Error";
 import LoginPage, { action as loginAction } from "./pages/Authentication/login";
 import { action as logoutAction } from "./pages/Authentication/logout";
 import { action as actionCategoryRoom } from "./components/UI/CategoryRoomForm";
+import { action as actionCustomer } from "./components/UI/CustomerForm";
 import RoomManagementPage, { loader as loadRoom } from "./pages/RoomManagement";
 import { action as actionRoom } from "./components/UI/RoomForm";
 import CategoryManagementPage, {
   loader as loadCateRoom,
 } from "./pages/CategoryManagement";
 import ProductManagementPage from "./pages/ProductManagement";
-import CustomerManagementPage from "./pages/CustomerManagement";
+import CustomerManagementPage, {
+  loader as loadCustomers,
+} from "./pages/CustomerManagement";
 import StocktakeManagementPage from "./pages/StocktakeManagement";
 import { checkAuthLoader, tokenLoader } from "./contexts/auth";
 import ManagerLayout from "./pages/ManagerLayout";
@@ -48,6 +51,8 @@ const routesForManager = [
   {
     path: "customerManagement",
     element: <CustomerManagementPage />,
+    loader: loadCustomers,
+    action: actionCustomer,
   },
 ];
 
@@ -105,8 +110,8 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <div className="bg-gray-100 h-screen w-screen">
-      <RouterProvider router={router} />
+    <div className="bg-gray-100 min-h-screen max-h-full w-screen">
+        <RouterProvider router={router} />
     </div>
   );
 }

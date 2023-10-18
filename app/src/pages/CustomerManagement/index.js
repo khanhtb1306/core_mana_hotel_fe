@@ -1,33 +1,55 @@
 import { Box } from "@mui/material";
-import { DataGrid, GridActionsCellItem, GridToolbar, viVN } from "@mui/x-data-grid";
+import {
+  DataGrid,
+  GridActionsCellItem,
+  GridToolbar,
+  viVN,
+} from "@mui/x-data-grid";
 import { useState } from "react";
 import Button from "../../components/UI/Button";
-import NewStocktakeRoom from "../../components/Stocktake/NewStocktake";
 import NewCustomer from "../../components/Customer/NewCustomer";
 import DetailsCustomer from "../../components/Customer/DetailsCustomer";
+import { axiosConfig } from "../../utils/axiosConfig";
+import { defer, useLoaderData } from "react-router-dom";
+import EditCustomer from "../../components/Customer/EditCustomer";
+import DeleteCustomer from "../../components/Customer/DeleteCustomer";
 
 function CustomerManagementPage() {
+  const { customers } = useLoaderData();
+  console.log(customers);
+
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openNewCustomerModal, setOpenNewCustomerModal] = useState(false);
+  const [openEditCustomerModal, setOpenEditCustomerModal] = useState(false);
+  const [openDetailsCustomerModal, setOpenDetailsCustomerModal] = useState(false);
+  const [openDeleteCustomerModal, setOpenDeleteCustomerModal] = useState(false);
+  const [selectedCustomerId, setSelectedCustomerId] = useState(null);
 
-  const [openDetailsStocktake, setOpenDetailsStocktake] = useState(false);
-  const [selectedStocktakeId, setSelectedStocktakeId] = useState(null);
+  const handleDetailsCustomer = (id) => {
+    setOpenDetailsCustomerModal(true);
+    setSelectedCustomerId(id);
+  };
 
-  const handleDetailsRoom = (id) => {
-    setOpenDetailsStocktake(true);
-    setSelectedStocktakeId(id);
+  const handleEditCustomer = (id) => {
+    setOpenEditCustomerModal(true);
+    setSelectedCustomerId(id);
+  };
+
+  const deleteCustomerHandler = () => {
+    setOpenDeleteCustomerModal(true);
   };
 
   const columns = [
     { field: "code", headerName: "Mã khách hàng", width: 150 },
-    { field: "nameCus", headerName: "Tên khách hàng", width: 150 },
+    { field: "nameCus", headerName: "Tên khách hàng", width: 200 },
+    { field: "customerGroup", headerName: "Nhóm khách hàng", width: 150 },
     { field: "IC", headerName: "CMND", width: 150 },
     { field: "address", headerName: "Địa chỉ", width: 200 },
     { field: "phoneNumber", headerName: "Số điện thoại", width: 150 },
-    { field: "DOB", headerName: "Năm sinh", width: 100 },
+    { field: "DOB", headerName: "Năm sinh", width: 150 },
     { field: "gender", headerName: "Giới tính", width: 100 },
     { field: "email", headerName: "Thư điện tử", width: 200 },
-    { field: "status", headerName: "Trạng thái", width: 150 },
+    { field: "taxCode", headerName: "Mã số thuế", width: 150 },
     {
       field: "actions",
       headerName: "Hoạt động",
@@ -37,31 +59,40 @@ function CustomerManagementPage() {
           <GridActionsCellItem
             icon={<i className="fa-solid fa-eye"></i>}
             label="Xem chi tiết"
-            onClick={() => handleDetailsRoom(id)}
+            onClick={() => handleDetailsCustomer(id)}
           />,
           <GridActionsCellItem
             icon={<i className="fa-solid fa-pen-to-square"></i>}
             label="Sửa đổi"
+            onClick={() => handleEditCustomer(id)}
           />,
         ];
       },
     },
   ];
 
-  const rows = [
-    {
-      id: 1,
-      code: "KH000001",
-      nameCus: "dinh van tien",
-      IC: "123456789",
-      address: "Yen Khanh / Ninh Binh",
-      phoneNumber: "0981987625",
-      DOB: "26/10/2001",
-      gender: "Nam",
-      email: "dinhvantiendev@gmail.com",
-      status: "Dang hoat dong"
-    },
-  ];
+  const rows = customers.map((cus) => {
+    const gender = cus.gender ? "Nam giới" : "Nữ giới";
+    const dateNow = new Date(cus.dob);
+    const year = dateNow.getFullYear();
+    const month = String(dateNow.getMonth() + 1).padStart(2, "0");
+    const day = String(dateNow.getDate()).padStart(2, "0");
+
+    const formattedDate = `${year}-${month}-${day}`;
+    return {
+      id: cus.customerId,
+      code: cus.customerId,
+      nameCus: cus.customerName,
+      customerGroup: cus.customerGroup,
+      IC: cus.identity,
+      address: cus.address,
+      phoneNumber: cus.phoneNumber,
+      DOB: formattedDate,
+      gender: gender,
+      email: cus.email,
+      taxCode: cus.taxCode,
+    };
+  });
 
   const newCustomerHandler = () => {
     setOpenNewCustomerModal(true);
@@ -73,6 +104,21 @@ function CustomerManagementPage() {
         <div className="flex mb-10">
           <h1 className="text-4xl">Khách hàng</h1>
           <div className="ml-auto flex">
+            {rowSelectionModel.length > 0 ? (
+              <div className="mx-2">
+                <Button
+                  action="Thao tác"
+                  iconAction="fa-solid fa-ellipsis-vertical"
+                  names={[
+                    {
+                      name: "Xoá khách hàng",
+                      icon: "fa-solid fa-trash",
+                      action: deleteCustomerHandler,
+                    },
+                  ]}
+                />
+              </div>
+            ) : null}
             <div className="mx-2">
               <Button
                 action="Thêm mới"
@@ -82,7 +128,7 @@ function CustomerManagementPage() {
                     name: "Khách hàng",
                     icon: "fa-solid fa-plus",
                     action: newCustomerHandler,
-                  }
+                  },
                 ]}
               />
             </div>
@@ -106,19 +152,45 @@ function CustomerManagementPage() {
           slots={{ toolbar: GridToolbar }}
         />
       </Box>
-      <NewCustomer
-        open={openNewCustomerModal}
-        onClose={() => setOpenNewCustomerModal(false)}
-      />
-      {openDetailsStocktake && selectedStocktakeId && (
-        <DetailsCustomer
-          open={openDetailsStocktake}
-          onClose={() => setOpenDetailsStocktake(false)}
-          roomId={selectedStocktakeId}
+      {openNewCustomerModal && (
+        <NewCustomer
+          open={openNewCustomerModal}
+          onClose={() => setOpenNewCustomerModal(false)}
         />
       )}
+
+      {openEditCustomerModal && selectedCustomerId && (
+        <EditCustomer
+          open={openEditCustomerModal}
+          onClose={() => setOpenEditCustomerModal(false)}
+          customerId={selectedCustomerId}
+        />
+      )}
+      {openDetailsCustomerModal && selectedCustomerId && (
+        <DetailsCustomer
+          open={openDetailsCustomerModal}
+          onClose={() => setOpenDetailsCustomerModal(false)}
+          customerId={selectedCustomerId}
+        />
+      )}
+      <DeleteCustomer
+        open={openDeleteCustomerModal}
+        onClose={() => setOpenDeleteCustomerModal(false)}
+        listCateRoomId={rowSelectionModel}
+      />
     </>
   );
 }
 
 export default CustomerManagementPage;
+
+async function loadCustomers() {
+  const response = await axiosConfig.get("customer");
+  return response.data;
+}
+
+export async function loader() {
+  return defer({
+    customers: await loadCustomers(),
+  });
+}

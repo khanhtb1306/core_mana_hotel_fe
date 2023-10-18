@@ -7,12 +7,6 @@ import NewCategoryRoom from "../CategoryRoom/NewCategoryRoom";
 import NewArea from "../NewArea";
 
 function RoomForm({ name, open, onClose, method, floors, categories, room }) {
-  //   const dateNow = new Date();
-  //   const year = dateNow.getFullYear();
-  //   const month = String(dateNow.getMonth() + 1).padStart(2, "0");
-  //   const day = String(dateNow.getDate()).padStart(2, "0");
-
-  //   const formattedDate = `${year}-${month}-${day}`;
   const [openNewCateRoomModal, setOpenNewCateRoomModal] = useState(false);
   const [openNewAreaModal, setOpenNewAreaModal] = useState(false);
   const defaultCate = categories[0].roomCategory;

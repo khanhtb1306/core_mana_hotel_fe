@@ -20,6 +20,7 @@ function CategoryManagementPage() {
   const { categories, floors } = useLoaderData();
   const token = useRouteLoaderData("root");
 
+  // const [listCategory, setListCategory] = useState(categories);
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openNewRoomModal, setOpenNewRoomModal] = useState(false);
   const [openDeleteCateRoomModal, setOpenDeleteCateRoomModal] = useState(false);
@@ -46,6 +47,11 @@ function CategoryManagementPage() {
     setSelectedCateRoomId(id);
   };
 
+  const handleStatusCateRoom = (id) => {
+    const cate = categories.find(cate => cate.roomCategory.roomCategoryId === id);
+    console.log(cate);
+  };
+
   const handleEditCateRoom = (id) => {
     setOpenEditCateRoom(true);
     setSelectedCateRoomId(id);
@@ -66,17 +72,23 @@ function CategoryManagementPage() {
       getActions: ({ id }) => {
         return [
           <GridActionsCellItem
-            icon={<i className="fa-solid fa-eye"></i>}
+            icon={<i className="fa-solid fa-eye p-2"></i>}
             label="Xem chi tiết"
             onClick={() => handleDetailsCateRoom(id)}
           />,
           <GridActionsCellItem
-            icon={<i className="fa-solid fa-pen-to-square"></i>}
+            icon={<i className="fa-solid fa-lock p-2"></i>}
+            label="Kinh doanh"
+            onClick={() => handleStatusCateRoom(id)}
+          />,
+          <GridActionsCellItem
+            icon={<i className="fa-solid fa-pen-to-square p-2"></i>}
             label="Chỉnh sửa"
             onClick={() => handleEditCateRoom(id)}
           />,
         ];
       },
+      width: 150
     },
   ];
 
