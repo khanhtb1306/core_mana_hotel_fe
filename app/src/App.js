@@ -5,6 +5,7 @@ import LoginPage, { action as loginAction } from "./pages/Authentication/login";
 import { action as logoutAction } from "./pages/Authentication/logout";
 import { action as actionCategoryRoom } from "./components/UI/CategoryRoomForm";
 import RoomManagementPage, { loader as loadRoom } from "./pages/RoomManagement";
+import { action as actionRoom } from "./components/UI/RoomForm";
 import CategoryManagementPage, {
   loader as loadCateRoom,
 } from "./pages/CategoryManagement";
@@ -34,6 +35,7 @@ const routesForManager = [
     path: "roomManagement",
     element: <RoomManagementPage />,
     loader: loadRoom,
+    action: actionRoom,
   },
   {
     path: "productManagement",

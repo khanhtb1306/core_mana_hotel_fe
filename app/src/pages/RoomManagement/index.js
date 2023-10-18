@@ -1,5 +1,10 @@
 import { Box } from "@mui/material";
-import { DataGrid, GridActionsCellItem, GridToolbar, viVN } from "@mui/x-data-grid";
+import {
+  DataGrid,
+  GridActionsCellItem,
+  GridToolbar,
+  viVN,
+} from "@mui/x-data-grid";
 import { useState } from "react";
 import Button from "../../components/UI/Button";
 import NewRoom from "../../components/Room/NewRoom";
@@ -9,20 +14,26 @@ import DetailsRoom from "../../components/Room/DetailsRoom";
 import { axiosConfig } from "../../utils/axiosConfig";
 import RoomRootLayout from "../RoomLayout";
 import { defer, useLoaderData } from "react-router-dom";
+import EditRoom from "../../components/Room/EditRoom";
 
 function RoomManagementPage() {
-  const { rooms } = useLoaderData();
-  console.log(rooms);
+  const { rooms, categories, floors } = useLoaderData();
 
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openNewRoomModal, setOpenNewRoomModal] = useState(false);
   const [openDeleetRoomModal, setOpenDeleetRoomModal] = useState(false);
   const [openNewCateRoomModal, setOpenNewCateRoomModal] = useState(false);
   const [openDetailsRoom, setOpenDetailsRoom] = useState(false);
+  const [openEditRoom, setOpenEditRoom] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState(null);
 
   const handleDetailsRoom = (id) => {
     setOpenDetailsRoom(true);
+    setSelectedRoomId(id);
+  };
+
+  const handleEditRoom = (id) => {
+    setOpenEditRoom(true);
     setSelectedRoomId(id);
   };
 
@@ -48,6 +59,7 @@ function RoomManagementPage() {
           <GridActionsCellItem
             icon={<i className="fa-solid fa-pen-to-square"></i>}
             label="Chỉnh sửa"
+            onClick={() => handleEditRoom(id)}
           />,
         ];
       },
@@ -55,7 +67,7 @@ function RoomManagementPage() {
   ];
 
   const rows = rooms.map((room) => {
-    const status = room.status ? "Đang hoạt động" : "Ngừng hoạt động"
+    const status = room.status ? "Đang hoạt động" : "Ngừng hoạt động";
     return {
       id: room.roomId,
       name: room.roomName,
@@ -65,8 +77,8 @@ function RoomManagementPage() {
       priceDay: room.roomCategory.priceByDay,
       priceNight: room.roomCategory.priceByNight,
       status: status,
-    }
-  })
+    };
+  });
 
   const newCateRoomHandler = () => {
     setOpenNewCateRoomModal(true);
@@ -136,26 +148,42 @@ function RoomManagementPage() {
             setRowSelectionModel(newRowSelectionModel);
           }}
           rowSelectionModel={rowSelectionModel}
-          localeText={viVN  .components.MuiDataGrid.defaultProps.localeText}
+          localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
           slots={{ toolbar: GridToolbar }}
         />
       </Box>
-      <NewRoom
-        open={openNewRoomModal}
-        onClose={() => setOpenNewRoomModal(false)}
-      />
-      <NewCategoryRoom
-        open={openNewCateRoomModal}
-        onClose={() => setOpenNewCateRoomModal(false)}
-      />
+      {openNewRoomModal && (
+        <NewRoom
+          open={openNewRoomModal}
+          onClose={() => setOpenNewRoomModal(false)}
+          floors={floors}
+          categories={categories}
+        />
+      )}
+      {openNewCateRoomModal && (
+        <NewCategoryRoom
+          open={openNewCateRoomModal}
+          onClose={() => setOpenNewCateRoomModal(false)}
+        />
+      )}
       <DeleteRoom
         open={openDeleetRoomModal}
         onClose={() => setOpenDeleetRoomModal(false)}
+        listRoomId={rowSelectionModel}
       />
       {openDetailsRoom && selectedRoomId && (
         <DetailsRoom
           open={openDetailsRoom}
           onClose={() => setOpenDetailsRoom(false)}
+          roomId={selectedRoomId}
+        />
+      )}
+      {openEditRoom && selectedRoomId && (
+        <EditRoom
+          open={openEditRoom}
+          onClose={() => setOpenEditRoom(false)}
+          floors={floors}
+          categories={categories}
           roomId={selectedRoomId}
         />
       )}
@@ -170,8 +198,20 @@ async function loadRooms() {
   return response.data;
 }
 
+async function loadFloors() {
+  const response = await axiosConfig.get("Floor");
+  return response.data;
+}
+
+async function loadCategories() {
+  const response = await axiosConfig.get("room-class");
+  return response.data;
+}
+
 export async function loader() {
   return defer({
     rooms: await loadRooms(),
+    floors: await loadFloors(),
+    categories: await loadCategories(),
   });
 }

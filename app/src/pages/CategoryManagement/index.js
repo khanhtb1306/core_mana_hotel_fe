@@ -17,7 +17,7 @@ import EditCategoryRoom from "../../components/CategoryRoom/EditCategoryRoom";
 import DeleteCategoryRoom from "../../components/CategoryRoom/DeleteCategoryRoom";
 
 function CategoryManagementPage() {
-  const { categories } = useLoaderData();
+  const { categories, floors } = useLoaderData();
   const token = useRouteLoaderData("root");
 
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
@@ -178,6 +178,8 @@ function CategoryManagementPage() {
         <NewRoom
           open={openNewRoomModal}
           onClose={() => setOpenNewRoomModal(false)}
+          floors={floors}
+          categories={categories}
         />
       )}
       {openNewCateRoomModal && (
@@ -211,6 +213,11 @@ function CategoryManagementPage() {
 
 export default CategoryManagementPage;
 
+async function loadFloors() {
+  const response = await axiosConfig.get("Floor");
+  return response.data;
+}
+
 async function loadCategories() {
   const response = await axiosConfig.get("room-class");
   return response.data;
@@ -218,6 +225,7 @@ async function loadCategories() {
 
 export async function loader() {
   return defer({
+    floors: await loadFloors(),
     categories: await loadCategories(),
   });
 }
