@@ -1,37 +1,12 @@
-import { useState } from "react";
-import Image from "./UI/ImageInput";
 import Modal from "./UI/Modal";
+import { Form } from "react-router-dom";
 
 function NewArea(props) {
-  const [inputValues, setInputValues] = useState({
-    idArea: 0,
-    nameArea: "",
-  });
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setInputValues({
-      ...inputValues,
-      [name]: value,
-    });
-  };
-
-  const handleReset = () => {
-    setInputValues({
-      idArea: 0,
-      nameArea: "",
-    });
-  };
-
   return (
-    <Modal
-      open={props.open}
-      onClose={props.onClose}
-      reset={handleReset}
-      size="w-5/12 h-.5/6"
-    >
-      <div className="p-2 w-full">
-        <h1 className="text-lg pb-10 font-bold">Thêm khu vực mới</h1>
+    <Form method="post" onSubmit={props.onClose} encType="multipart/form-data">
+      <Modal open={props.open} onClose={props.onClose} size="w-5/12 h-.5/6">
+        <div className="p-2 w-full">
+          <h1 className="text-lg pb-10 font-bold">Thêm khu vực mới</h1>
           <table className="ml-auto mr-5 w-full">
             <tbody>
               <tr>
@@ -42,16 +17,15 @@ function NewArea(props) {
                   <input
                     className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                     type="text"
-                    name="nameArea"
-                    value={inputValues.nameArea}
-                    onChange={handleInputChange}
+                    name="floorName"
                   />
                 </td>
               </tr>
             </tbody>
           </table>
-      </div>
-    </Modal>
+        </div>
+      </Modal>
+    </Form>
   );
 }
 

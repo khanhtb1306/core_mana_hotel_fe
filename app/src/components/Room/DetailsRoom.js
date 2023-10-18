@@ -49,7 +49,6 @@ function DetailsRoom(props) {
   ];
 
   if (room) {
-    
   }
 
   return (
@@ -91,7 +90,9 @@ function DetailsRoom(props) {
             <>
               <div className="flex">
                 <div className="w-4/12">
-                  <ImageDisplay />
+                  <ImageDisplay
+                    src={`data:image/png;base64,${room.image}`}
+                  />
                 </div>
                 <div className="w-8/12 mx-5">
                   <table className="m-4 w-full">
@@ -103,7 +104,7 @@ function DetailsRoom(props) {
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Hạng phòng:</td>
                         <td className="w-7/12 pt-2">
-                        {room.roomCategory.roomCategoryName}
+                          {room.roomCategory.roomCategoryName}
                         </td>
                       </tr>
                       <tr className="border-0 border-b">
@@ -112,19 +113,25 @@ function DetailsRoom(props) {
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Giá theo giờ:</td>
-                        <td className="w-7/12 pt-2">{room.roomCategory.priceByHour.toLocaleString()}</td>
+                        <td className="w-7/12 pt-2">
+                          {room.roomCategory.priceByHour.toLocaleString()}
+                        </td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Giá theo ngày:</td>
-                        <td className="w-7/12 pt-2">{room.roomCategory.priceByDay.toLocaleString()}</td>
+                        <td className="w-7/12 pt-2">
+                          {room.roomCategory.priceByDay.toLocaleString()}
+                        </td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Giá theo đêm:</td>
-                        <td className="w-7/12 pt-2">{room.roomCategory.priceByNight.toLocaleString()}</td>
+                        <td className="w-7/12 pt-2">
+                          {room.roomCategory.priceByNight.toLocaleString()}
+                        </td>
                       </tr>
                       <tr className="border-0 border-b">
-                        <td className="w-5/12 pt-2">Bắt đầu sử dụng:</td>
-                        <td className="w-7/12 pt-2">{room.createdDate}</td>
+                        <td className="w-5/12 pt-2">Chú ý:</td>
+                        <td className="w-7/12 pt-2">{room.note}</td>
                       </tr>
                     </tbody>
                   </table>

@@ -5,40 +5,41 @@ import {
   GridToolbar,
   viVN,
 } from "@mui/x-data-grid";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import RoomRootLayout from "../RoomLayout";
 import Button from "../../components/UI/Button";
 import NewRoom from "../../components/Room/NewRoom";
 import NewCategoryRoom from "../../components/CategoryRoom/NewCategoryRoom";
-import DeleteRoom from "../../components/Room/DeleteRoom";
 import DetailsCategoryRoom from "../../components/CategoryRoom/DetailsCategoryRoom";
-import { axiosConfig, axiosPrivate } from "../../utils/axiosConfig";
-import { useRouteLoaderData } from "react-router-dom";
+import { axiosConfig } from "../../utils/axiosConfig";
+import { defer, useLoaderData, useRouteLoaderData } from "react-router-dom";
 import EditCategoryRoom from "../../components/CategoryRoom/EditCategoryRoom";
+import DeleteCategoryRoom from "../../components/CategoryRoom/DeleteCategoryRoom";
 
 function CategoryManagementPage() {
+  const { categories, floors } = useLoaderData();
   const token = useRouteLoaderData("root");
 
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openNewRoomModal, setOpenNewRoomModal] = useState(false);
-  const [openDeleetRoomModal, setOpenDeleetRoomModal] = useState(false);
+  const [openDeleteCateRoomModal, setOpenDeleteCateRoomModal] = useState(false);
   const [openNewCateRoomModal, setOpenNewCateRoomModal] = useState(false);
   const [openDetailsCateRoom, setOpenDetailsCateRoom] = useState(false);
   const [openEditCateRoom, setOpenEditCateRoom] = useState(false);
   const [selectedCateRoomId, setSelectedCateRoomId] = useState(null);
-  const [categories, setCategories] = useState([]);
 
-  useEffect(() => {
-    async function fetchCategories() {
-      try {
-        const response = await axiosConfig.get("room-class");
-        setCategories(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    }
-    fetchCategories();
-  }, []);
+  // const [categories, setCategories] = useState([]);
+  // useEffect(() => {
+  //   async function fetchCategories() {
+  //     try {
+  //       const response = await axiosConfig.get("room-class");
+  //       setCategories(response.data);
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   }
+  //   fetchCategories();
+  // }, []);
 
   const handleDetailsCateRoom = (id) => {
     setOpenDetailsCateRoom(true);
@@ -109,7 +110,7 @@ function CategoryManagementPage() {
   };
 
   const deleteRoomHandler = () => {
-    setOpenDeleetRoomModal(true);
+    setOpenDeleteCateRoomModal(true);
   };
 
   return (
@@ -166,6 +167,7 @@ function CategoryManagementPage() {
           disableRowSelectionOnClick
           onRowSelectionModelChange={(newRowSelectionModel) => {
             setRowSelectionModel(newRowSelectionModel);
+            console.log(newRowSelectionModel);
           }}
           rowSelectionModel={rowSelectionModel}
           localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
@@ -176,17 +178,20 @@ function CategoryManagementPage() {
         <NewRoom
           open={openNewRoomModal}
           onClose={() => setOpenNewRoomModal(false)}
+          floors={floors}
+          categories={categories}
         />
       )}
-      {/* {openNewCateRoomModal && ( */}
+      {openNewCateRoomModal && (
         <NewCategoryRoom
           open={openNewCateRoomModal}
           onClose={() => setOpenNewCateRoomModal(false)}
         />
-      {/* )} */}
-      <DeleteRoom
-        open={openDeleetRoomModal}
-        onClose={() => setOpenDeleetRoomModal(false)}
+      )}
+      <DeleteCategoryRoom
+        open={openDeleteCateRoomModal}
+        onClose={() => setOpenDeleteCateRoomModal(false)}
+        listCateRoomId={rowSelectionModel}
       />
       {openDetailsCateRoom && selectedCateRoomId && (
         <DetailsCategoryRoom
@@ -207,3 +212,20 @@ function CategoryManagementPage() {
 }
 
 export default CategoryManagementPage;
+
+async function loadFloors() {
+  const response = await axiosConfig.get("Floor");
+  return response.data;
+}
+
+async function loadCategories() {
+  const response = await axiosConfig.get("room-class");
+  return response.data;
+}
+
+export async function loader() {
+  return defer({
+    floors: await loadFloors(),
+    categories: await loadCategories(),
+  });
+}

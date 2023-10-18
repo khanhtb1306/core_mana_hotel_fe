@@ -1,7 +1,7 @@
 import { Form } from "react-router-dom";
 import Modal from "../UI/Modal";
 
-function DeleteRoom(props) {
+function DeleteCategoryRoom(props) {
   return (
     <Form method="delete" onSubmit={() => props.onClose()}>
       <Modal
@@ -11,17 +11,18 @@ function DeleteRoom(props) {
         size="w-5/12 h-.5/6"
       >
         <div className="p-2 w-full">
-          <h1 className="text-lg pb-10 font-bold">Xoá phòng</h1>
+          <h1 className="text-lg pb-10 font-bold">Xoá hạng phòng</h1>
           <input
             hidden
             type="text"
-            name="roomId"
-            defaultValue={props.listRoomId}
+            name="roomCategoryId"
+            defaultValue={props.listCateRoomId}
           />
           <div className="ml-auto mr-5 w-full">
             <p>
-              Hệ thống sẽ xoá hoàn toàn danh sách phòng được chọn nhưng vẫn giữ
-              nguyên thông tin phòng trong các giao dịch lịch sử nếu có
+              Hệ thống sẽ xóa hoàn toàn danh sách hạng phòng được chọn bao gồm
+              hạng phòng đang gắn với phòng nhưng vẫn giữ thông tin hạng phòng
+              trong các giao dịch lịch sử nếu có.
             </p>
             <p>Bạn có chắc chắn muốn xoá?</p>
           </div>
@@ -31,4 +32,8 @@ function DeleteRoom(props) {
   );
 }
 
-export default DeleteRoom;
+export default DeleteCategoryRoom;
+
+export async function action({ request }) {
+  console.log(request);
+}

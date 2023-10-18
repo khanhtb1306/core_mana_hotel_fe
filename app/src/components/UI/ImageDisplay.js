@@ -1,11 +1,10 @@
 import bedroom1 from "../../assets/images/bedroom.png";
 import bedroom2 from "../../assets/images/background-login.jpg";
 import { useState } from "react";
-import { randomNumberBetween } from "@mui/x-data-grid/utils/utils";
 
 function ImageDisplay(props) {
   const DUMMY_IMAGES = [props.src, bedroom2, bedroom1];
-  const [imageDisplay, setImageDisplay] = useState(bedroom1);
+  const [imageDisplay, setImageDisplay] = useState(props.src);
 
   const handleImageDiplay = (src) => {
     setImageDisplay(src);
