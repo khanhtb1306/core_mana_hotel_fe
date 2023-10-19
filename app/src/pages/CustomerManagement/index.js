@@ -10,7 +10,7 @@ import Button from "../../components/UI/Button";
 import NewCustomer from "../../components/Customer/NewCustomer";
 import DetailsCustomer from "../../components/Customer/DetailsCustomer";
 import { axiosConfig } from "../../utils/axiosConfig";
-import { defer, useLoaderData } from "react-router-dom";
+import { defer, redirect, useLoaderData } from "react-router-dom";
 import EditCustomer from "../../components/Customer/EditCustomer";
 import DeleteCustomer from "../../components/Customer/DeleteCustomer";
 
@@ -193,4 +193,60 @@ export async function loader() {
   return defer({
     customers: await loadCustomers(),
   });
+}
+
+export async function action({ request }) {
+  const method = request.method;
+  const data = await request.formData();
+  const formData = new FormData();
+  formData.append("customerName", data.get("customerName"));
+  formData.append("customerGroup", data.get("customerGroup"));
+  formData.append("identity", data.get("identity"));
+  formData.append("address", data.get("address"));
+  formData.append("phoneNumber", data.get("phoneNumber"));
+  formData.append("dob", data.get("dob"));
+  formData.append("gender", data.get("gender"));
+  formData.append("email", data.get("email"));
+  formData.append("taxCode", data.get("taxCode"));
+  formData.append("image", data.get("image"));
+
+  if (method === "POST") {
+    const response = await axiosConfig
+      .post("customer", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+    console.log(response);
+    return redirect("/manager/customerManagement");
+  }
+  if (method === "PUT") {
+    const response = await axiosConfig
+      .put("customer/" + data.get("customerId"), formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+    console.log(response);
+    return redirect("/manager/customerManagement");
+  }
+  if (method === "DELETE") {
+    const dataArray = data.get("customerId").split(",");
+    dataArray.map(async (id) => {
+      const response = await axiosConfig
+        .delete("customer/" + id)
+        .catch((e) => {
+          console.log(e);
+        });
+      console.log(response);
+    });
+    window.location.href = "/manager/customerManagement";
+    // return redirect("/manager/customerManagement");
+  }
 }
