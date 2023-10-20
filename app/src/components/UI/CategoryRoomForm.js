@@ -88,6 +88,7 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                               ? cateRoom.roomCategoryName
                               : ""
                           }
+                          required
                         />
                       </td>
                     </tr>
@@ -96,13 +97,27 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                         <h2>Sức chứa</h2>
                       </td>
                       <td className="w-9/12">
+                        Người lớn
                         <input
-                          className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
+                          className="border-0 border-b border-gray-500 w-4/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
                           type="number"
-                          name="roomCapacity"
+                          name="numOfAdults"
                           defaultValue={
-                            cateRoom.roomCapacity ? cateRoom.roomCapacity : ""
+                            cateRoom.numOfAdults ? cateRoom.numOfAdults : 0
                           }
+                          min={0}
+                          required
+                        />
+                        Trẻ em
+                        <input
+                          className="border-0 border-b border-gray-500 w-4/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                          type="number"
+                          name="numOfChildren"
+                          defaultValue={
+                            cateRoom.numOfChildren ? cateRoom.numOfChildren : 0
+                          }
+                          min={0}
+                          required
                         />
                       </td>
                     </tr>
@@ -116,8 +131,9 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                           type="number"
                           name="roomArea"
                           defaultValue={
-                            cateRoom.roomArea ? cateRoom.roomArea : ""
+                            cateRoom.roomArea ? cateRoom.roomArea : 0
                           }
+                          required
                         />
                       </td>
                     </tr>
@@ -135,8 +151,9 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                           type="number"
                           name="priceByHour"
                           defaultValue={
-                            cateRoom.priceByHour ? cateRoom.priceByHour : ""
+                            cateRoom.priceByHour ? cateRoom.priceByHour : 0
                           }
+                          required
                         />
                       </td>
                     </tr>
@@ -150,8 +167,9 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                           type="number"
                           name="priceByDay"
                           defaultValue={
-                            cateRoom.priceByDay ? cateRoom.priceByDay : ""
+                            cateRoom.priceByDay ? cateRoom.priceByDay : 0
                           }
+                          required
                         />
                       </td>
                     </tr>
@@ -165,8 +183,9 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                           type="number"
                           name="priceByNight"
                           defaultValue={
-                            cateRoom.priceByNight ? cateRoom.priceByNight : ""
+                            cateRoom.priceByNight ? cateRoom.priceByNight : 0
                           }
+                          required
                         />
                       </td>
                     </tr>
@@ -204,91 +223,3 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
 }
 
 export default CategoryRoomForm;
-
-export async function action({ request }) {
-  const method = request.method;
-  const data = await request.formData();
-  if (data.get("floorName")) {
-    const formData = {
-      floorName: data.get("floorName"),
-      status: 1,
-    };
-    const response = await axiosConfig.post("Floor", formData).catch((e) => {
-      console.log(e);
-    });
-    console.log(response);
-    return redirect("/manager/categoryRoomManagement");
-  }
-  const formData = new FormData();
-  if (data.get("roomName")) {
-    formData.append("roomName", data.get("roomName"));
-    formData.append("roomCategoryId", data.get("roomCategoryId"));
-    formData.append("floorId", data.get("floorId"));
-    formData.append("status", 1);
-    formData.append("bookingStatus", 0);
-    formData.append("conditionStatus", 0);
-    formData.append("note", data.get("note"));
-    formData.append("image", data.get("image"));
-    if (method === "POST") {
-      const response = await axiosConfig
-        .post("room", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        })
-        .catch((e) => {
-          console.log(e);
-        });
-      console.log(response);
-    }
-    return redirect("/manager/categoryRoomManagement");
-  }
-  formData.append("roomCategoryName", data.get("roomCategoryName"));
-  formData.append("roomCapacity", data.get("roomCapacity"));
-  formData.append("roomArea", data.get("roomArea"));
-  formData.append("priceByHour", data.get("priceByHour"));
-  formData.append("priceByDay", data.get("priceByDay"));
-  formData.append("priceByNight", data.get("priceByNight"));
-  formData.append("status", 1);
-  formData.append("description", data.get("description"));
-  formData.append("image", data.get("image"));
-
-  if (method === "POST") {
-    const response = await axiosConfig
-      .post("room-class", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-    console.log(response);
-  }
-  if (method === "PUT") {
-    console.log(data.get("roomCategoryId"));
-    const response = await axiosConfig
-      .put("room-class/" + data.get("roomCategoryId"), formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-    console.log(response);
-  }
-  if (method === "DELETE") {
-    const dataArray = data.get("roomCategoryId").split(",");
-    dataArray.map(async (id) => {
-      const response = await axiosConfig
-        .delete("room-class/" + id)
-        .catch((e) => {
-          console.log(e);
-        });
-      console.log(response);
-    });
-  }
-
-  return redirect("/manager/categoryRoomManagement");
-}

@@ -6,6 +6,11 @@ import { useState } from "react";
 function DetailsService(props) {
   const [openInfo, setOpenInfo] = useState(true);
   const [openWastage, setOpenWastage] = useState(false);
+  const service = props.service;
+
+  const defaultVal = service.listGoodsUnit.find((unit) => unit.isDefault);
+
+  const name = service.goods.goodsName + " (" + defaultVal.goodsUnitName + ")";
 
   const handleInfo = () => {
     setOpenInfo(true);
@@ -70,14 +75,33 @@ function DetailsService(props) {
           <>
             <div className="flex">
               <div className="w-4/12">
-                <ImageDisplay />
+                <h2 className="text-lg pb-5 font-bold">{name ? name : ""}</h2>
+                <ImageDisplay
+                  image1={
+                    service.goods.image
+                      ? `data:image/png;base64,${service.goods.image}`
+                      : null
+                  }
+                  image2={
+                    service.goods.image
+                      ? `data:image/png;base64,${service.goods.image}`
+                      : null
+                  }
+                  image3={
+                    service.goods.image
+                      ? `data:image/png;base64,${service.goods.image}`
+                      : null
+                  }
+                />
               </div>
-              <div className="w-8/12">
-                <table className="m-4 w-full text-xl">
+              <div className="w-8/12 px-5">
+                <table className="m-4 w-full">
                   <tbody>
                     <tr className="border-0 border-b">
                       <td className="w-5/12 pt-2">Mã dịch vụ:</td>
-                      <td className="w-7/12 pt-2">SP000001</td>
+                      <td className="w-7/12 pt-2">
+                        {service.goods.goodsId ? service.goods.goodsId : ""}
+                      </td>
                     </tr>
                     <tr className="border-0 border-b">
                       <td className="w-5/12 pt-2">Loại hàng:</td>
@@ -85,15 +109,29 @@ function DetailsService(props) {
                     </tr>
                     <tr className="border-0 border-b">
                       <td className="w-5/12 pt-2">Giá bán:</td>
-                      <td className="w-7/12 pt-2">18,000</td>
+                      <td className="w-7/12 pt-2">
+                        {defaultVal.price ? defaultVal.price : 0}
+                      </td>
                     </tr>
                     <tr className="border-0 border-b">
                       <td className="w-5/12 pt-2">Giá vốn:</td>
-                      <td className="w-7/12 pt-2">10,000</td>
+                      <td className="w-7/12 pt-2">
+                        {defaultVal.cost ? defaultVal.cost : 0}
+                      </td>
                     </tr>
                     <tr className="border-0 border-b">
                       <td className="w-5/12 pt-2">Mô tả chi tiết</td>
-                      <td className="w-7/12 pt-2">...</td>
+                      <td className="w-7/12 pt-2">
+                        {service.goods.description
+                          ? service.goods.description
+                          : ""}
+                      </td>
+                    </tr>
+                    <tr className="border-0 border-b">
+                      <td className="w-5/12 pt-2">Chú ý</td>
+                      <td className="w-7/12 pt-2">
+                        {service.goods.note ? service.goods.note : ""}
+                      </td>
                     </tr>
                   </tbody>
                 </table>

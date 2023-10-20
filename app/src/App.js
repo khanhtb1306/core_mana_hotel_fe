@@ -3,14 +3,21 @@ import RootLayout from "./pages/RootLayout";
 import ErrorPage from "./pages/Error";
 import LoginPage, { action as loginAction } from "./pages/Authentication/login";
 import { action as logoutAction } from "./pages/Authentication/logout";
-import { action as actionCategoryRoom } from "./components/UI/CategoryRoomForm";
-import RoomManagementPage, { loader as loadRoom } from "./pages/RoomManagement";
-import { action as actionRoom } from "./components/UI/RoomForm";
+import RoomManagementPage, {
+  loader as loadRoom,
+  action as actionRoom,
+} from "./pages/RoomManagement";
 import CategoryManagementPage, {
   loader as loadCateRoom,
+  action as actionCategoryRoom,
 } from "./pages/CategoryManagement";
-import ProductManagementPage from "./pages/ProductManagement";
-import CustomerManagementPage from "./pages/CustomerManagement";
+import ProductManagementPage, {
+  loader as loadProducts,
+} from "./pages/ProductManagement";
+import CustomerManagementPage, {
+  loader as loadCustomers,
+  action as actionCustomer,
+} from "./pages/CustomerManagement";
 import StocktakeManagementPage from "./pages/StocktakeManagement";
 import { checkAuthLoader, tokenLoader } from "./contexts/auth";
 import ManagerLayout from "./pages/ManagerLayout";
@@ -40,6 +47,7 @@ const routesForManager = [
   {
     path: "productManagement",
     element: <ProductManagementPage />,
+    loader: loadProducts,
   },
   {
     path: "stocktakeManagement",
@@ -48,6 +56,8 @@ const routesForManager = [
   {
     path: "customerManagement",
     element: <CustomerManagementPage />,
+    loader: loadCustomers,
+    action: actionCustomer,
   },
 ];
 
@@ -105,7 +115,7 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <div className="bg-gray-100 h-screen w-screen">
+    <div className="bg-gray-100 min-h-screen max-h-full w-screen">
       <RouterProvider router={router} />
     </div>
   );

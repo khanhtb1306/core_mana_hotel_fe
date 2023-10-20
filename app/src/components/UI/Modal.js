@@ -8,7 +8,7 @@ function Modal({ open, onClose, size, button, children }) {
   return (
     <div
       onClick={onClose}
-      className={`fixed inset-0 flex justify-center items-center transition-colors ${
+      className={`fixed inset-0 flex justify-center items-center transition-colors overflow-auto ${
         open ? "visible bg-black/20" : "invisible"
       }`}
     >

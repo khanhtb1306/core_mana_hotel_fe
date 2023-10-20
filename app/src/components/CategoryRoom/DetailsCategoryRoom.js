@@ -16,7 +16,6 @@ function DetailsCategoryRoom(props) {
           "room-class/" + props.cateRoomId
         );
         setCategory(response.data);
-        console.log(response.data);
       } catch (error) {
         console.log(error);
       }
@@ -43,7 +42,7 @@ function DetailsCategoryRoom(props) {
   let rowsRoom = [];
   if (category) {
     rowsRoom = category.listRoom.map((room) => {
-      const status = room.status ? "Đang hoạt động" : "Ngừng hoạt động"
+      const status = room.status ? "Đang hoạt động" : "Ngừng hoạt động";
       return {
         id: room.roomId,
         name: room.roomName,
@@ -92,7 +91,23 @@ function DetailsCategoryRoom(props) {
             <>
               <div className="flex">
                 <div className="w-4/12">
-                  <ImageDisplay src={`data:image/png;base64,${category.roomCategory.image}`} />
+                  <ImageDisplay
+                    image1={
+                      category.roomCategory.image
+                        ? `data:image/png;base64,${category.roomCategory.image}`
+                        : null
+                    }
+                    image2={
+                      category.roomCategory.image
+                        ? `data:image/png;base64,${category.roomCategory.image}`
+                        : null
+                    }
+                    image3={
+                      category.roomCategory.image
+                        ? `data:image/png;base64,${category.roomCategory.image}`
+                        : null
+                    }
+                  />
                 </div>
                 <div className="w-8/12 mx-5">
                   <table className="m-4 w-full">
@@ -106,49 +121,66 @@ function DetailsCategoryRoom(props) {
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Tên hạng phòng:</td>
                         <td className="w-7/12 pt-2">
-                          {category.roomCategory.roomCategoryName}
+                          {category.roomCategory.roomCategoryName ? category.roomCategory.roomCategoryName : ""}
                         </td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Số lượng phòng:</td>
                         <td className="w-7/12 pt-2">
-                          {category.listRoom.length}
+                          {category.listRoom.length ? category.listRoom.length : 0}
                         </td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Sức chứa:</td>
                         <td className="w-7/12 pt-2">
-                          {category.roomCategory.roomCapacity}
+                          <div>
+                            Người lớn:{" "}
+                            {category.roomCategory.numOfAdults
+                              ? category.roomCategory.numOfAdults
+                              : 0}
+                          </div>
+                          <div>
+                            Trẻ em:{" "}
+                            {category.roomCategory.numOfChildren
+                              ? category.roomCategory.numOfChildren
+                              : 0}
+                          </div>
                         </td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Diện tích:</td>
                         <td className="w-7/12 pt-2">
-                          {category.roomCategory.roomArea}
+                          {category.roomCategory.roomArea ? category.roomCategory.roomArea : 0}
                         </td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Giá theo giờ:</td>
                         <td className="w-7/12 pt-2">
-                          {category.roomCategory.priceByHour.toLocaleString()}
+                          {category.roomCategory.priceByHour
+                            ? category.roomCategory.priceByHour.toLocaleString()
+                            : 0}
                         </td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Giá theo ngày:</td>
                         <td className="w-7/12 pt-2">
-                          {category.roomCategory.priceByDay.toLocaleString()}
+                          {category.roomCategory.priceByDay
+                            ? category.roomCategory.priceByDay.toLocaleString()
+                            : 0}
                         </td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Giá theo đêm:</td>
                         <td className="w-7/12 pt-2">
-                          {category.roomCategory.priceByNight.toLocaleString()}
+                          {category.roomCategory.priceByNight
+                            ? category.roomCategory.priceByNight.toLocaleString()
+                            : 0}
                         </td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Mô tả chi tiết</td>
                         <td className="w-7/12 pt-2">
-                          {category.roomCategory.description}
+                          {category.roomCategory.description ? category.roomCategory.description : ""}
                         </td>
                       </tr>
                     </tbody>

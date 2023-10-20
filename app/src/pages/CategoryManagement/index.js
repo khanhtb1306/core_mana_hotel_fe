@@ -12,14 +12,22 @@ import NewRoom from "../../components/Room/NewRoom";
 import NewCategoryRoom from "../../components/CategoryRoom/NewCategoryRoom";
 import DetailsCategoryRoom from "../../components/CategoryRoom/DetailsCategoryRoom";
 import { axiosConfig } from "../../utils/axiosConfig";
-import { defer, useLoaderData, useRouteLoaderData } from "react-router-dom";
+import {
+  defer,
+  redirect,
+  useLoaderData,
+  useRouteLoaderData,
+} from "react-router-dom";
 import EditCategoryRoom from "../../components/CategoryRoom/EditCategoryRoom";
 import DeleteCategoryRoom from "../../components/CategoryRoom/DeleteCategoryRoom";
+import Swal from "sweetalert2";
 
 function CategoryManagementPage() {
-  const { categories, floors } = useLoaderData();
   const token = useRouteLoaderData("root");
+  const { categories, floors } = useLoaderData();
+  console.log(categories);
 
+  // const [listCategory, setListCategory] = useState(categories);
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openNewRoomModal, setOpenNewRoomModal] = useState(false);
   const [openDeleteCateRoomModal, setOpenDeleteCateRoomModal] = useState(false);
@@ -46,6 +54,13 @@ function CategoryManagementPage() {
     setSelectedCateRoomId(id);
   };
 
+  const handleStatusCateRoom = (id) => {
+    const cate = categories.find(
+      (cate) => cate.roomCategory.roomCategoryId === id
+    );
+    console.log(cate);
+  };
+
   const handleEditCateRoom = (id) => {
     setOpenEditCateRoom(true);
     setSelectedCateRoomId(id);
@@ -66,17 +81,23 @@ function CategoryManagementPage() {
       getActions: ({ id }) => {
         return [
           <GridActionsCellItem
-            icon={<i className="fa-solid fa-eye"></i>}
+            icon={<i className="fa-solid fa-eye p-2"></i>}
             label="Xem chi tiết"
             onClick={() => handleDetailsCateRoom(id)}
           />,
+          // <GridActionsCellItem
+          //   icon={<i className="fa-solid fa-lock p-2"></i>}
+          //   label="Kinh doanh"
+          //   onClick={() => handleStatusCateRoom(id)}
+          // />,
           <GridActionsCellItem
-            icon={<i className="fa-solid fa-pen-to-square"></i>}
+            icon={<i className="fa-solid fa-pen-to-square p-2"></i>}
             label="Chỉnh sửa"
             onClick={() => handleEditCateRoom(id)}
           />,
         ];
       },
+      width: 150,
     },
   ];
 
@@ -90,13 +111,13 @@ function CategoryManagementPage() {
       amount: row.roomTotal,
       priceHour: cateRoom.priceByHour
         ? cateRoom.priceByHour.toLocaleString()
-        : null,
+        : 0,
       priceDay: cateRoom.priceByDay
         ? cateRoom.priceByDay.toLocaleString()
-        : null,
+        : 0,
       priceNight: cateRoom.priceByNight
         ? cateRoom.priceByNight.toLocaleString()
-        : null,
+        : 0,
       status: status,
     };
   });
@@ -228,4 +249,168 @@ export async function loader() {
     floors: await loadFloors(),
     categories: await loadCategories(),
   });
+}
+
+export async function action({ request }) {
+  const method = request.method;
+  const data = await request.formData();
+  if (data.get("floorName")) {
+    const formData = {
+      floorName: data.get("floorName"),
+      status: 1,
+    };
+    const response = await axiosConfig
+      .post("Floor", formData)
+      .then((response) => {
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      })
+      .catch((e) => {
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: e.response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      });
+    return redirect("/manager/categoryRoomManagement");
+  }
+  const formData = new FormData();
+  if (data.get("roomName")) {
+    formData.append("roomName", data.get("roomName"));
+    formData.append("roomCategoryId", data.get("roomCategoryId"));
+    formData.append("floorId", data.get("floorId"));
+    formData.append("status", 1);
+    formData.append("bookingStatus", 0);
+    formData.append("conditionStatus", 0);
+    formData.append("note", data.get("note"));
+    formData.append("image", data.get("image"));
+    if (method === "POST") {
+      const response = await axiosConfig
+        .post("room", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((response) => {
+          Swal.fire({
+            position: "center",
+            icon: "success",
+            title: response.data,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        })
+        .catch((e) => {
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            title: e.response.data,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        });
+    }
+    return redirect("/manager/categoryRoomManagement");
+  }
+  formData.append("roomCategoryName", data.get("roomCategoryName"));
+  formData.append("numOfAdults", data.get("numOfAdults"));
+  formData.append("numOfChildren", data.get("numOfChildren"));
+  formData.append("roomArea", data.get("roomArea"));
+  formData.append("priceByHour", data.get("priceByHour"));
+  formData.append("priceByDay", data.get("priceByDay"));
+  formData.append("priceByNight", data.get("priceByNight"));
+  formData.append("status", 1);
+  formData.append("description", data.get("description"));
+  formData.append("image", data.get("image"));
+
+  if (method === "POST") {
+    await axiosConfig
+      .post("room-class", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((response) => {
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      })
+      .catch((e) => {
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: e.response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      });
+    return redirect("/manager/categoryRoomManagement");
+  }
+  if (method === "PUT") {
+    console.log(data.get("roomCategoryId"));
+    const response = await axiosConfig
+      .put("room-class/" + data.get("roomCategoryId"), formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((response) => {
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      })
+      .catch((e) => {
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: e.response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      });
+    return redirect("/manager/categoryRoomManagement");
+  }
+  if (method === "DELETE") {
+    const dataArray = data.get("roomCategoryId").split(",");
+    dataArray.map(async (id) => {
+      const response = await axiosConfig
+        .delete("room-class/" + id)
+        .then((response) => {
+          Swal.fire({
+            position: "center",
+            icon: "success",
+            title: response.data,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        })
+        .catch((e) => {
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            title: e.response.data,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        });
+    });
+    return redirect("/manager/categoryRoomManagement");
+  }
+
+  return redirect("/manager/categoryRoomManagement");
 }

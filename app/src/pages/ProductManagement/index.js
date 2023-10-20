@@ -11,95 +11,161 @@ import NewProduct from "../../components/Product/NewProduct";
 import NewService from "../../components/Service/NewService";
 import DetailsProduct from "../../components/Product/DetailsProduct";
 import DetailsService from "../../components/Service/DetailsService";
+import { defer, redirect, useLoaderData } from "react-router-dom";
+import { axiosConfig } from "../../utils/axiosConfig";
+import EditProduct from "../../components/Product/EditProduct";
+import EditService from "../../components/Service/EditService";
+import Swal from "sweetalert2";
 
 function ProductManagementPage() {
+  const { products } = useLoaderData();
+
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openDeleteProductModal, setOpenDeleteProductModal] = useState(false);
   const [openNewProductModal, setOpenNewProductModal] = useState(false);
+  const [openEditProductModal, setOpenEditProductModal] = useState(false);
   const [openNewServiceModal, setOpenNewServiceModal] = useState(false);
+  const [openEditServiceModal, setOpenEditServiceModal] = useState(false);
 
   const [openDetailsProduct, setOpenDetailsProduct] = useState(false);
+  const [openDetailsService, setOpenDetailsService] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState(null);
+  const [selectedUnitId, setSelectedunitId] = useState(null);
 
-  const handleDetailsRoom = (id) => {
-    setOpenDetailsProduct(true);
-    setSelectedProductId(id);
+  const handleDetailsProduct = (row) => {
+    setSelectedunitId(null);
+    setSelectedProductId(row.id);
+    if (row.goodsCategory === "Hàng hoá") {
+      setOpenDetailsProduct(true);
+    } else {
+      setOpenDetailsService(true);
+    }
+  };
+
+  const handleEditProduct = (row) => {
+    setSelectedunitId(null);
+    setSelectedProductId(row.id);
+    if (row.goodsCategory === "Hàng hoá") {
+      setOpenEditProductModal(true);
+    } else {
+      setOpenEditServiceModal(true);
+    }
   };
 
   const columns = [
     { field: "code", headerName: "Mã hàng hoá", width: 150 },
-    { field: "nameProduct", headerName: "Tên hàng", width: 200 },
-    { field: "cateProduct", headerName: "Loại hàng", width: 100 },
+    {
+      field: "goodsName",
+      headerName: "Tên hàng",
+      width: 200,
+      type: "actions",
+      getActions: (params) => {
+        const row = params.row;
+        let options = null;
+        if (row.listUnit.length > 1) {
+          options = row.listUnit.map((unit) => {
+            return (
+              <option
+                key={unit.goodsUnitId}
+                value={unit.goodsUnitId}
+                className="text-xs"
+              >
+                {unit.goodsUnitName}
+              </option>
+            );
+          });
+        }
+        return [
+          <GridActionsCellItem
+            icon={<p className="text-black text-sm">{row.goodsName}</p>}
+            label="name"
+          />,
+          <GridActionsCellItem
+            icon={
+              options ? (
+                <select
+                  className="h-9"
+                  onChange={(e) => {
+                    setSelectedunitId(parseInt(e.target.value, 10));
+                    setSelectedProductId(row.id);
+                  }}
+                >
+                  {options}
+                </select>
+              ) : (
+                <>{" (" + row.unitDefault + ")"}</>
+              )
+            }
+            label="unit"
+          />,
+          ,
+        ];
+      },
+    },
+    { field: "goodsCategory", headerName: "Loại hàng", width: 100 },
     { field: "sellingPrice", headerName: "Giá bán", width: 100 },
     { field: "capitalPrice", headerName: "Giá vốn", width: 100 },
     { field: "quantityInStock", headerName: "Tồn kho", width: 100 },
+    { field: "minStock", headerName: "Định mức tồn ít nhất", width: 100 },
+    { field: "maxStock", headerName: "Định mức tồn nhiều nhất", width: 100 },
+    { field: "status", headerName: "Trạng thái", width: 150 },
     {
       field: "actions",
       headerName: "Actions",
       type: "actions",
-      getActions: ({ id }) => {
+      getActions: (params) => {
+        const row = params.row;
         return [
           <GridActionsCellItem
             icon={<i className="fa-solid fa-eye"></i>}
             label="Xem chi tiết"
-            onClick={() => handleDetailsRoom(id)}
+            onClick={() => handleDetailsProduct(row)}
           />,
           <GridActionsCellItem
             icon={<i className="fa-solid fa-pen-to-square"></i>}
             label="Edit"
+            onClick={() => handleEditProduct(row)}
           />,
         ];
       },
     },
   ];
 
-  const rows = [
-    {
-      id: 1,
-      code: "DV000001",
-      nameProduct: "Bắn bi-a",
-      cateProduct: "Dịch vụ",
-      sellingPrice: 25000,
-      capitalPrice: 18000,
-      quantityInStock: 100,
-    },
-    {
-      id: 2,
-      code: "SP000001",
-      nameProduct: "Coca-cola",
-      cateProduct: "Hàng hoá",
-      sellingPrice: 25000,
-      capitalPrice: 18000,
-      quantityInStock: 100,
-    },
-    {
-      id: 3,
-      code: "SP000002",
-      nameProduct: "Sprite",
-      cateProduct: "Hàng hoá",
-      sellingPrice: 25000,
-      capitalPrice: 18000,
-      quantityInStock: 100,
-    },
-    {
-      id: 4,
-      code: "SP000003",
-      nameProduct: "Nước khoáng",
-      cateProduct: "Hàng hoá",
-      sellingPrice: 25000,
-      capitalPrice: 18000,
-      quantityInStock: 100,
-    },
-    {
-      id: 5,
-      code: "SP000004",
-      nameProduct: "Bim bim",
-      cateProduct: "Hàng hoá",
-      sellingPrice: 25000,
-      capitalPrice: 18000,
-      quantityInStock: 100,
-    },
-  ];
+  const rows = products.map((product) => {
+    const status = product.goods.status
+      ? "Đang kinh doanh"
+      : "Ngừng kinh doanh";
+    let unitDefault = product.listGoodsUnit.find((unit) => unit.isDefault);
+    const defaultCost = unitDefault.cost;
+    if (selectedUnitId && product.goods.goodsId === selectedProductId) {
+      unitDefault = product.listGoodsUnit.find(
+        (unit) => unit.goodsUnitId === selectedUnitId
+      );
+    }
+    let minStock = "...";
+    let maxStock = "...";
+    if (product.goods.goodsCategory) {
+      if (unitDefault.isDefault) {
+        minStock = product.goods.minInventory;
+        maxStock = product.goods.maxInventory;
+      }
+    }
+    const category = product.goods.goodsCategory ? "Hàng hoá" : "Dịch vụ";
+    return {
+      id: product.goods.goodsId,
+      code: product.goods.goodsId,
+      goodsName: product.goods.goodsName,
+      unitDefault: unitDefault.goodsUnitName,
+      goodsCategory: category,
+      sellingPrice: unitDefault.price,
+      capitalPrice: unitDefault.cost,
+      quantityInStock: product.goods.goodsCategory ? product.goods.inventory * defaultCost / unitDefault.cost : "...",
+      minStock: minStock,
+      maxStock: maxStock,
+      status: status,
+      listUnit: product.listGoodsUnit,
+    };
+  });
 
   const newProductHandler = () => {
     setOpenNewProductModal(true);
@@ -171,28 +237,170 @@ function ProductManagementPage() {
           slots={{ toolbar: GridToolbar }}
         />
       </Box>
-      <NewProduct
-        open={openNewProductModal}
-        onClose={() => setOpenNewProductModal(false)}
-      />
+      {openNewProductModal && (
+        <NewProduct
+          open={openNewProductModal}
+          onClose={() => setOpenNewProductModal(false)}
+        />
+      )}
+
       <NewService
         open={openNewServiceModal}
         onClose={() => setOpenNewServiceModal(false)}
       />
-      {/* {openDetailsProduct && selectedProductId && (
+      {openDetailsProduct && selectedProductId && (
         <DetailsProduct
           open={openDetailsProduct}
           onClose={() => setOpenDetailsProduct(false)}
-          roomId={selectedProductId}
+          product={products.find(
+            (pro) => pro.goods.goodsId === selectedProductId
+          )}
         />
-      )} */}
-      <DetailsService
-        open={openDetailsProduct}
-        onClose={() => setOpenDetailsProduct(false)}
-        roomId={selectedProductId}
-      />
+      )}
+      {openDetailsService && selectedProductId && (
+        <DetailsService
+          open={openDetailsService}
+          onClose={() => setOpenDetailsService(false)}
+          service={products.find(
+            (pro) => pro.goods.goodsId === selectedProductId
+          )}
+        />
+      )}
+      {openEditProductModal && selectedProductId && (
+        <EditProduct
+          open={openEditProductModal}
+          onClose={() => setOpenEditProductModal(false)}
+          product={products.find(
+            (pro) => pro.goods.goodsId === selectedProductId
+          )}
+        />
+      )}
+      {openEditServiceModal && selectedProductId && (
+        <EditService
+          open={openEditServiceModal}
+          onClose={() => setOpenEditServiceModal(false)}
+          product={products.find(
+            (pro) => pro.goods.goodsId === selectedProductId
+          )}
+        />
+      )}
     </>
   );
 }
 
 export default ProductManagementPage;
+
+async function loadProducts() {
+  const response = await axiosConfig.get("goods");
+  return response.data;
+}
+
+export async function loader() {
+  return defer({
+    pro: await loadProducts(),
+    products: await loadProducts(),
+  });
+}
+
+export async function action({ request }) {
+  const method = request.method;
+  const data = await request.formData();
+  const formData = new FormData();
+  formData.append("customerName", data.get("customerName"));
+  formData.append("customerGroup", data.get("customerGroup"));
+  formData.append("phoneNumber", data.get("phoneNumber"));
+  formData.append("dob", new Date(data.get("dob")).toISOString());
+  formData.append("email", data.get("email"));
+  formData.append("address", data.get("address"));
+  formData.append("identity", data.get("identity"));
+  formData.append("nationality", data.get("nationality"));
+  formData.append("taxCode", data.get("taxCode"));
+  formData.append("gender", data.get("gender"));
+  formData.append("image", data.get("image"));
+  if (method === "POST") {
+    const response = await axiosConfig
+      .post("customer", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((response) => {
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      })
+      .catch((e) => {
+        console.log(e);
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: e.response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      });
+    console.log(response);
+    return redirect("/manager/productManagement");
+  }
+  if (method === "PUT") {
+    const response = await axiosConfig
+      .put("customer/" + data.get("customerId"), formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((response) => {
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      })
+      .catch((e) => {
+        console.log(e);
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: e.response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      });
+    console.log(response);
+    return redirect("/manager/productManagement");
+  }
+  if (method === "DELETE") {
+    const dataArray = data.get("customerId").split(",");
+    dataArray.map(async (id) => {
+      const response = await axiosConfig
+        .delete("customer/" + id)
+        .then((response) => {
+          Swal.fire({
+            position: "center",
+            icon: "success",
+            title: response.data,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        })
+        .catch((e) => {
+          console.log(e);
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            title: e.response.data,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        });
+    });
+    return redirect("/manager/productManagement");
+  }
+  return redirect("/manager/productManagement");
+}

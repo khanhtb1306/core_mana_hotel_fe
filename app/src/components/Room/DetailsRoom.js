@@ -91,7 +91,9 @@ function DetailsRoom(props) {
               <div className="flex">
                 <div className="w-4/12">
                   <ImageDisplay
-                    src={`data:image/png;base64,${room.image}`}
+                    image1={`data:image/png;base64,${room.image}`}
+                    image2={`data:image/png;base64,${room.image}`}
+                    image3={`data:image/png;base64,${room.image}`}
                   />
                 </div>
                 <div className="w-8/12 mx-5">
