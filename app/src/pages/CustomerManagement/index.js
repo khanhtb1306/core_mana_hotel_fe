@@ -13,15 +13,16 @@ import { axiosConfig } from "../../utils/axiosConfig";
 import { defer, redirect, useLoaderData } from "react-router-dom";
 import EditCustomer from "../../components/Customer/EditCustomer";
 import DeleteCustomer from "../../components/Customer/DeleteCustomer";
+import Swal from "sweetalert2";
 
 function CustomerManagementPage() {
   const { customers } = useLoaderData();
-  console.log(customers);
 
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openNewCustomerModal, setOpenNewCustomerModal] = useState(false);
   const [openEditCustomerModal, setOpenEditCustomerModal] = useState(false);
-  const [openDetailsCustomerModal, setOpenDetailsCustomerModal] = useState(false);
+  const [openDetailsCustomerModal, setOpenDetailsCustomerModal] =
+    useState(false);
   const [openDeleteCustomerModal, setOpenDeleteCustomerModal] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
 
@@ -191,6 +192,7 @@ async function loadCustomers() {
 
 export async function loader() {
   return defer({
+    demo: await loadCustomers(),
     customers: await loadCustomers(),
   });
 }
@@ -201,15 +203,15 @@ export async function action({ request }) {
   const formData = new FormData();
   formData.append("customerName", data.get("customerName"));
   formData.append("customerGroup", data.get("customerGroup"));
-  formData.append("identity", data.get("identity"));
-  formData.append("address", data.get("address"));
   formData.append("phoneNumber", data.get("phoneNumber"));
-  formData.append("dob", data.get("dob"));
-  formData.append("gender", data.get("gender"));
+  formData.append("dob", new Date(data.get("dob")).toISOString());
   formData.append("email", data.get("email"));
+  formData.append("address", data.get("address"));
+  formData.append("identity", data.get("identity"));
+  formData.append("nationality", data.get("nationality"));
   formData.append("taxCode", data.get("taxCode"));
+  formData.append("gender", data.get("gender"));
   formData.append("image", data.get("image"));
-
   if (method === "POST") {
     const response = await axiosConfig
       .post("customer", formData, {
@@ -217,8 +219,24 @@ export async function action({ request }) {
           "Content-Type": "multipart/form-data",
         },
       })
+      .then((response) => {
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      })
       .catch((e) => {
         console.log(e);
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: e.response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
       });
     console.log(response);
     return redirect("/manager/customerManagement");
@@ -230,8 +248,24 @@ export async function action({ request }) {
           "Content-Type": "multipart/form-data",
         },
       })
+      .then((response) => {
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      })
       .catch((e) => {
         console.log(e);
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: e.response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
       });
     console.log(response);
     return redirect("/manager/customerManagement");
@@ -241,12 +275,27 @@ export async function action({ request }) {
     dataArray.map(async (id) => {
       const response = await axiosConfig
         .delete("customer/" + id)
+        .then((response) => {
+          Swal.fire({
+            position: "center",
+            icon: "success",
+            title: response.data,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        })
         .catch((e) => {
           console.log(e);
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            title: e.response.data,
+            showConfirmButton: false,
+            timer: 1500,
+          });
         });
-      console.log(response);
     });
-    window.location.href = "/manager/customerManagement";
-    // return redirect("/manager/customerManagement");
+    return redirect("/manager/customerManagement");
   }
+  return redirect("/manager/customerManagement");
 }

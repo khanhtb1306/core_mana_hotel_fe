@@ -100,8 +100,6 @@ function DetailsCustomer(props) {
                 <div className="w-4/12">
                   <ImageDisplay
                     image1={customer.image ? `data:image/png;base64,${customer.image}` : null}
-                    image2={customer.image ? `data:image/png;base64,${customer.image}` : null}
-                    image3={customer.image ? `data:image/png;base64,${customer.image}` : null}
                   />
                 </div>
                 <div className="w-8/12 mx-5">
@@ -143,7 +141,7 @@ function DetailsCustomer(props) {
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Giới tính:</td>
-                        <td className="w-7/12 pt-2">{gender}</td>
+                        <td className="w-7/12 pt-2">{gender ? "Nam giới" : "Nữ giới"}</td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Mã số thuế</td>

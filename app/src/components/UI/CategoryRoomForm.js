@@ -88,6 +88,7 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                               ? cateRoom.roomCategoryName
                               : ""
                           }
+                          required
                         />
                       </td>
                     </tr>
@@ -96,13 +97,27 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                         <h2>Sức chứa</h2>
                       </td>
                       <td className="w-9/12">
+                        Người lớn
                         <input
-                          className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
+                          className="border-0 border-b border-gray-500 w-4/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
                           type="number"
-                          name="roomCapacity"
+                          name="numOfAdults"
                           defaultValue={
-                            cateRoom.roomCapacity ? cateRoom.roomCapacity : ""
+                            cateRoom.numOfAdults ? cateRoom.numOfAdults : 0
                           }
+                          min={0}
+                          required
+                        />
+                        Trẻ em
+                        <input
+                          className="border-0 border-b border-gray-500 w-4/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                          type="number"
+                          name="numOfChildren"
+                          defaultValue={
+                            cateRoom.numOfChildren ? cateRoom.numOfChildren : 0
+                          }
+                          min={0}
+                          required
                         />
                       </td>
                     </tr>
@@ -116,8 +131,9 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                           type="number"
                           name="roomArea"
                           defaultValue={
-                            cateRoom.roomArea ? cateRoom.roomArea : ""
+                            cateRoom.roomArea ? cateRoom.roomArea : 0
                           }
+                          required
                         />
                       </td>
                     </tr>
@@ -135,8 +151,9 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                           type="number"
                           name="priceByHour"
                           defaultValue={
-                            cateRoom.priceByHour ? cateRoom.priceByHour : ""
+                            cateRoom.priceByHour ? cateRoom.priceByHour : 0
                           }
+                          required
                         />
                       </td>
                     </tr>
@@ -150,8 +167,9 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                           type="number"
                           name="priceByDay"
                           defaultValue={
-                            cateRoom.priceByDay ? cateRoom.priceByDay : ""
+                            cateRoom.priceByDay ? cateRoom.priceByDay : 0
                           }
+                          required
                         />
                       </td>
                     </tr>
@@ -165,8 +183,9 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                           type="number"
                           name="priceByNight"
                           defaultValue={
-                            cateRoom.priceByNight ? cateRoom.priceByNight : ""
+                            cateRoom.priceByNight ? cateRoom.priceByNight : 0
                           }
+                          required
                         />
                       </td>
                     </tr>

@@ -9,7 +9,8 @@ function NewCategoryRoom(props) {
       onClose={props.onClose}
       cateRoom={{
         roomCategoryName: null,
-        roomCapacity: null,
+        numOfAdults: null,
+        numOfChildren: null,
         roomArea: null,
         priceByHour: null,
         priceByDay: null,

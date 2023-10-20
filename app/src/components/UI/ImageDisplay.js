@@ -1,5 +1,3 @@
-import bedroom1 from "../../assets/images/bedroom.png";
-import bedroom2 from "../../assets/images/background-login.jpg";
 import { useState } from "react";
 
 function ImageDisplay(props) {
@@ -17,7 +15,6 @@ function ImageDisplay(props) {
   let keyCounter = 0;
   let image = null;
   if (images.length > 0) {
-    console.log(images);
     image = images.map((img) => {
       if (img !== null) {
         return (

@@ -8,103 +8,6 @@ function ProductForm({ name, open, onClose, method, product }) {
   const [openDetails, setOpenDetails] = useState(false);
 
   let defautUnit = product.listGoodsUnit.find((unit) => unit.isDefault);
-  let newUnits = [];
-  if (product.listGoodsUnit.length > 1) {
-    const listUnit = product.listGoodsUnit.filter((unit) => !unit.isDefault);
-    newUnits = listUnit.map((unit, index) => {
-      const exchange = (product.goods.inventory * defautUnit.cost) / unit.cost;
-      return {
-        id: index,
-        jsx: (
-          <tr key={index}>
-            <td className="w-3/12">
-              <input
-                className="border-0 border-b border-gray-500 w-8/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                type="text"
-                name={`unit${index}`}
-                defaultValue={unit.goodsUnitName ? unit.goodsUnitName : ""}
-              />
-            </td>
-            <td className="w-3/12">
-              <input
-                className="border-0 border-b border-gray-500 w-8/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                type="number"
-                name={`amount${index}`}
-                defaultValue={exchange ? exchange : 0}
-              />
-            </td>
-            <td className="w-3/12">
-              <input
-                className="border-0 border-b border-gray-500 w-8/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                type="number"
-                name={`price${index}`}
-                defaultValue={unit.price ? unit.price : 0}
-              />
-            </td>
-            <td className="w-3/12">
-              <button
-                type="button"
-                className="p-2"
-                onClick={() => handleUnitDelete(index)}
-              >
-                <i className="fa-solid fa-trash"></i>
-              </button>
-            </td>
-          </tr>
-        ),
-      };
-    });
-    // setUnits([...units, ...newUnits]);
-  }
-  const [units, setUnits] = useState(newUnits);
-
-  const handleUnitDelete = (id) => {
-    const updatedUnits = units.filter((unit) => unit.id !== id);
-    setUnits(updatedUnits);
-  };
-
-  const handleUnitAdd = () => {
-    setUnits([
-      ...units,
-      {
-        id: units.length,
-        jsx: (
-          <tr key={units.length}>
-            <td className="w-3/12">
-              <input
-                className="border-0 border-b border-gray-500 w-8/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                type="text"
-                name={`unit${units.length}`}
-              />
-            </td>
-            <td className="w-3/12">
-              <input
-                className="border-0 border-b border-gray-500 w-8/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                type="number"
-                name={`amount${units.length}`}
-              />
-            </td>
-            <td className="w-3/12">
-              <input
-                className="border-0 border-b border-gray-500 w-8/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                type="number"
-                name={`price${units.length}`}
-              />
-            </td>
-            <td className="w-3/12">
-              <button
-                type="button"
-                className="p-2"
-                onClick={() => handleUnitDelete(units.length)}
-              >
-                <i className="fa-solid fa-trash"></i>
-              </button>
-            </td>
-          </tr>
-        ),
-      },
-    ]);
-  };
 
   const handleInfo = () => {
     setOpenInfo(true);
@@ -155,7 +58,7 @@ function ProductForm({ name, open, onClose, method, product }) {
                     {product.goods.goodsId && (
                       <tr>
                         <td className="w-3/12">
-                          <h2>Mã hàng hoá</h2>
+                          <h2>Mã dịch vụ</h2>
                         </td>
                         <td className="w-9/12">
                           <input
@@ -172,7 +75,7 @@ function ProductForm({ name, open, onClose, method, product }) {
                     )}
                     <tr>
                       <td className="w-3/12">
-                        <h2>Tên hàng hoá</h2>
+                        <h2>Tên dịch vụ</h2>
                       </td>
                       <td className="w-9/12">
                         <input
@@ -184,39 +87,6 @@ function ProductForm({ name, open, onClose, method, product }) {
                               ? product.goods.goodsName
                               : ""
                           }
-                          required
-                        />
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <h2>Định mức tồn</h2>
-                      </td>
-                      <td>
-                        Ít nhất
-                        <input
-                          className="border-0 border-b border-gray-500 w-4/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                          type="number"
-                          name="minInventory"
-                          defaultValue={
-                            product.goods.minInventory
-                              ? product.goods.minInventory
-                              : 0
-                          }
-                          min={0}
-                          required
-                        />
-                        Nhiều nhất
-                        <input
-                          className="border-0 border-b border-gray-500 w-4/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                          type="number"
-                          name="maxInventory"
-                          defaultValue={
-                            product.goods.maxInventory
-                              ? product.goods.maxInventory
-                              : 10000
-                          }
-                          min={0}
                           required
                         />
                       </td>
@@ -249,24 +119,6 @@ function ProductForm({ name, open, onClose, method, product }) {
                           type="number"
                           name="price"
                           defaultValue={defautUnit ? defautUnit.price : 0}
-                          required
-                        />
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <h2>Tồn kho</h2>
-                      </td>
-                      <td>
-                        <input
-                          className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
-                          type="number"
-                          name="inventory"
-                          defaultValue={
-                            product.goods.inventory
-                              ? product.goods.inventory
-                              : 0
-                          }
                           required
                         />
                       </td>
@@ -312,28 +164,6 @@ function ProductForm({ name, open, onClose, method, product }) {
                     required
                   />
                 </div>
-                {units.length > 0 && (
-                  <table className="text-sm text-left p-2">
-                    <tbody>
-                      <tr>
-                        <th className="w-3/12">Tên đơn vị</th>
-                        <th className="w-3/12">Giá trị quy đổi</th>
-                        <th className="w-3/12">Giá bán</th>
-                        <th className="w-3/12"></th>
-                      </tr>
-                      {units.map((unit) => (
-                        <Fragment key={unit.id}>{unit.jsx}</Fragment>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-
-                <div
-                  className="rounded border py-2 px-4 w-40 m-2"
-                  onClick={handleUnitAdd}
-                >
-                  <i className="fa-solid fa-plus pr-2"></i> Thêm đơn vị
-                </div>
               </div>
             </div>
             <div className={`${openDetails ? "" : "hidden"} mt-10`}>
@@ -342,9 +172,7 @@ function ProductForm({ name, open, onClose, method, product }) {
                 <textarea
                   className="textarea border-0 textarea-lg w-full h-40 max-h-40"
                   name="description"
-                  defaultValue={
-                    product.goods.description ? product.goods.description : ""
-                  }
+                  defaultValue={product.goods.description ? product.goods.description : ""}
                 ></textarea>
               </div>
               <div>

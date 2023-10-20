@@ -121,25 +121,36 @@ function DetailsCategoryRoom(props) {
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Tên hạng phòng:</td>
                         <td className="w-7/12 pt-2">
-                          {category.roomCategory.roomCategoryName}
+                          {category.roomCategory.roomCategoryName ? category.roomCategory.roomCategoryName : ""}
                         </td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Số lượng phòng:</td>
                         <td className="w-7/12 pt-2">
-                          {category.listRoom.length}
+                          {category.listRoom.length ? category.listRoom.length : 0}
                         </td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Sức chứa:</td>
                         <td className="w-7/12 pt-2">
-                          {category.roomCategory.roomCapacity}
+                          <div>
+                            Người lớn:{" "}
+                            {category.roomCategory.numOfAdults
+                              ? category.roomCategory.numOfAdults
+                              : 0}
+                          </div>
+                          <div>
+                            Trẻ em:{" "}
+                            {category.roomCategory.numOfChildren
+                              ? category.roomCategory.numOfChildren
+                              : 0}
+                          </div>
                         </td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Diện tích:</td>
                         <td className="w-7/12 pt-2">
-                          {category.roomCategory.roomArea}
+                          {category.roomCategory.roomArea ? category.roomCategory.roomArea : 0}
                         </td>
                       </tr>
                       <tr className="border-0 border-b">
@@ -169,7 +180,7 @@ function DetailsCategoryRoom(props) {
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Mô tả chi tiết</td>
                         <td className="w-7/12 pt-2">
-                          {category.roomCategory.description}
+                          {category.roomCategory.description ? category.roomCategory.description : ""}
                         </td>
                       </tr>
                     </tbody>

@@ -9,11 +9,26 @@ function NewProduct(props) {
       onClose={props.onClose}
       product={{
         goods: {
-
+          goodsId: null,
+          goodsName: null,
+          goodsCategory: null,
+          status: null,
+          inventory: null,
+          minInventory: null,
+          maxInventory: null,
+          note: null,
+          description: null,
+          image: null,
         },
         listGoodsUnit: [
-          {}
-        ]
+          {
+            goodsUnitId: null,
+            goodsUnitName: null,
+            cost: null,
+            price: null,
+            isDefault: null,
+          },
+        ],
       }}
     />
   );

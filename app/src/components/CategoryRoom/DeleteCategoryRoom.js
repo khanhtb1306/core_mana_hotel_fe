@@ -7,7 +7,6 @@ function DeleteCategoryRoom(props) {
       <Modal
         open={props.open}
         onClose={props.onClose}
-        reset={props.onClose}
         size="w-5/12 h-.5/6"
       >
         <div className="p-2 w-full">

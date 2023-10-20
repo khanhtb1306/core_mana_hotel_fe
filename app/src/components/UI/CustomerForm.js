@@ -1,7 +1,6 @@
-import { Form, redirect } from "react-router-dom";
+import { Form } from "react-router-dom";
 import Modal from "./Modal";
 import ImageInput from "../UI/ImageInput";
-import { axiosConfig } from "../../utils/axiosConfig";
 
 function CustomerForm({ name, open, onClose, method, customer }) {
   let formattedDate = null;
@@ -22,7 +21,14 @@ function CustomerForm({ name, open, onClose, method, customer }) {
             </div>
             <div className="flex w-full">
               <div className="ml-auto w-3/12 mr-5">
-                <ImageInput name="image" />
+              <ImageInput
+                  name="image"
+                  src={
+                    customer.image
+                      ? `data:image/png;base64,${customer.image}`
+                      : null
+                  }
+                />
               </div>
               <table className="ml-auto w-9/12 mr-5">
                 <tbody>
@@ -56,6 +62,7 @@ function CustomerForm({ name, open, onClose, method, customer }) {
                         defaultValue={
                           customer.customerName ? customer.customerName : ""
                         }
+                        required
                       />
                     </td>
                   </tr>
@@ -86,6 +93,7 @@ function CustomerForm({ name, open, onClose, method, customer }) {
                         defaultValue={
                           customer.identity ? customer.identity : ""
                         }
+                        required
                       />
                     </td>
                   </tr>
@@ -99,6 +107,7 @@ function CustomerForm({ name, open, onClose, method, customer }) {
                         type="text"
                         name="address"
                         defaultValue={customer.address ? customer.address : ""}
+                        required
                       />
                     </td>
                   </tr>
@@ -114,6 +123,7 @@ function CustomerForm({ name, open, onClose, method, customer }) {
                         defaultValue={
                           customer.phoneNumber ? customer.phoneNumber : ""
                         }
+                        required
                       />
                     </td>
                   </tr>
@@ -127,6 +137,7 @@ function CustomerForm({ name, open, onClose, method, customer }) {
                         type="date"
                         name="dob"
                         defaultValue={formattedDate ? formattedDate : ""}
+                        required
                       />
                     </td>
                   </tr>
@@ -140,6 +151,7 @@ function CustomerForm({ name, open, onClose, method, customer }) {
                         type="text"
                         name="email"
                         defaultValue={customer.email ? customer.email : ""}
+                        required
                       />
                     </td>
                   </tr>
@@ -168,6 +180,7 @@ function CustomerForm({ name, open, onClose, method, customer }) {
                         type="text"
                         name="taxCode"
                         defaultValue={customer.taxCode ? customer.taxCode : ""}
+                        required
                       />
                     </td>
                   </tr>

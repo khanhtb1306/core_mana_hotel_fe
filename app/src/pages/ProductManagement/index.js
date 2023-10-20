@@ -11,9 +11,11 @@ import NewProduct from "../../components/Product/NewProduct";
 import NewService from "../../components/Service/NewService";
 import DetailsProduct from "../../components/Product/DetailsProduct";
 import DetailsService from "../../components/Service/DetailsService";
-import { defer, useLoaderData } from "react-router-dom";
+import { defer, redirect, useLoaderData } from "react-router-dom";
 import { axiosConfig } from "../../utils/axiosConfig";
 import EditProduct from "../../components/Product/EditProduct";
+import EditService from "../../components/Service/EditService";
+import Swal from "sweetalert2";
 
 function ProductManagementPage() {
   const { products } = useLoaderData();
@@ -134,10 +136,19 @@ function ProductManagementPage() {
       ? "Đang kinh doanh"
       : "Ngừng kinh doanh";
     let unitDefault = product.listGoodsUnit.find((unit) => unit.isDefault);
+    const defaultCost = unitDefault.cost;
     if (selectedUnitId && product.goods.goodsId === selectedProductId) {
       unitDefault = product.listGoodsUnit.find(
         (unit) => unit.goodsUnitId === selectedUnitId
       );
+    }
+    let minStock = "...";
+    let maxStock = "...";
+    if (product.goods.goodsCategory) {
+      if (unitDefault.isDefault) {
+        minStock = product.goods.minInventory;
+        maxStock = product.goods.maxInventory;
+      }
     }
     const category = product.goods.goodsCategory ? "Hàng hoá" : "Dịch vụ";
     return {
@@ -148,9 +159,9 @@ function ProductManagementPage() {
       goodsCategory: category,
       sellingPrice: unitDefault.price,
       capitalPrice: unitDefault.cost,
-      quantityInStock: product.goods.inventory,
-      minStock: product.goods.minInventory,
-      maxStock: product.goods.maxInventory,
+      quantityInStock: product.goods.goodsCategory ? product.goods.inventory * defaultCost / unitDefault.cost : "...",
+      minStock: minStock,
+      maxStock: maxStock,
       status: status,
       listUnit: product.listGoodsUnit,
     };
@@ -264,6 +275,15 @@ function ProductManagementPage() {
           )}
         />
       )}
+      {openEditServiceModal && selectedProductId && (
+        <EditService
+          open={openEditServiceModal}
+          onClose={() => setOpenEditServiceModal(false)}
+          product={products.find(
+            (pro) => pro.goods.goodsId === selectedProductId
+          )}
+        />
+      )}
     </>
   );
 }
@@ -277,6 +297,110 @@ async function loadProducts() {
 
 export async function loader() {
   return defer({
+    pro: await loadProducts(),
     products: await loadProducts(),
   });
+}
+
+export async function action({ request }) {
+  const method = request.method;
+  const data = await request.formData();
+  const formData = new FormData();
+  formData.append("customerName", data.get("customerName"));
+  formData.append("customerGroup", data.get("customerGroup"));
+  formData.append("phoneNumber", data.get("phoneNumber"));
+  formData.append("dob", new Date(data.get("dob")).toISOString());
+  formData.append("email", data.get("email"));
+  formData.append("address", data.get("address"));
+  formData.append("identity", data.get("identity"));
+  formData.append("nationality", data.get("nationality"));
+  formData.append("taxCode", data.get("taxCode"));
+  formData.append("gender", data.get("gender"));
+  formData.append("image", data.get("image"));
+  if (method === "POST") {
+    const response = await axiosConfig
+      .post("customer", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((response) => {
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      })
+      .catch((e) => {
+        console.log(e);
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: e.response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      });
+    console.log(response);
+    return redirect("/manager/productManagement");
+  }
+  if (method === "PUT") {
+    const response = await axiosConfig
+      .put("customer/" + data.get("customerId"), formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((response) => {
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      })
+      .catch((e) => {
+        console.log(e);
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: e.response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      });
+    console.log(response);
+    return redirect("/manager/productManagement");
+  }
+  if (method === "DELETE") {
+    const dataArray = data.get("customerId").split(",");
+    dataArray.map(async (id) => {
+      const response = await axiosConfig
+        .delete("customer/" + id)
+        .then((response) => {
+          Swal.fire({
+            position: "center",
+            icon: "success",
+            title: response.data,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        })
+        .catch((e) => {
+          console.log(e);
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            title: e.response.data,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        });
+    });
+    return redirect("/manager/productManagement");
+  }
+  return redirect("/manager/productManagement");
 }

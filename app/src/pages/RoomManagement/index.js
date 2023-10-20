@@ -18,11 +18,13 @@ import {
   redirect,
   useActionData,
   useLoaderData,
+  useRouteLoaderData,
 } from "react-router-dom";
 import EditRoom from "../../components/Room/EditRoom";
 import Swal from "sweetalert2";
 
 function RoomManagementPage() {
+  const token = useRouteLoaderData("root");
   const { rooms, categories, floors } = useLoaderData();
   // let response = useActionData();
 
@@ -80,9 +82,9 @@ function RoomManagementPage() {
       name: room.roomName,
       cateRoom: room.roomCategory.roomCategoryName,
       area: room.floor.floorName,
-      priceHour: room.roomCategory.priceByHour,
-      priceDay: room.roomCategory.priceByDay,
-      priceNight: room.roomCategory.priceByNight,
+      priceHour: room.roomCategory.priceByHour ? room.roomCategory.priceByHour.toLocaleString() : 0,
+      priceDay: room.roomCategory.priceByDay ? room.roomCategory.priceByDay.toLocaleString() : 0,
+      priceNight: room.roomCategory.priceByNight ? room.roomCategory.priceByNight.toLocaleString() : 0,
       status: status,
     };
   });
@@ -217,9 +219,9 @@ async function loadCategories() {
 
 export async function loader() {
   return defer({
-    rooms: await loadRooms(),
     floors: await loadFloors(),
     categories: await loadCategories(),
+    rooms: await loadRooms(),
   });
 }
 
@@ -247,23 +249,23 @@ export async function action({ request }) {
         .catch((e) => {
           console.log(e);
         });
-        if (response.status === 200) {
-          Swal.fire({
-            position: "center",
-            icon: "success",
-            title: response.data,
-            showConfirmButton: false,
-            timer: 1500,
-          });
-        } else {
-          Swal.fire({
-            position: "center",
-            icon: "error",
-            title: response.data,
-            showConfirmButton: false,
-            timer: 1500,
-          });
-        }
+      if (response.status === 200) {
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      } else {
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      }
       return redirect("/manager/roomManagement");
     }
     return redirect("/manager/roomManagement");
@@ -273,26 +275,26 @@ export async function action({ request }) {
       floorName: data.get("floorName"),
       status: 1,
     };
-    const response = await axiosConfig.post("Floor", formData).catch((e) => {
-      console.log(e);
-    });
-    if (response.status === 200) {
-      Swal.fire({
-        position: "center",
-        icon: "success",
-        title: response.data,
-        showConfirmButton: false,
-        timer: 1500,
+    const response = await axiosConfig
+      .post("Floor", formData)
+      .then((response) => {
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      })
+      .catch((e) => {
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: e.response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
       });
-    } else {
-      Swal.fire({
-        position: "center",
-        icon: "error",
-        title: response.data,
-        showConfirmButton: false,
-        timer: 1500,
-      });
-    }
     return redirect("/manager/roomManagement");
   }
   formData.append("roomName", data.get("roomName"));
@@ -311,26 +313,24 @@ export async function action({ request }) {
           "Content-Type": "multipart/form-data",
         },
       })
+      .then((response) => {
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      })
       .catch((e) => {
-        console.log(e);
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: e.response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
       });
-    if (response.status === 200) {
-      Swal.fire({
-        position: "center",
-        icon: "success",
-        title: response.data,
-        showConfirmButton: false,
-        timer: 1500,
-      });
-    } else {
-      Swal.fire({
-        position: "center",
-        icon: "error",
-        title: response.data,
-        showConfirmButton: false,
-        timer: 1500,
-      });
-    }
     return redirect("/manager/roomManagement");
   }
   if (method === "PUT") {
@@ -341,37 +341,7 @@ export async function action({ request }) {
           "Content-Type": "multipart/form-data",
         },
       })
-      .catch((e) => {
-        console.log(e);
-      });
-    if (response.status === 200) {
-      Swal.fire({
-        position: "center",
-        icon: "success",
-        title: response.data,
-        showConfirmButton: false,
-        timer: 1500,
-      });
-    } else {
-      Swal.fire({
-        position: "center",
-        icon: "error",
-        title: response.data,
-        showConfirmButton: false,
-        timer: 1500,
-      });
-    }
-    return redirect("/manager/roomManagement");
-  }
-  if (method === "DELETE") {
-    const dataArray = data.get("roomId").split(",");
-    dataArray.map(async (id) => {
-      const response = await axiosConfig.delete("room/" + id).catch((e) => {
-        console.log(e);
-      });
-
-      console.log(response);
-      if (response.status === 200) {
+      .then((response) => {
         Swal.fire({
           position: "center",
           icon: "success",
@@ -379,17 +349,42 @@ export async function action({ request }) {
           showConfirmButton: false,
           timer: 1500,
         });
-      } else {
+      })
+      .catch((e) => {
         Swal.fire({
           position: "center",
           icon: "error",
-          title: response.data,
+          title: e.response.data,
           showConfirmButton: false,
           timer: 1500,
         });
-      }
+      });
+    return redirect("/manager/roomManagement");
+  }
+  if (method === "DELETE") {
+    const dataArray = data.get("roomId").split(",");
+    dataArray.map(async (id) => {
+      await axiosConfig
+        .delete("room/" + id)
+        .then((response) => {
+          Swal.fire({
+            position: "center",
+            icon: "success",
+            title: response.data,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        })
+        .catch((e) => {
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            title: e.response.data,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        });
     });
-    
     return redirect("/manager/roomManagement");
   }
 }
