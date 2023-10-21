@@ -11,7 +11,6 @@ function DetailsProduct(props) {
 
   const product = props.product;
   let isManyUnit = false;
-  console.log(product);
   if (product.listGoodsUnit.length > 1) {
     isManyUnit = true;
   }

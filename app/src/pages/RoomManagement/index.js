@@ -6,7 +6,7 @@ import {
   viVN,
 } from "@mui/x-data-grid";
 import { useState } from "react";
-import Button from "../../components/UI/Button";
+import ButtonHover from "../../components/UI/ButtonHover";
 import NewRoom from "../../components/Room/NewRoom";
 import NewCategoryRoom from "../../components/CategoryRoom/NewCategoryRoom";
 import DeleteRoom from "../../components/Room/DeleteRoom";
@@ -22,6 +22,7 @@ import {
 } from "react-router-dom";
 import EditRoom from "../../components/Room/EditRoom";
 import Swal from "sweetalert2";
+import { Tooltip } from "react-tooltip";
 
 function RoomManagementPage() {
   const token = useRouteLoaderData("root");
@@ -30,7 +31,8 @@ function RoomManagementPage() {
 
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openNewRoomModal, setOpenNewRoomModal] = useState(false);
-  const [openDeleetRoomModal, setOpenDeleetRoomModal] = useState(false);
+  const [openDeleteRoomsModal, setOpenDeleteRoomsModal] = useState(false);
+  const [openDeleteRoomModal, setOpenDeleteRoomModal] = useState(false);
   const [openNewCateRoomModal, setOpenNewCateRoomModal] = useState(false);
   const [openDetailsRoom, setOpenDetailsRoom] = useState(false);
   const [openEditRoom, setOpenEditRoom] = useState(false);
@@ -46,9 +48,16 @@ function RoomManagementPage() {
     setSelectedRoomId(id);
   };
 
+  const handleStatusRoom = (id) => {
+    const cate = categories.find(
+      (cate) => cate.roomCategory.roomCategoryId === id
+    );
+    console.log(cate);
+  };
+
   const columns = [
     { field: "name", headerName: "Tên phòng", width: 100 },
-    { field: "cateRoom", headerName: "Hạng phòng", width: 300 },
+    { field: "cateRoom", headerName: "Hạng phòng", width: 200 },
     { field: "area", headerName: "Khu vực", width: 120 },
     { field: "priceHour", headerName: "Giá theo giờ", width: 120 },
     { field: "priceDay", headerName: "Giá theo ngày", width: 120 },
@@ -58,20 +67,49 @@ function RoomManagementPage() {
       field: "actions",
       headerName: "Hành động",
       type: "actions",
-      getActions: ({ id }) => {
+      getActions: (params) => {
+        const row = params.row;
+        let isActive = null;
+        if (row.status === "Đang hoạt động") {
+          isActive = true;
+        } else {
+          isActive = false;
+        }
         return [
           <GridActionsCellItem
-            icon={<i className="fa-solid fa-eye"></i>}
+            icon={<i className="fa-solid fa-eye view-details p-1"></i>}
             label="Xem chi tiết"
-            onClick={() => handleDetailsRoom(id)}
+            onClick={() => handleDetailsRoom(row.id)}
+          />,
+          isActive ? (
+            <GridActionsCellItem
+              icon={<i className="fa-solid fa-lock inactive-action p-1"></i>}
+              label="Đang hoạt động"
+              onClick={() => handleStatusRoom(row.id)}
+            />
+          ) : (
+            <GridActionsCellItem
+              icon={<i className="fa-solid fa-unlock active-action p-1"></i>}
+              label="Ngừng hoạt động"
+              onClick={() => handleStatusRoom(row.id)}
+            />
+          ),
+          <GridActionsCellItem
+            icon={<i className="fa-solid fa-pen-to-square edit-action p-1"></i>}
+            label="Chỉnh sửa"
+            onClick={() => handleEditRoom(row.id)}
           />,
           <GridActionsCellItem
-            icon={<i className="fa-solid fa-pen-to-square"></i>}
-            label="Chỉnh sửa"
-            onClick={() => handleEditRoom(id)}
+            icon={<i className="fa-solid fa-trash delete-action p-1"></i>}
+            label="Xoá"
+            onClick={() => {
+              setOpenDeleteRoomModal(true);
+              setSelectedRoomId(row.id);
+            }}
           />,
         ];
       },
+      width: 200,
     },
   ];
 
@@ -82,9 +120,15 @@ function RoomManagementPage() {
       name: room.roomName,
       cateRoom: room.roomCategory.roomCategoryName,
       area: room.floor.floorName,
-      priceHour: room.roomCategory.priceByHour ? room.roomCategory.priceByHour.toLocaleString() : 0,
-      priceDay: room.roomCategory.priceByDay ? room.roomCategory.priceByDay.toLocaleString() : 0,
-      priceNight: room.roomCategory.priceByNight ? room.roomCategory.priceByNight.toLocaleString() : 0,
+      priceHour: room.roomCategory.priceByHour
+        ? room.roomCategory.priceByHour.toLocaleString()
+        : 0,
+      priceDay: room.roomCategory.priceByDay
+        ? room.roomCategory.priceByDay.toLocaleString()
+        : 0,
+      priceNight: room.roomCategory.priceByNight
+        ? room.roomCategory.priceByNight.toLocaleString()
+        : 0,
       status: status,
     };
   });
@@ -97,8 +141,8 @@ function RoomManagementPage() {
     setOpenNewRoomModal(true);
   };
 
-  const deleteRoomHandler = () => {
-    setOpenDeleetRoomModal(true);
+  const deleteRoomsHandler = () => {
+    setOpenDeleteRoomsModal(true);
   };
 
   return (
@@ -109,21 +153,21 @@ function RoomManagementPage() {
           <div className="ml-auto flex">
             {rowSelectionModel.length > 0 ? (
               <div className="mx-2">
-                <Button
+                <ButtonHover
                   action="Thao tác"
                   iconAction="fa-solid fa-ellipsis-vertical"
                   names={[
                     {
                       name: "Xoá phòng",
                       icon: "fa-solid fa-trash",
-                      action: deleteRoomHandler,
+                      action: deleteRoomsHandler,
                     },
                   ]}
                 />
               </div>
             ) : null}
             <div className="mx-2">
-              <Button
+              <ButtonHover
                 action="Thêm mới"
                 iconAction="fa-solid fa-plus"
                 names={[
@@ -175,11 +219,6 @@ function RoomManagementPage() {
           onClose={() => setOpenNewCateRoomModal(false)}
         />
       )}
-      <DeleteRoom
-        open={openDeleetRoomModal}
-        onClose={() => setOpenDeleetRoomModal(false)}
-        listRoomId={rowSelectionModel}
-      />
       {openDetailsRoom && selectedRoomId && (
         <DetailsRoom
           open={openDetailsRoom}
@@ -196,6 +235,35 @@ function RoomManagementPage() {
           roomId={selectedRoomId}
         />
       )}
+      {openDeleteRoomsModal && rowSelectionModel.length > 0 && (
+        <DeleteRoom
+          open={openDeleteRoomsModal}
+          onClose={() => setOpenDeleteRoomsModal(false)}
+          listRoomId={rowSelectionModel}
+        />
+      )}
+      {openDeleteRoomModal && selectedRoomId && (
+        <DeleteRoom
+          open={openDeleteRoomModal}
+          onClose={() => setOpenDeleteRoomModal(false)}
+          listRoomId={[selectedRoomId]}
+        />
+      )}
+      <Tooltip anchorSelect=".view-details" place="top">
+        Xem chi tiết
+      </Tooltip>
+      <Tooltip anchorSelect=".edit-action" place="top">
+        Chỉnh sửa
+      </Tooltip>
+      <Tooltip anchorSelect=".delete-action" place="top">
+        Xoá
+      </Tooltip>
+      <Tooltip anchorSelect=".active-action" place="top">
+        Hoạt động
+      </Tooltip>
+      <Tooltip anchorSelect=".inactive-action" place="top">
+        Ngừng hoạt động
+      </Tooltip>
     </>
   );
 }
@@ -236,7 +304,6 @@ export async function action({ request }) {
     formData.append("priceByHour", data.get("priceByHour"));
     formData.append("priceByDay", data.get("priceByDay"));
     formData.append("priceByNight", data.get("priceByNight"));
-    formData.append("status", 1);
     formData.append("description", data.get("description"));
     formData.append("image", data.get("image"));
     if (method === "POST") {
@@ -300,7 +367,6 @@ export async function action({ request }) {
   formData.append("roomName", data.get("roomName"));
   formData.append("roomCategoryId", data.get("roomCategoryId"));
   formData.append("floorId", data.get("floorId"));
-  formData.append("status", 1);
   formData.append("bookingStatus", 0);
   formData.append("conditionStatus", 0);
   formData.append("note", data.get("note"));

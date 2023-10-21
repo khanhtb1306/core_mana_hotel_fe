@@ -97,20 +97,6 @@ function ProductForm({ name, open, onClose, method, product }) {
                   <tbody>
                     <tr>
                       <td>
-                        <h2>Giá vốn</h2>
-                      </td>
-                      <td>
-                        <input
-                          className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
-                          type="number"
-                          name="cost"
-                          defaultValue={defautUnit ? defautUnit.cost : 0}
-                          required
-                        />
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
                         <h2>Giá bán</h2>
                       </td>
                       <td>
@@ -172,7 +158,9 @@ function ProductForm({ name, open, onClose, method, product }) {
                 <textarea
                   className="textarea border-0 textarea-lg w-full h-40 max-h-40"
                   name="description"
-                  defaultValue={product.goods.description ? product.goods.description : ""}
+                  defaultValue={
+                    product.goods.description ? product.goods.description : ""
+                  }
                 ></textarea>
               </div>
               <div>

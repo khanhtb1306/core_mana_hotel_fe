@@ -6,7 +6,8 @@ import {
   viVN,
 } from "@mui/x-data-grid";
 import { useState } from "react";
-import Button from "../../components/UI/Button";
+import ButtonHover from "../../components/UI/ButtonHover";
+import ButtonClick from "../../components/UI/ButtonClick";
 import NewProduct from "../../components/Product/NewProduct";
 import NewService from "../../components/Service/NewService";
 import DetailsProduct from "../../components/Product/DetailsProduct";
@@ -16,12 +17,15 @@ import { axiosConfig } from "../../utils/axiosConfig";
 import EditProduct from "../../components/Product/EditProduct";
 import EditService from "../../components/Service/EditService";
 import Swal from "sweetalert2";
+import DeleteProduct from "../../components/Product/DeleteProduct";
+import { Tooltip } from "react-tooltip";
 
 function ProductManagementPage() {
   const { products } = useLoaderData();
 
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openDeleteProductModal, setOpenDeleteProductModal] = useState(false);
+  const [openDeleteProductsModal, setOpenDeleteProductsModal] = useState(false);
   const [openNewProductModal, setOpenNewProductModal] = useState(false);
   const [openEditProductModal, setOpenEditProductModal] = useState(false);
   const [openNewServiceModal, setOpenNewServiceModal] = useState(false);
@@ -50,6 +54,17 @@ function ProductManagementPage() {
     } else {
       setOpenEditServiceModal(true);
     }
+  };
+
+  const newProductHandler = () => {
+    setOpenNewProductModal(true);
+  };
+  const newServiceHandler = () => {
+    setOpenNewServiceModal(true);
+  };
+
+  const deleteProductsHandler = () => {
+    setOpenDeleteProductsModal(true);
   };
 
   const columns = [
@@ -111,7 +126,7 @@ function ProductManagementPage() {
     { field: "status", headerName: "Trạng thái", width: 150 },
     {
       field: "actions",
-      headerName: "Actions",
+      headerName: "Hoạt động",
       type: "actions",
       getActions: (params) => {
         const row = params.row;
@@ -125,6 +140,14 @@ function ProductManagementPage() {
             icon={<i className="fa-solid fa-pen-to-square"></i>}
             label="Edit"
             onClick={() => handleEditProduct(row)}
+          />,
+          <GridActionsCellItem
+            icon={<i className="fa-solid fa-trash"></i>}
+            label="Delete"
+            onClick={() => {
+              setOpenDeleteProductModal(true);
+              setSelectedProductId(row.id);
+            }}
           />,
         ];
       },
@@ -159,7 +182,9 @@ function ProductManagementPage() {
       goodsCategory: category,
       sellingPrice: unitDefault.price,
       capitalPrice: unitDefault.cost,
-      quantityInStock: product.goods.goodsCategory ? product.goods.inventory * defaultCost / unitDefault.cost : "...",
+      quantityInStock: product.goods.goodsCategory
+        ? (product.goods.inventory * defaultCost) / unitDefault.cost
+        : "...",
       minStock: minStock,
       maxStock: maxStock,
       status: status,
@@ -167,40 +192,23 @@ function ProductManagementPage() {
     };
   });
 
-  const newProductHandler = () => {
-    setOpenNewProductModal(true);
-  };
-  const newServiceHandler = () => {
-    setOpenNewServiceModal(true);
-  };
-
-  const deleteProductHandler = () => {
-    setOpenDeleteProductModal(true);
-  };
-
   return (
     <>
       <Box className="h-full w-10/12 mx-auto mt-10">
         <div className="flex mb-10">
-          <h1 className="text-4xl">Hàng hoá</h1>
+          <h1 className="text-4xl">Hàng hoá & Dịch vụ</h1>
           <div className="ml-auto flex">
             {rowSelectionModel.length > 0 ? (
               <div className="mx-2">
-                <Button
-                  action="Thao tác"
-                  iconAction="fa-solid fa-ellipsis-vertical"
-                  names={[
-                    {
-                      name: "Xoá hàng hoá",
-                      icon: "fa-solid fa-trash",
-                      action: deleteProductHandler,
-                    },
-                  ]}
+                <ButtonClick
+                  name="Xoá hàng hoá/dịch vụ"
+                  iconAction="fa-solid fa-trash"
+                  action={deleteProductsHandler}
                 />
               </div>
             ) : null}
             <div className="mx-2">
-              <Button
+              <ButtonHover
                 action="Thêm mới"
                 iconAction="fa-solid fa-plus"
                 names={[
@@ -284,6 +292,20 @@ function ProductManagementPage() {
           )}
         />
       )}
+      {openDeleteProductsModal && rowSelectionModel.length > 0 && (
+        <DeleteProduct
+          open={openDeleteProductsModal}
+          onClose={() => setOpenDeleteProductsModal(false)}
+          listGoodsId={rowSelectionModel}
+        />
+      )}
+      {openDeleteProductModal && selectedProductId && (
+        <DeleteProduct
+          open={openDeleteProductModal}
+          onClose={() => setOpenDeleteProductModal(false)}
+          listGoodsId={[selectedProductId]}
+        />
+      )}
     </>
   );
 }
@@ -305,81 +327,13 @@ export async function loader() {
 export async function action({ request }) {
   const method = request.method;
   const data = await request.formData();
-  const formData = new FormData();
-  formData.append("customerName", data.get("customerName"));
-  formData.append("customerGroup", data.get("customerGroup"));
-  formData.append("phoneNumber", data.get("phoneNumber"));
-  formData.append("dob", new Date(data.get("dob")).toISOString());
-  formData.append("email", data.get("email"));
-  formData.append("address", data.get("address"));
-  formData.append("identity", data.get("identity"));
-  formData.append("nationality", data.get("nationality"));
-  formData.append("taxCode", data.get("taxCode"));
-  formData.append("gender", data.get("gender"));
-  formData.append("image", data.get("image"));
-  if (method === "POST") {
-    const response = await axiosConfig
-      .post("customer", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .then((response) => {
-        Swal.fire({
-          position: "center",
-          icon: "success",
-          title: response.data,
-          showConfirmButton: false,
-          timer: 1500,
-        });
-      })
-      .catch((e) => {
-        console.log(e);
-        Swal.fire({
-          position: "center",
-          icon: "error",
-          title: e.response.data,
-          showConfirmButton: false,
-          timer: 1500,
-        });
-      });
-    console.log(response);
-    return redirect("/manager/productManagement");
-  }
-  if (method === "PUT") {
-    const response = await axiosConfig
-      .put("customer/" + data.get("customerId"), formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .then((response) => {
-        Swal.fire({
-          position: "center",
-          icon: "success",
-          title: response.data,
-          showConfirmButton: false,
-          timer: 1500,
-        });
-      })
-      .catch((e) => {
-        console.log(e);
-        Swal.fire({
-          position: "center",
-          icon: "error",
-          title: e.response.data,
-          showConfirmButton: false,
-          timer: 1500,
-        });
-      });
-    console.log(response);
-    return redirect("/manager/productManagement");
-  }
+
   if (method === "DELETE") {
-    const dataArray = data.get("customerId").split(",");
+    const dataArray = data.get("listGoodsId").split(",");
+    console.log(dataArray);
     dataArray.map(async (id) => {
       const response = await axiosConfig
-        .delete("customer/" + id)
+        .delete("goods/" + id)
         .then((response) => {
           Swal.fire({
             position: "center",
@@ -401,6 +355,202 @@ export async function action({ request }) {
         });
     });
     return redirect("/manager/productManagement");
+  }
+  if (data.get("categoryGoods")) {
+    const formData = new FormData();
+    formData.append("goodsDTO.goodsName", data.get("goodsName"));
+    formData.append("goodsDTO.goodsCategory", true);
+    formData.append("goodsDTO.status", 1);
+    formData.append("goodsDTO.inventory", data.get("inventory"));
+    formData.append("goodsDTO.minInventory", data.get("minInventory"));
+    formData.append("goodsDTO.maxInventory", data.get("maxInventory"));
+    formData.append("goodsDTO.note", data.get("note"));
+    formData.append("goodsDTO.description", data.get("description"));
+    formData.append("goodsDTO.image", data.get("image1"));
+    const defaultCost = data.get("cost");
+    const defaultPrice = data.get("price");
+    const defaultUnit = data.get("unit");
+    formData.append("goodsUnitDTO.goodsUnitName", defaultUnit);
+    formData.append("goodsUnitDTO.cost", defaultCost);
+    formData.append("goodsUnitDTO.price", defaultPrice);
+
+    const units = data.get("numberUnit");
+    if (method === "POST") {
+      const response = await axiosConfig
+        .post("goods", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .catch((e) => {
+          console.log(e);
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            title: e.response.data,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        });
+      if (response) {
+        if (units >= 0) {
+          for (let i = 0; i < units; i++) {
+            const cost = defaultCost * data.get("amount" + i);
+            const unit = data.get("unit" + i);
+            const price = data.get("price" + i);
+            const formUnit = new FormData();
+            formUnit.append("goodsUnitName", unit);
+            formUnit.append("goodsId", response.data.goodsId);
+            formUnit.append("cost", cost);
+            formUnit.append("price", price);
+            await axiosConfig
+              .post("goods-unit", formUnit, {
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                },
+              })
+              .then((response) => console.log(response))
+              .catch((e) => {
+                console.log(e);
+              });
+          }
+        }
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: response.data.message,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      }
+      return redirect("/manager/productManagement");
+    }
+    if (method === "PUT") {
+      const response = await axiosConfig
+        .put("goods/" + data.get("goodsId"), formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .catch((e) => {
+          console.log(e);
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            title: e.response.data,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        });
+      if (response) {
+        if (units >= 0) {
+          const goodsId = data.get("goodsId");
+          await axiosConfig
+            .delete("goods-unit/" + goodsId, {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            })
+            .then((response) => console.log(response))
+            .catch((e) => {
+              console.log(e);
+            });
+          for (let i = 0; i < units; i++) {
+            const cost = data.get("cost") * data.get("amount" + i);
+            const unit = data.get("unit" + i);
+            const price = data.get("price" + i);
+            const formUnit = new FormData();
+            formUnit.append("goodsUnitName", unit);
+            formUnit.append("goodsId", goodsId);
+            formUnit.append("cost", cost);
+            formUnit.append("price", price);
+            await axiosConfig
+              .post("goods-unit", formUnit, {
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                },
+              })
+              .then((response) => console.log(response))
+              .catch((e) => {
+                console.log(e);
+              });
+          }
+        }
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      }
+      return redirect("/manager/productManagement");
+    }
+  } else {
+    const formData = new FormData();
+    formData.append("goodsDTO.goodsName", data.get("goodsName"));
+    formData.append("goodsDTO.goodsCategory", false);
+    formData.append("goodsDTO.status", 1);
+    formData.append("goodsDTO.note", data.get("note"));
+    formData.append("goodsDTO.description", data.get("description"));
+    formData.append("goodsDTO.image", data.get("image1"));
+    formData.append("goodsUnitDTO.goodsUnitName", data.get("unit"));
+    formData.append("goodsUnitDTO.price", data.get("price"));
+    if (method === "POST") {
+      await axiosConfig
+        .post("goods", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((response) => {
+          console.log(response);
+          Swal.fire({
+            position: "center",
+            icon: "success",
+            title: response.data.message,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        })
+        .catch((e) => {
+          console.log(e);
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            title: e.response.data.message,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        });
+    }
+    if (method === "PUT") {
+      await axiosConfig
+        .put("goods/" + data.get("goodsId"), formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((response) => {
+          Swal.fire({
+            position: "center",
+            icon: "success",
+            title: response.data,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        })
+        .catch((e) => {
+          console.log(e);
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            title: e.response.data,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        });
+    }
   }
   return redirect("/manager/productManagement");
 }

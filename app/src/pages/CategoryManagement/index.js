@@ -7,7 +7,7 @@ import {
 } from "@mui/x-data-grid";
 import { useState } from "react";
 import RoomRootLayout from "../RoomLayout";
-import Button from "../../components/UI/Button";
+import ButtonHover from "../../components/UI/ButtonHover";
 import NewRoom from "../../components/Room/NewRoom";
 import NewCategoryRoom from "../../components/CategoryRoom/NewCategoryRoom";
 import DetailsCategoryRoom from "../../components/CategoryRoom/DetailsCategoryRoom";
@@ -21,33 +21,22 @@ import {
 import EditCategoryRoom from "../../components/CategoryRoom/EditCategoryRoom";
 import DeleteCategoryRoom from "../../components/CategoryRoom/DeleteCategoryRoom";
 import Swal from "sweetalert2";
+import ButtonClick from "../../components/UI/ButtonClick";
+import { Tooltip } from "react-tooltip";
 
 function CategoryManagementPage() {
   const token = useRouteLoaderData("root");
   const { categories, floors } = useLoaderData();
-  console.log(categories);
 
-  // const [listCategory, setListCategory] = useState(categories);
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openNewRoomModal, setOpenNewRoomModal] = useState(false);
+  const [openDeleteCateRoomsModal, setOpenDeleteCateRoomsModal] =
+    useState(false);
   const [openDeleteCateRoomModal, setOpenDeleteCateRoomModal] = useState(false);
   const [openNewCateRoomModal, setOpenNewCateRoomModal] = useState(false);
   const [openDetailsCateRoom, setOpenDetailsCateRoom] = useState(false);
   const [openEditCateRoom, setOpenEditCateRoom] = useState(false);
   const [selectedCateRoomId, setSelectedCateRoomId] = useState(null);
-
-  // const [categories, setCategories] = useState([]);
-  // useEffect(() => {
-  //   async function fetchCategories() {
-  //     try {
-  //       const response = await axiosConfig.get("room-class");
-  //       setCategories(response.data);
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   }
-  //   fetchCategories();
-  // }, []);
 
   const handleDetailsCateRoom = (id) => {
     setOpenDetailsCateRoom(true);
@@ -66,6 +55,18 @@ function CategoryManagementPage() {
     setSelectedCateRoomId(id);
   };
 
+  const newCateRoomHandler = () => {
+    setOpenNewCateRoomModal(true);
+  };
+
+  const newRoomHandler = () => {
+    setOpenNewRoomModal(true);
+  };
+
+  const deleteCateRoomsHandler = () => {
+    setOpenDeleteCateRoomsModal(true);
+  };
+
   const columns = [
     { field: "idCateRoom", headerName: "Mã hạng phòng", width: 150 },
     { field: "name", headerName: "Tên hạng phòng", width: 200 },
@@ -78,26 +79,49 @@ function CategoryManagementPage() {
       field: "actions",
       headerName: "Hoạt động",
       type: "actions",
-      getActions: ({ id }) => {
+      getActions: (params) => {
+        const row = params.row;
+        let isActive = null;
+        if (row.status === "Đang hoạt động") {
+          isActive = true;
+        } else {
+          isActive = false;
+        }
         return [
           <GridActionsCellItem
-            icon={<i className="fa-solid fa-eye p-2"></i>}
+            icon={<i className="fa-solid fa-eye view-details p-1"></i>}
             label="Xem chi tiết"
-            onClick={() => handleDetailsCateRoom(id)}
+            onClick={() => handleDetailsCateRoom(row.id)}
           />,
-          // <GridActionsCellItem
-          //   icon={<i className="fa-solid fa-lock p-2"></i>}
-          //   label="Kinh doanh"
-          //   onClick={() => handleStatusCateRoom(id)}
-          // />,
+          isActive ? (
+            <GridActionsCellItem
+              icon={<i className="fa-solid fa-lock inactive-action p-1"></i>}
+              label="Đang hoạt động"
+              onClick={() => handleStatusCateRoom(row.id)}
+            />
+          ) : (
+            <GridActionsCellItem
+              icon={<i className="fa-solid fa-unlock active-action p-1"></i>}
+              label="Ngừng hoạt động"
+              onClick={() => handleStatusCateRoom(row.id)}
+            />
+          ),
           <GridActionsCellItem
-            icon={<i className="fa-solid fa-pen-to-square p-2"></i>}
+            icon={<i className="fa-solid fa-pen-to-square edit-action p-1"></i>}
             label="Chỉnh sửa"
-            onClick={() => handleEditCateRoom(id)}
+            onClick={() => handleEditCateRoom(row.id)}
+          />,
+          <GridActionsCellItem
+            icon={<i className="fa-solid fa-trash delete-action p-1"></i>}
+            label="Xoá"
+            onClick={() => {
+              setOpenDeleteCateRoomModal(true);
+              setSelectedCateRoomId(row.id);
+            }}
           />,
         ];
       },
-      width: 150,
+      width: 200,
     },
   ];
 
@@ -112,27 +136,13 @@ function CategoryManagementPage() {
       priceHour: cateRoom.priceByHour
         ? cateRoom.priceByHour.toLocaleString()
         : 0,
-      priceDay: cateRoom.priceByDay
-        ? cateRoom.priceByDay.toLocaleString()
-        : 0,
+      priceDay: cateRoom.priceByDay ? cateRoom.priceByDay.toLocaleString() : 0,
       priceNight: cateRoom.priceByNight
         ? cateRoom.priceByNight.toLocaleString()
         : 0,
       status: status,
     };
   });
-
-  const newCateRoomHandler = () => {
-    setOpenNewCateRoomModal(true);
-  };
-
-  const newRoomHandler = () => {
-    setOpenNewRoomModal(true);
-  };
-
-  const deleteRoomHandler = () => {
-    setOpenDeleteCateRoomModal(true);
-  };
 
   return (
     <>
@@ -142,21 +152,15 @@ function CategoryManagementPage() {
           <div className="ml-auto flex">
             {rowSelectionModel.length > 0 ? (
               <div className="mx-2">
-                <Button
-                  action="Thao tác"
-                  iconAction="fa-solid fa-ellipsis-vertical"
-                  names={[
-                    {
-                      name: "Xoá hạng phòng",
-                      icon: "fa-solid fa-trash",
-                      action: deleteRoomHandler,
-                    },
-                  ]}
+                <ButtonClick
+                  name="Xoá hạng phòng"
+                  iconAction="fa-solid fa-trash"
+                  action={deleteCateRoomsHandler}
                 />
               </div>
             ) : null}
             <div className="mx-2">
-              <Button
+              <ButtonHover
                 action="Thêm mới"
                 iconAction="fa-solid fa-plus"
                 names={[
@@ -209,11 +213,6 @@ function CategoryManagementPage() {
           onClose={() => setOpenNewCateRoomModal(false)}
         />
       )}
-      <DeleteCategoryRoom
-        open={openDeleteCateRoomModal}
-        onClose={() => setOpenDeleteCateRoomModal(false)}
-        listCateRoomId={rowSelectionModel}
-      />
       {openDetailsCateRoom && selectedCateRoomId && (
         <DetailsCategoryRoom
           open={openDetailsCateRoom}
@@ -228,6 +227,35 @@ function CategoryManagementPage() {
           cateRoomId={selectedCateRoomId}
         />
       )}
+      {openDeleteCateRoomsModal && rowSelectionModel.length > 0 && (
+        <DeleteCategoryRoom
+          open={openDeleteCateRoomsModal}
+          onClose={() => setOpenDeleteCateRoomsModal(false)}
+          listCateRoomId={rowSelectionModel}
+        />
+      )}
+      {openDeleteCateRoomModal && selectedCateRoomId && (
+        <DeleteCategoryRoom
+          open={openDeleteCateRoomModal}
+          onClose={() => setOpenDeleteCateRoomModal(false)}
+          listCateRoomId={[selectedCateRoomId]}
+        />
+      )}
+      <Tooltip anchorSelect=".view-details" place="top">
+        Xem chi tiết
+      </Tooltip>
+      <Tooltip anchorSelect=".edit-action" place="top">
+        Chỉnh sửa
+      </Tooltip>
+      <Tooltip anchorSelect=".delete-action" place="top">
+        Xoá
+      </Tooltip>
+      <Tooltip anchorSelect=".active-action" place="top">
+        Hoạt động
+      </Tooltip>
+      <Tooltip anchorSelect=".inactive-action" place="top">
+        Ngừng hoạt động
+      </Tooltip>
     </>
   );
 }
@@ -387,28 +415,30 @@ export async function action({ request }) {
   }
   if (method === "DELETE") {
     const dataArray = data.get("roomCategoryId").split(",");
-    dataArray.map(async (id) => {
-      const response = await axiosConfig
-        .delete("room-class/" + id)
-        .then((response) => {
-          Swal.fire({
-            position: "center",
-            icon: "success",
-            title: response.data,
-            showConfirmButton: false,
-            timer: 1500,
-          });
-        })
-        .catch((e) => {
-          Swal.fire({
-            position: "center",
-            icon: "error",
-            title: e.response.data,
-            showConfirmButton: false,
-            timer: 1500,
-          });
+    const response = await axiosConfig
+      .delete("room-class/" + dataArray)
+      .then((response) => {
+        console.log(response);
+        let message = "";
+        dataArray.map((id) => {
+          message += response.data[id] + " có mã hạng phòng là " + id + "<br/>";
         });
-    });
+        Swal.fire({
+          position: "center",
+          html: `<p>${message}</p>`,
+          showConfirmButton: true,
+        });
+      })
+      .catch((e) => {
+        console.log(e);
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          text: e.response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      });
     return redirect("/manager/categoryRoomManagement");
   }
 
