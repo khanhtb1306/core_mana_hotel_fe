@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-function Button(props) {
+function ButtonHover(props) {
   const [showAction, setShowAction] = useState(false);
   const list = props.names.map((item) => (
     <div key={item.name} className="py-2 px-4 hover:bg-gray-200" onClick={item.action}>
@@ -31,4 +31,4 @@ function Button(props) {
   );
 }
 
-export default Button;
+export default ButtonHover;

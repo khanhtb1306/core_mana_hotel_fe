@@ -11,18 +11,18 @@ export default LoginPage;
 export async function action({ request }) {
   const data = await request.formData();
   const authData = {
-    userName: data.get("username"),
+    username: data.get("username"),
     password: data.get("password"),
   };
 
   const response = await axiosConfig
-    .post("api/v1/auth/authenticate", authData)
+    .post("auth/login", authData)
     .catch((error) => {
       console.error(error);
     });
     console.log(response);
   if (response) {
-    if (response.status === 200) {
+    if (response.data.response !== 'Username or password is wrong') {
       const token = response.data.token;
       localStorage.setItem("token", token);
       const expiration = new Date();
@@ -39,12 +39,11 @@ export async function action({ request }) {
       //     return Promise.reject(error);
       //   }
       // );
-      return redirect("/");
+      return redirect("/manager");
     } else {
-      //return response;
+      return response.data.response;
     }
   } else {
-    //return redirect("/error");
     return "Your email or password is wrong!";
   }
 }

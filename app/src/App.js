@@ -13,6 +13,7 @@ import CategoryManagementPage, {
 } from "./pages/CategoryManagement";
 import ProductManagementPage, {
   loader as loadProducts,
+  action as actionProduct,
 } from "./pages/ProductManagement";
 import CustomerManagementPage, {
   loader as loadCustomers,
@@ -48,6 +49,7 @@ const routesForManager = [
     path: "productManagement",
     element: <ProductManagementPage />,
     loader: loadProducts,
+    action: actionProduct,
   },
   {
     path: "stocktakeManagement",

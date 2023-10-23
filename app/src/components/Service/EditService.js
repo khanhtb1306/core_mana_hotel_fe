@@ -4,7 +4,7 @@ function EditService(props) {
   return (
     <ServiceForm
       name="Thêm dịch vụ mới"
-      method="post"
+      method="put"
       open={props.open}
       onClose={props.onClose}
       product={props.product}

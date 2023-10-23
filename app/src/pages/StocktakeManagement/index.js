@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import { DataGrid, GridActionsCellItem, GridToolbar, viVN } from "@mui/x-data-grid";
 import { useState } from "react";
-import Button from "../../components/UI/Button";
+import ButtonHover from "../../components/UI/ButtonHover";
 import NewStocktakeRoom from "../../components/Stocktake/NewStocktake";
 
 function StocktakeManagementPage() {
@@ -81,7 +81,7 @@ function StocktakeManagementPage() {
           <h1 className="text-4xl">Phiếu kiểm kho</h1>
           <div className="ml-auto flex">
             <div className="mx-2">
-              <Button
+              <ButtonHover
                 action="Thêm mới"
                 iconAction="fa-solid fa-plus"
                 names={[

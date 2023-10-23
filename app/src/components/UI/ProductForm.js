@@ -6,104 +6,54 @@ import Modal from "./Modal";
 function ProductForm({ name, open, onClose, method, product }) {
   const [openInfo, setOpenInfo] = useState(true);
   const [openDetails, setOpenDetails] = useState(false);
-
   let defautUnit = product.listGoodsUnit.find((unit) => unit.isDefault);
   let newUnits = [];
   if (product.listGoodsUnit.length > 1) {
     const listUnit = product.listGoodsUnit.filter((unit) => !unit.isDefault);
     newUnits = listUnit.map((unit, index) => {
-      const exchange = (product.goods.inventory * defautUnit.cost) / unit.cost;
+      const exchange = unit.cost / defautUnit.cost;
       return {
-        id: index,
-        jsx: (
-          <tr key={index}>
-            <td className="w-3/12">
-              <input
-                className="border-0 border-b border-gray-500 w-8/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                type="text"
-                name={`unit${index}`}
-                defaultValue={unit.goodsUnitName ? unit.goodsUnitName : ""}
-              />
-            </td>
-            <td className="w-3/12">
-              <input
-                className="border-0 border-b border-gray-500 w-8/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                type="number"
-                name={`amount${index}`}
-                defaultValue={exchange ? exchange : 0}
-              />
-            </td>
-            <td className="w-3/12">
-              <input
-                className="border-0 border-b border-gray-500 w-8/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                type="number"
-                name={`price${index}`}
-                defaultValue={unit.price ? unit.price : 0}
-              />
-            </td>
-            <td className="w-3/12">
-              <button
-                type="button"
-                className="p-2"
-                onClick={() => handleUnitDelete(index)}
-              >
-                <i className="fa-solid fa-trash"></i>
-              </button>
-            </td>
-          </tr>
-        ),
+        goodsUnitName: unit.goodsUnitName,
+        exchange: exchange,
+        price: unit.price,
       };
     });
-    // setUnits([...units, ...newUnits]);
   }
   const [units, setUnits] = useState(newUnits);
 
-  const handleUnitDelete = (id) => {
-    const updatedUnits = units.filter((unit) => unit.id !== id);
+  const handleAddUnit = () => {
+    const newUnit = {
+      goodsUnitName: "",
+      exchange: 0,
+      price: 0,
+    };
+    setUnits([...units, newUnit]);
+  };
+
+  const handleUnitDelete = (index) => {
+    const updatedUnits = units.filter((_, i) => i !== index);
     setUnits(updatedUnits);
   };
 
-  const handleUnitAdd = () => {
-    setUnits([
-      ...units,
-      {
-        id: units.length,
-        jsx: (
-          <tr key={units.length}>
-            <td className="w-3/12">
-              <input
-                className="border-0 border-b border-gray-500 w-8/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                type="text"
-                name={`unit${units.length}`}
-              />
-            </td>
-            <td className="w-3/12">
-              <input
-                className="border-0 border-b border-gray-500 w-8/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                type="number"
-                name={`amount${units.length}`}
-              />
-            </td>
-            <td className="w-3/12">
-              <input
-                className="border-0 border-b border-gray-500 w-8/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                type="number"
-                name={`price${units.length}`}
-              />
-            </td>
-            <td className="w-3/12">
-              <button
-                type="button"
-                className="p-2"
-                onClick={() => handleUnitDelete(units.length)}
-              >
-                <i className="fa-solid fa-trash"></i>
-              </button>
-            </td>
-          </tr>
-        ),
-      },
-    ]);
+  const handleInputValue = (e) => {
+    const value = e.target.value;
+    const name = e.target.name;
+    const index = parseInt(name.match(/\d+/)[0], 10);
+    if (name.includes("unit")) {
+      const updatedUnits = [...units];
+      updatedUnits[index].goodsUnitName = value;
+      setUnits(updatedUnits);
+    }
+    if (name.includes("amount")) {
+      const updatedUnits = [...units];
+      updatedUnits[index].exchange = value;
+      setUnits(updatedUnits);
+    }
+    if (name.includes("price")) {
+      const updatedUnits = [...units];
+      updatedUnits[index].price = value;
+      setUnits(updatedUnits);
+    }
   };
 
   const handleInfo = () => {
@@ -150,6 +100,21 @@ function ProductForm({ name, open, onClose, method, product }) {
             </div>
             <div className={`${openInfo ? "" : "hidden"}`}>
               <div className="flex w-full">
+                <input
+                  readOnly
+                  hidden
+                  type="number"
+                  name="numberUnit"
+                  value={units.length}
+                  onChange={handleInputValue}
+                />
+                <input
+                  readOnly
+                  hidden
+                  type="number"
+                  name="categoryGoods"
+                  value={1}
+                />
                 <table className="ml-auto w-8/12 mr-5">
                   <tbody>
                     {product.goods.goodsId && (
@@ -321,19 +286,62 @@ function ProductForm({ name, open, onClose, method, product }) {
                         <th className="w-3/12">Giá bán</th>
                         <th className="w-3/12"></th>
                       </tr>
-                      {units.map((unit) => (
-                        <Fragment key={unit.id}>{unit.jsx}</Fragment>
+                      {units.map((unit, index) => (
+                        <tr key={index}>
+                          <td className="w-3/12">
+                            <input
+                              className="border-0 border-b border-gray-500 w-8/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                              type="text"
+                              name={`unit${index}`}
+                              value={
+                                units[index] ? units[index].goodsUnitName : ""
+                              }
+                              index={index}
+                              onChange={handleInputValue}
+                            />
+                          </td>
+                          <td className="w-3/12">
+                            <input
+                              className="border-0 border-b border-gray-500 w-8/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                              type="number"
+                              name={`amount${index}`}
+                              value={units[index] ? units[index].exchange : 2}
+                              onChange={handleInputValue}
+                              min={2}
+                            />
+                          </td>
+                          <td className="w-3/12">
+                            <input
+                              className="border-0 border-b border-gray-500 w-8/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                              type="number"
+                              name={`price${index}`}
+                              value={units[index] ? units[index].price : 2}
+                              onChange={handleInputValue}
+                              min={2}
+                            />
+                          </td>
+                          <td className="w-3/12">
+                            <button
+                              type="button"
+                              className="p-2"
+                              onClick={() => handleUnitDelete(index)}
+                            >
+                              <i className="fa-solid fa-trash"></i>
+                            </button>
+                          </td>
+                        </tr>
                       ))}
                     </tbody>
                   </table>
                 )}
 
-                <div
+                <button
+                  type="button"
                   className="rounded border py-2 px-4 w-40 m-2"
-                  onClick={handleUnitAdd}
+                  onClick={handleAddUnit}
                 >
                   <i className="fa-solid fa-plus pr-2"></i> Thêm đơn vị
-                </div>
+                </button>
               </div>
             </div>
             <div className={`${openDetails ? "" : "hidden"} mt-10`}>

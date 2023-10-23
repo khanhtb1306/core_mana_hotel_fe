@@ -6,7 +6,7 @@ import {
   viVN,
 } from "@mui/x-data-grid";
 import { useState } from "react";
-import Button from "../../components/UI/Button";
+import ButtonHover from "../../components/UI/ButtonHover";
 import NewCustomer from "../../components/Customer/NewCustomer";
 import DetailsCustomer from "../../components/Customer/DetailsCustomer";
 import { axiosConfig } from "../../utils/axiosConfig";
@@ -107,7 +107,7 @@ function CustomerManagementPage() {
           <div className="ml-auto flex">
             {rowSelectionModel.length > 0 ? (
               <div className="mx-2">
-                <Button
+                <ButtonHover
                   action="Thao tác"
                   iconAction="fa-solid fa-ellipsis-vertical"
                   names={[
@@ -121,7 +121,7 @@ function CustomerManagementPage() {
               </div>
             ) : null}
             <div className="mx-2">
-              <Button
+              <ButtonHover
                 action="Thêm mới"
                 iconAction="fa-solid fa-plus"
                 names={[
