@@ -331,29 +331,30 @@ export async function action({ request }) {
   if (method === "DELETE") {
     const dataArray = data.get("listGoodsId").split(",");
     console.log(dataArray);
-    dataArray.map(async (id) => {
-      const response = await axiosConfig
-        .delete("goods/" + id)
-        .then((response) => {
-          Swal.fire({
-            position: "center",
-            icon: "success",
-            title: response.data,
-            showConfirmButton: false,
-            timer: 1500,
-          });
-        })
-        .catch((e) => {
-          console.log(e);
-          Swal.fire({
-            position: "center",
-            icon: "error",
-            title: e.response.data,
-            showConfirmButton: false,
-            timer: 1500,
-          });
+    const response = await axiosConfig
+      .delete("goods/" + dataArray)
+      .then((response) => {
+        console.log(response);
+        let message = "";
+        dataArray.map((id) => {
+          message += response.data[id] + " có mã sản phẩm là " + id + "<br/>";
         });
-    });
+        Swal.fire({
+          position: "center",
+          html: `<p>${message}</p>`,
+          showConfirmButton: true,
+        });
+      })
+      .catch((e) => {
+        console.log(e);
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          text: e.response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      });
     return redirect("/manager/productManagement");
   }
   if (data.get("categoryGoods")) {

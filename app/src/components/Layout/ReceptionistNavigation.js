@@ -5,60 +5,56 @@ import { useLocation } from "react-router-dom";
 
 function ReceptionistNavigation() {
   const location = useLocation();
+
   return (
-    <nav className="pl-20 bg-blue-500">
+    <nav className="pl-20 h-12 bg-green-500">
       <ul className="flex">
-        <div
-          className={`${
-            location.pathname === "/manager/overview"
-              ? "bg-blue-800"
-              : "hover:bg-blue-800"
-          }`}
-        >
-          <li className="text-white p-4">
-            <Link to="/manager/overview" className="">
-              <i className="fa-solid fa-eye pr-3"></i>
-              Tổng quan
+        <div>
+          <li className="py-3 px-2">
+            <Link
+              to="/reservation"
+              className={`rounded-2xl bg-green-500 py-2 px-4 ${
+                location.pathname === "/" || 
+                location.pathname === "/reservation"
+                  ? "text-green-500 bg-white"
+                  : "text-white hover:bg-white hover:text-green-500"
+              }`}
+            >
+              <i className="fa-solid fa-calendar-days pr-2"></i>
+              Lịch đặt phòng
             </Link>
           </li>
         </div>
-        <div
-          className={`${
-            location.pathname === "/manager/categoryRoomManagement" ||
-            location.pathname === "/manager/roomManagement"
-              ? "bg-blue-800"
-              : "hover:bg-blue-800"
-          }`}
-        >
-          <li className="text-white p-4">
-            <Link to="/manager/categoryRoomManagement">
-              <i className="fa-solid fa-table pr-3"></i>
-              Phòng
+        <div>
+          <li className="py-3 px-2">
+            <Link
+              to="/addReservation"
+              className={`rounded-2xl bg-green-500 py-2 px-4 ${
+                location.pathname === "/addReservation"
+                  ? "text-green-500 bg-white"
+                  : "text-white hover:bg-white hover:text-green-500"
+              }`}
+            >
+              <i className="fa-solid fa-circle-plus pr-2"></i>
+              Đặt phòng mới
             </Link>
           </li>
         </div>
-        <ButtonHeader
-          name="Danh mục"
-          icon="fa-solid fa-box"
-          isActive={
-            location.pathname === "/manager/productManagement" ||
-            location.pathname === "/manager/stocktakeManagement"
-          }
-          list={[
-            {
-              name: "Hàng hoá",
-              icon: "fa-solid fa-table-cells",
-              link: "/manager/productManagement",
-              isActive: location.pathname === "/manager/productManagement",
-            },
-            {
-              name: "Kiểm kho",
-              icon: "fa-solid fa-warehouse",
-              link: "/manager/stocktakeManagement",
-              isActive: location.pathname === "/manager/stocktakeManagement",
-            },
-          ]}
-        />
+        <div>
+          <li className="py-3 px-2">
+            <Link
+              to="/addInvoice"
+              className={`rounded-2xl bg-green-500 py-2 px-4 ${
+                location.pathname === "/addInvoice"
+                  ? "text-green-500 bg-white"
+                  : "text-white hover:bg-white hover:text-green-500"
+              }`}
+            >
+              <i className="fa-solid fa-file-circle-plus pr-2"></i>
+              Hoá đơn bán lẻ
+            </Link>
+          </li>
+        </div>
       </ul>
     </nav>
   );

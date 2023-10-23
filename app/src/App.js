@@ -23,6 +23,11 @@ import StocktakeManagementPage from "./pages/StocktakeManagement";
 import { checkAuthLoader, tokenLoader } from "./contexts/auth";
 import ManagerLayout from "./pages/ManagerLayout";
 import ReceptionistLayout from "./pages/ReceptionistLayout";
+import ReservationPage from "./pages/Reservation";
+import AddReservationPage, {
+  loader as loadNewReservation,
+} from "./pages/Reservation/addReservation";
+import AddInvoicePage from "./pages/Invoice/addInvoice";
 
 const routesForManager = [
   {
@@ -66,15 +71,20 @@ const routesForManager = [
 const routesForReceptionist = [
   {
     index: true,
-    element: <>Hehe reservation true</>,
+    element: <ReservationPage />,
   },
   {
     path: "reservation",
-    element: <>Hehe reservation</>,
+    element: <ReservationPage />,
   },
   {
-    path: "auto",
-    element: <>Auto</>,
+    path: "addReservation",
+    element: <AddReservationPage />,
+    loader: loadNewReservation,
+  },
+  {
+    path: "addInvoice",
+    element: <AddInvoicePage />,
   },
 ];
 
@@ -117,9 +127,9 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <div className="bg-gray-100 min-h-screen max-h-full w-screen">
-      <RouterProvider router={router} />
-    </div>
+      <div className="bg-gray-100 min-h-screen max-h-full w-screen">
+        <RouterProvider router={router} />
+      </div>
   );
 }
 
