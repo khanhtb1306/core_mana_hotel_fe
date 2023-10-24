@@ -1,5 +1,5 @@
 import { json, redirect } from "react-router-dom";
-import LoginForm from "../../components/LoginForm";
+import LoginForm from "../../components/Authen/LoginForm";
 import { axiosConfig } from "../../utils/axiosConfig";
 
 function LoginPage() {
@@ -20,7 +20,6 @@ export async function action({ request }) {
     .catch((error) => {
       console.error(error);
     });
-  console.log(response);
   if (response) {
     if (response.data.response !== "Username or password is wrong") {
       const token = response.data.response;

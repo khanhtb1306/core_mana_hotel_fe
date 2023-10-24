@@ -28,6 +28,12 @@ import AddReservationPage, {
   loader as loadNewReservation,
 } from "./pages/Reservation/addReservation";
 import AddInvoicePage from "./pages/Invoice/addInvoice";
+import ForgetPasswordPage, {
+  action as actionSendEmail,
+} from "./pages/Authentication/forgetPassword";
+import ResetPasswordPage, {
+  action as actionChangePassword,
+} from "./pages/Authentication/resetPassword";
 
 const routesForManager = [
   {
@@ -123,13 +129,25 @@ const router = createBrowserRouter([
     element: <LoginPage />,
     action: loginAction,
   },
+  {
+    path: "/forgetPassword",
+    element: <ForgetPasswordPage />,
+    action: actionSendEmail,
+  },
+  {
+    path: "resetPassword",
+    id: "token",
+    loader: checkAuthLoader,
+    element: <ResetPasswordPage />,
+    action: actionChangePassword,
+  },
 ]);
 
 function App() {
   return (
-      <div className="bg-gray-100 min-h-screen max-h-full w-screen">
-        <RouterProvider router={router} />
-      </div>
+    <div className="bg-gray-100 min-h-screen max-h-full w-screen">
+      <RouterProvider router={router} />
+    </div>
   );
 }
 
