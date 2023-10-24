@@ -1,5 +1,5 @@
 import { defer, useLoaderData } from "react-router-dom";
-import { axiosConfig } from "../../utils/axiosConfig";
+import { axiosPrivate } from "../../utils/axiosConfig";
 import SearchProduct from "../../components/Search/SearchProduct";
 import SearchCustomer from "../../components/Search/SearchCustomer";
 import NewCustomer from "../../components/Customer/NewCustomer";
@@ -62,12 +62,12 @@ function AddReservationPage() {
 export default AddReservationPage;
 
 async function loadProducts() {
-  const response = await axiosConfig.get("goods");
+  const response = await axiosPrivate.get("goods");
   return response.data;
 }
 
 async function loadCustomers() {
-  const response = await axiosConfig.get("customer");
+  const response = await axiosPrivate.get("customer");
   return response.data;
 }
 

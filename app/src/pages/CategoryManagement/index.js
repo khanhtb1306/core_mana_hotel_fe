@@ -11,7 +11,7 @@ import ButtonHover from "../../components/UI/ButtonHover";
 import NewRoom from "../../components/Room/NewRoom";
 import NewCategoryRoom from "../../components/CategoryRoom/NewCategoryRoom";
 import DetailsCategoryRoom from "../../components/CategoryRoom/DetailsCategoryRoom";
-import { axiosConfig } from "../../utils/axiosConfig";
+import { axiosPrivate } from "../../utils/axiosConfig";
 import {
   defer,
   redirect,
@@ -263,12 +263,20 @@ function CategoryManagementPage() {
 export default CategoryManagementPage;
 
 async function loadFloors() {
-  const response = await axiosConfig.get("Floor");
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return redirect('/login');
+  }
+  const response = await axiosPrivate.get("Floor");
   return response.data;
 }
 
 async function loadCategories() {
-  const response = await axiosConfig.get("room-class");
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return redirect('/login');
+  }
+  const response = await axiosPrivate.get("room-class");
   return response.data;
 }
 
@@ -287,7 +295,7 @@ export async function action({ request }) {
       floorName: data.get("floorName"),
       status: 1,
     };
-    const response = await axiosConfig
+    const response = await axiosPrivate
       .post("Floor", formData)
       .then((response) => {
         Swal.fire({
@@ -320,7 +328,7 @@ export async function action({ request }) {
     formData.append("note", data.get("note"));
     formData.append("image", data.get("image"));
     if (method === "POST") {
-      const response = await axiosConfig
+      const response = await axiosPrivate
         .post("room", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
@@ -359,7 +367,7 @@ export async function action({ request }) {
   formData.append("image", data.get("image"));
 
   if (method === "POST") {
-    await axiosConfig
+    await axiosPrivate
       .post("room-class", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -387,7 +395,7 @@ export async function action({ request }) {
   }
   if (method === "PUT") {
     console.log(data.get("roomCategoryId"));
-    const response = await axiosConfig
+    const response = await axiosPrivate
       .put("room-class/" + data.get("roomCategoryId"), formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -415,7 +423,7 @@ export async function action({ request }) {
   }
   if (method === "DELETE") {
     const dataArray = data.get("roomCategoryId").split(",");
-    const response = await axiosConfig
+    const response = await axiosPrivate
       .delete("room-class/" + dataArray)
       .then((response) => {
         console.log(response);

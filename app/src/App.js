@@ -104,7 +104,7 @@ const router = createBrowserRouter([
       {
         path: "manager",
         element: <ManagerLayout />,
-        //loader: checkAuthLoader,
+        loader: checkAuthLoader,
         children: [...routesForManager],
       },
 
