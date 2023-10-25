@@ -2,7 +2,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import ImageDisplay from "../UI/ImageDisplay";
 import Modal from "../UI/Modal";
 import { useEffect, useState } from "react";
-import { axiosConfig } from "../../utils/axiosConfig";
+import { axiosConfig, axiosPrivate } from "../../utils/axiosConfig";
 
 function DetailsCategoryRoom(props) {
   const [openInfo, setOpenInfo] = useState(true);
@@ -12,7 +12,7 @@ function DetailsCategoryRoom(props) {
   useEffect(() => {
     async function fetchCategory() {
       try {
-        const response = await axiosConfig.get(
+        const response = await axiosPrivate.get(
           "room-class/" + props.cateRoomId
         );
         setCategory(response.data);
@@ -97,16 +97,6 @@ function DetailsCategoryRoom(props) {
                         ? `data:image/png;base64,${category.roomCategory.image}`
                         : null
                     }
-                    image2={
-                      category.roomCategory.image
-                        ? `data:image/png;base64,${category.roomCategory.image}`
-                        : null
-                    }
-                    image3={
-                      category.roomCategory.image
-                        ? `data:image/png;base64,${category.roomCategory.image}`
-                        : null
-                    }
                   />
                 </div>
                 <div className="w-8/12 mx-5">
@@ -121,36 +111,59 @@ function DetailsCategoryRoom(props) {
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Tên hạng phòng:</td>
                         <td className="w-7/12 pt-2">
-                          {category.roomCategory.roomCategoryName ? category.roomCategory.roomCategoryName : ""}
+                          {category.roomCategory.roomCategoryName
+                            ? category.roomCategory.roomCategoryName
+                            : ""}
                         </td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Số lượng phòng:</td>
                         <td className="w-7/12 pt-2">
-                          {category.listRoom.length ? category.listRoom.length : 0}
+                          {category.listRoom.length
+                            ? category.listRoom.length
+                            : 0}
                         </td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Sức chứa:</td>
                         <td className="w-7/12 pt-2">
-                          <div>
-                            Người lớn:{" "}
-                            {category.roomCategory.numOfAdults
-                              ? category.roomCategory.numOfAdults
-                              : 0}
+                          <div className="flex">
+                            <div className="mr-16">
+                              Người lớn:{" "}
+                              {category.roomCategory.numOfAdults
+                                ? category.roomCategory.numOfAdults
+                                : 0}
+                            </div>
+                            <div>
+                              Trẻ em:{" "}
+                              {category.roomCategory.numOfChildren
+                                ? category.roomCategory.numOfChildren
+                                : 0}
+                            </div>
                           </div>
-                          <div>
-                            Trẻ em:{" "}
-                            {category.roomCategory.numOfChildren
-                              ? category.roomCategory.numOfChildren
-                              : 0}
+                          <div className="flex">
+                            <div className="mr-5">
+                              Người lớn tối đa:{" "}
+                              {category.roomCategory.numMaxOfAdults
+                                ? category.roomCategory.numMaxOfAdults
+                                : 0}
+                            </div>
+                            <div>
+                              Trẻ em tối đa:{" "}
+                              {category.roomCategory.numMaxOfChildren
+                                ? category.roomCategory.numMaxOfChildren
+                                : 0}
+                            </div>
                           </div>
                         </td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Diện tích:</td>
                         <td className="w-7/12 pt-2">
-                          {category.roomCategory.roomArea ? category.roomCategory.roomArea : 0}
+                          {category.roomCategory.roomArea
+                            ? category.roomCategory.roomArea
+                            : 0}
+                            (m<sup>2</sup>)
                         </td>
                       </tr>
                       <tr className="border-0 border-b">
@@ -180,7 +193,9 @@ function DetailsCategoryRoom(props) {
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Mô tả chi tiết</td>
                         <td className="w-7/12 pt-2">
-                          {category.roomCategory.description ? category.roomCategory.description : ""}
+                          {category.roomCategory.description
+                            ? category.roomCategory.description
+                            : ""}
                         </td>
                       </tr>
                     </tbody>

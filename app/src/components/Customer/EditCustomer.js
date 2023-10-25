@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { axiosConfig } from "../../utils/axiosConfig";
+import { axiosConfig, axiosPrivate } from "../../utils/axiosConfig";
 import CustomerForm from "../UI/CustomerForm";
 
 function EditCustomer(props) {
@@ -7,7 +7,7 @@ function EditCustomer(props) {
   useEffect(() => {
     async function fetchCategory() {
       try {
-        const response = await axiosConfig.get("customer/" + props.customerId);
+        const response = await axiosPrivate.get("customer/" + props.customerId);
         setCustomer(response.data);
       } catch (error) {
         console.log(error);

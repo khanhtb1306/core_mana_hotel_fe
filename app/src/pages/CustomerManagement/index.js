@@ -13,6 +13,7 @@ import { axiosPrivate } from "../../utils/axiosConfig";
 import { defer, redirect, useLoaderData } from "react-router-dom";
 import EditCustomer from "../../components/Customer/EditCustomer";
 import DeleteCustomer from "../../components/Customer/DeleteCustomer";
+import ButtonClick from "../../components/UI/ButtonClick";
 import Swal from "sweetalert2";
 
 function CustomerManagementPage() {
@@ -66,6 +67,14 @@ function CustomerManagementPage() {
             icon={<i className="fa-solid fa-pen-to-square"></i>}
             label="Sửa đổi"
             onClick={() => handleEditCustomer(id)}
+          />,
+          <GridActionsCellItem
+            icon={<i className="fa-solid fa-trash"></i>}
+            label="Xoá"
+            onClick={() => {
+              setSelectedCustomerId(id);
+              deleteCustomerHandler();
+            }}
           />,
         ];
       },
@@ -121,16 +130,10 @@ function CustomerManagementPage() {
               </div>
             ) : null}
             <div className="mx-2">
-              <ButtonHover
-                action="Thêm mới"
+              <ButtonClick
+                name="Thêm mới khách hàng"
                 iconAction="fa-solid fa-plus"
-                names={[
-                  {
-                    name: "Khách hàng",
-                    icon: "fa-solid fa-plus",
-                    action: newCustomerHandler,
-                  },
-                ]}
+                action={newCustomerHandler}
               />
             </div>
           </div>
@@ -174,11 +177,20 @@ function CustomerManagementPage() {
           customerId={selectedCustomerId}
         />
       )}
-      <DeleteCustomer
-        open={openDeleteCustomerModal}
-        onClose={() => setOpenDeleteCustomerModal(false)}
-        listCateRoomId={rowSelectionModel}
-      />
+      {openDeleteCustomerModal && rowSelectionModel && (
+        <DeleteCustomer
+          open={openDeleteCustomerModal}
+          onClose={() => setOpenDeleteCustomerModal(false)}
+          listCateRoomId={rowSelectionModel}
+        />
+      )}
+      {openDeleteCustomerModal && selectedCustomerId && (
+        <DeleteCustomer
+          open={openDeleteCustomerModal}
+          onClose={() => setOpenDeleteCustomerModal(false)}
+          listCateRoomId={selectedCustomerId}
+        />
+      )}
     </>
   );
 }
@@ -186,18 +198,18 @@ function CustomerManagementPage() {
 export default CustomerManagementPage;
 
 async function loadCustomers() {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   if (!token) {
-    return redirect('/login');
+    return redirect("/login");
   }
   const response = await axiosPrivate.get("customer");
   return response.data;
 }
 
 export async function loader() {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   if (!token) {
-    return redirect('/login');
+    return redirect("/login");
   }
   return defer({
     demo: await loadCustomers(),
@@ -280,29 +292,28 @@ export async function action({ request }) {
   }
   if (method === "DELETE") {
     const dataArray = data.get("customerId").split(",");
-    dataArray.map(async (id) => {
-      const response = await axiosPrivate
-        .delete("customer/" + id)
-        .then((response) => {
-          Swal.fire({
-            position: "center",
-            icon: "success",
-            title: response.data,
-            showConfirmButton: false,
-            timer: 1500,
-          });
-        })
-        .catch((e) => {
-          console.log(e);
-          Swal.fire({
-            position: "center",
-            icon: "error",
-            title: e.response.data,
-            showConfirmButton: false,
-            timer: 1500,
-          });
+    const response = await axiosPrivate
+      .delete("customer/" + dataArray)
+      .then((response) => {
+        let message = "";
+        dataArray.map((id) => {
+          message += response.data[id] + " có mã sản phẩm là " + id + "<br/>";
         });
-    });
+        Swal.fire({
+          position: "center",
+          html: `<p>${message}</p>`,
+          showConfirmButton: true,
+        });
+      })
+      .catch((e) => {
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: e.response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      });
     return redirect("/manager/customerManagement");
   }
   return redirect("/manager/customerManagement");

@@ -2,7 +2,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import ImageDisplay from "../UI/ImageDisplay";
 import Modal from "../UI/Modal";
 import { useEffect, useState } from "react";
-import { axiosConfig } from "../../utils/axiosConfig";
+import { axiosConfig, axiosPrivate } from "../../utils/axiosConfig";
 
 function DetailsRoom(props) {
   const [openInfo, setOpenInfo] = useState(true);
@@ -12,7 +12,7 @@ function DetailsRoom(props) {
   useEffect(() => {
     async function fetchRoom() {
       try {
-        const response = await axiosConfig.get("room/" + props.roomId);
+        const response = await axiosPrivate.get("room/" + props.roomId);
         setRoom(response.data);
       } catch (error) {
         console.log(error);
@@ -91,9 +91,7 @@ function DetailsRoom(props) {
               <div className="flex">
                 <div className="w-4/12">
                   <ImageDisplay
-                    image1={`data:image/png;base64,${room.image}`}
-                    image2={`data:image/png;base64,${room.image}`}
-                    image3={`data:image/png;base64,${room.image}`}
+                    image1={room.image ? `data:image/png;base64,${room.image}` : null}
                   />
                 </div>
                 <div className="w-8/12 mx-5">

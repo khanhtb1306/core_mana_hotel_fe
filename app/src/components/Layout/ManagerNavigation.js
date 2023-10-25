@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import ButtonHeader from "../UI/ButtonHeader";
 import { useLocation } from "react-router-dom";
 
@@ -16,11 +16,11 @@ function ManagerNavigation() {
               : "hover:bg-blue-800"
           }`}
         >
-          <li className="text-white p-4">
-            <Link to="/manager/overview" className="">
+          <li className="pt-4">
+            <NavLink to="/manager/overview" className="text-white p-4">
               <i className="fa-solid fa-eye pr-3"></i>
               Tổng quan
-            </Link>
+            </NavLink>
           </li>
         </div>
         <div
@@ -31,11 +31,11 @@ function ManagerNavigation() {
               : "hover:bg-blue-800"
           }`}
         >
-          <li className="text-white p-4">
-            <Link to="/manager/categoryRoomManagement">
+          <li className="pt-4">
+            <NavLink to="/manager/categoryRoomManagement" className="text-white p-4">
               <i className="fa-solid fa-table pr-3"></i>
               Phòng
-            </Link>
+            </NavLink>
           </li>
         </div>
         <ButtonHeader
