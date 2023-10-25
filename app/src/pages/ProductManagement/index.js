@@ -13,7 +13,7 @@ import NewService from "../../components/Service/NewService";
 import DetailsProduct from "../../components/Product/DetailsProduct";
 import DetailsService from "../../components/Service/DetailsService";
 import { defer, redirect, useLoaderData } from "react-router-dom";
-import { axiosConfig } from "../../utils/axiosConfig";
+import { axiosPrivate } from "../../utils/axiosConfig";
 import EditProduct from "../../components/Product/EditProduct";
 import EditService from "../../components/Service/EditService";
 import Swal from "sweetalert2";
@@ -313,7 +313,11 @@ function ProductManagementPage() {
 export default ProductManagementPage;
 
 async function loadProducts() {
-  const response = await axiosConfig.get("goods");
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return redirect('/login');
+  }
+  const response = await axiosPrivate.get("goods");
   return response.data;
 }
 
@@ -331,29 +335,30 @@ export async function action({ request }) {
   if (method === "DELETE") {
     const dataArray = data.get("listGoodsId").split(",");
     console.log(dataArray);
-    dataArray.map(async (id) => {
-      const response = await axiosConfig
-        .delete("goods/" + id)
-        .then((response) => {
-          Swal.fire({
-            position: "center",
-            icon: "success",
-            title: response.data,
-            showConfirmButton: false,
-            timer: 1500,
-          });
-        })
-        .catch((e) => {
-          console.log(e);
-          Swal.fire({
-            position: "center",
-            icon: "error",
-            title: e.response.data,
-            showConfirmButton: false,
-            timer: 1500,
-          });
+    const response = await axiosPrivate
+      .delete("goods/" + dataArray)
+      .then((response) => {
+        console.log(response);
+        let message = "";
+        dataArray.map((id) => {
+          message += response.data[id] + " có mã sản phẩm là " + id + "<br/>";
         });
-    });
+        Swal.fire({
+          position: "center",
+          html: `<p>${message}</p>`,
+          showConfirmButton: true,
+        });
+      })
+      .catch((e) => {
+        console.log(e);
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          text: e.response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      });
     return redirect("/manager/productManagement");
   }
   if (data.get("categoryGoods")) {
@@ -376,7 +381,7 @@ export async function action({ request }) {
 
     const units = data.get("numberUnit");
     if (method === "POST") {
-      const response = await axiosConfig
+      const response = await axiosPrivate
         .post("goods", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
@@ -403,7 +408,7 @@ export async function action({ request }) {
             formUnit.append("goodsId", response.data.goodsId);
             formUnit.append("cost", cost);
             formUnit.append("price", price);
-            await axiosConfig
+            await axiosPrivate
               .post("goods-unit", formUnit, {
                 headers: {
                   "Content-Type": "multipart/form-data",
@@ -426,7 +431,7 @@ export async function action({ request }) {
       return redirect("/manager/productManagement");
     }
     if (method === "PUT") {
-      const response = await axiosConfig
+      const response = await axiosPrivate
         .put("goods/" + data.get("goodsId"), formData, {
           headers: {
             "Content-Type": "multipart/form-data",
@@ -445,7 +450,7 @@ export async function action({ request }) {
       if (response) {
         if (units >= 0) {
           const goodsId = data.get("goodsId");
-          await axiosConfig
+          await axiosPrivate
             .delete("goods-unit/" + goodsId, {
               headers: {
                 "Content-Type": "multipart/form-data",
@@ -464,7 +469,7 @@ export async function action({ request }) {
             formUnit.append("goodsId", goodsId);
             formUnit.append("cost", cost);
             formUnit.append("price", price);
-            await axiosConfig
+            await axiosPrivate
               .post("goods-unit", formUnit, {
                 headers: {
                   "Content-Type": "multipart/form-data",
@@ -497,7 +502,7 @@ export async function action({ request }) {
     formData.append("goodsUnitDTO.goodsUnitName", data.get("unit"));
     formData.append("goodsUnitDTO.price", data.get("price"));
     if (method === "POST") {
-      await axiosConfig
+      await axiosPrivate
         .post("goods", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
@@ -525,7 +530,7 @@ export async function action({ request }) {
         });
     }
     if (method === "PUT") {
-      await axiosConfig
+      await axiosPrivate
         .put("goods/" + data.get("goodsId"), formData, {
           headers: {
             "Content-Type": "multipart/form-data",

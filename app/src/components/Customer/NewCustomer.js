@@ -1,6 +1,3 @@
-import { useState } from "react";
-import Image from "../UI/ImageInput";
-import Modal from "../UI/Modal";
 import CustomerForm from "../UI/CustomerForm";
 
 function NewCustomer(props) {

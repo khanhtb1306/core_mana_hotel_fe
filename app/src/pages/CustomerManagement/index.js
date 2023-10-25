@@ -9,7 +9,7 @@ import { useState } from "react";
 import ButtonHover from "../../components/UI/ButtonHover";
 import NewCustomer from "../../components/Customer/NewCustomer";
 import DetailsCustomer from "../../components/Customer/DetailsCustomer";
-import { axiosConfig } from "../../utils/axiosConfig";
+import { axiosPrivate } from "../../utils/axiosConfig";
 import { defer, redirect, useLoaderData } from "react-router-dom";
 import EditCustomer from "../../components/Customer/EditCustomer";
 import DeleteCustomer from "../../components/Customer/DeleteCustomer";
@@ -186,11 +186,19 @@ function CustomerManagementPage() {
 export default CustomerManagementPage;
 
 async function loadCustomers() {
-  const response = await axiosConfig.get("customer");
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return redirect('/login');
+  }
+  const response = await axiosPrivate.get("customer");
   return response.data;
 }
 
 export async function loader() {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return redirect('/login');
+  }
   return defer({
     demo: await loadCustomers(),
     customers: await loadCustomers(),
@@ -213,7 +221,7 @@ export async function action({ request }) {
   formData.append("gender", data.get("gender"));
   formData.append("image", data.get("image"));
   if (method === "POST") {
-    const response = await axiosConfig
+    const response = await axiosPrivate
       .post("customer", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -242,7 +250,7 @@ export async function action({ request }) {
     return redirect("/manager/customerManagement");
   }
   if (method === "PUT") {
-    const response = await axiosConfig
+    const response = await axiosPrivate
       .put("customer/" + data.get("customerId"), formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -273,7 +281,7 @@ export async function action({ request }) {
   if (method === "DELETE") {
     const dataArray = data.get("customerId").split(",");
     dataArray.map(async (id) => {
-      const response = await axiosConfig
+      const response = await axiosPrivate
         .delete("customer/" + id)
         .then((response) => {
           Swal.fire({

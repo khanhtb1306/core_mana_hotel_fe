@@ -11,7 +11,7 @@ import NewRoom from "../../components/Room/NewRoom";
 import NewCategoryRoom from "../../components/CategoryRoom/NewCategoryRoom";
 import DeleteRoom from "../../components/Room/DeleteRoom";
 import DetailsRoom from "../../components/Room/DetailsRoom";
-import { axiosConfig } from "../../utils/axiosConfig";
+import { axiosPrivate } from "../../utils/axiosConfig";
 import RoomRootLayout from "../RoomLayout";
 import {
   defer,
@@ -271,17 +271,29 @@ function RoomManagementPage() {
 export default RoomManagementPage;
 
 async function loadRooms() {
-  const response = await axiosConfig.get("room");
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return redirect('/login');
+  }
+  const response = await axiosPrivate.get("room");
   return response.data;
 }
 
 async function loadFloors() {
-  const response = await axiosConfig.get("Floor");
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return redirect('/login');
+  }
+  const response = await axiosPrivate.get("Floor");
   return response.data;
 }
 
 async function loadCategories() {
-  const response = await axiosConfig.get("room-class");
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return redirect('/login');
+  }
+  const response = await axiosPrivate.get("room-class");
   return response.data;
 }
 
@@ -307,7 +319,7 @@ export async function action({ request }) {
     formData.append("description", data.get("description"));
     formData.append("image", data.get("image"));
     if (method === "POST") {
-      const response = await axiosConfig
+      const response = await axiosPrivate
         .post("room-class", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
@@ -342,7 +354,7 @@ export async function action({ request }) {
       floorName: data.get("floorName"),
       status: 1,
     };
-    const response = await axiosConfig
+    const response = await axiosPrivate
       .post("Floor", formData)
       .then((response) => {
         Swal.fire({
@@ -373,7 +385,7 @@ export async function action({ request }) {
   formData.append("image", data.get("image"));
 
   if (method === "POST") {
-    const response = await axiosConfig
+    const response = await axiosPrivate
       .post("room", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -401,7 +413,7 @@ export async function action({ request }) {
   }
   if (method === "PUT") {
     console.log(data.get("roomId"));
-    const response = await axiosConfig
+    const response = await axiosPrivate
       .put("room/" + data.get("roomId"), formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -430,7 +442,7 @@ export async function action({ request }) {
   if (method === "DELETE") {
     const dataArray = data.get("roomId").split(",");
     dataArray.map(async (id) => {
-      await axiosConfig
+      await axiosPrivate
         .delete("room/" + id)
         .then((response) => {
           Swal.fire({

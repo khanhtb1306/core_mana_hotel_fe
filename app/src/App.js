@@ -23,6 +23,17 @@ import StocktakeManagementPage from "./pages/StocktakeManagement";
 import { checkAuthLoader, tokenLoader } from "./contexts/auth";
 import ManagerLayout from "./pages/ManagerLayout";
 import ReceptionistLayout from "./pages/ReceptionistLayout";
+import ReservationPage from "./pages/Reservation";
+import AddReservationPage, {
+  loader as loadNewReservation,
+} from "./pages/Reservation/addReservation";
+import AddInvoicePage from "./pages/Invoice/addInvoice";
+import ForgetPasswordPage, {
+  action as actionSendEmail,
+} from "./pages/Authentication/forgetPassword";
+import ResetPasswordPage, {
+  action as actionChangePassword,
+} from "./pages/Authentication/resetPassword";
 
 const routesForManager = [
   {
@@ -66,15 +77,20 @@ const routesForManager = [
 const routesForReceptionist = [
   {
     index: true,
-    element: <>Hehe reservation true</>,
+    element: <ReservationPage />,
   },
   {
     path: "reservation",
-    element: <>Hehe reservation</>,
+    element: <ReservationPage />,
   },
   {
-    path: "auto",
-    element: <>Auto</>,
+    path: "addReservation",
+    element: <AddReservationPage />,
+    loader: loadNewReservation,
+  },
+  {
+    path: "addInvoice",
+    element: <AddInvoicePage />,
   },
 ];
 
@@ -94,7 +110,7 @@ const router = createBrowserRouter([
       {
         path: "manager",
         element: <ManagerLayout />,
-        //loader: checkAuthLoader,
+        loader: checkAuthLoader,
         children: [...routesForManager],
       },
 
@@ -112,6 +128,18 @@ const router = createBrowserRouter([
     path: "/login",
     element: <LoginPage />,
     action: loginAction,
+  },
+  {
+    path: "/forgetPassword",
+    element: <ForgetPasswordPage />,
+    action: actionSendEmail,
+  },
+  {
+    path: "resetPassword",
+    id: "token",
+    loader: checkAuthLoader,
+    element: <ResetPasswordPage />,
+    action: actionChangePassword,
   },
 ]);
 

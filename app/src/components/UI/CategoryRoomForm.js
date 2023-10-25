@@ -152,7 +152,7 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                           name="priceByHour"
                           defaultValue={
                             cateRoom.priceByHour ? cateRoom.priceByHour : 0
-                          }
+                          } 
                           required
                         />
                       </td>
