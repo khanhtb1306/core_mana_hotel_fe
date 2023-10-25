@@ -19,7 +19,9 @@ import CustomerManagementPage, {
   loader as loadCustomers,
   action as actionCustomer,
 } from "./pages/CustomerManagement";
-import StocktakeManagementPage from "./pages/StocktakeManagement";
+import StocktakeManagementPage, {
+  loader as loadStocktakes,
+} from "./pages/StocktakeManagement";
 import { checkAuthLoader, tokenLoader } from "./contexts/auth";
 import ManagerLayout from "./pages/ManagerLayout";
 import ReceptionistLayout from "./pages/ReceptionistLayout";
@@ -65,6 +67,7 @@ const routesForManager = [
   {
     path: "stocktakeManagement",
     element: <StocktakeManagementPage />,
+    loader: loadStocktakes,
   },
   {
     path: "customerManagement",
