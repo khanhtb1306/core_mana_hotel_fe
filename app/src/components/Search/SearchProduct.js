@@ -1,15 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function SearchProduct(props) {
-  const products = props.products;
-  console.log(products);
+
+  const products = props.goodsUnit.map((unit) => {
+    return {
+      goodsId: unit.goods.goodsId,
+      goodsName: unit.goods.goodsName,
+      goodsUnitName: unit.goodsUnitName,
+      goodsUnitId: unit.goodsUnitId,
+    };
+  });
   const [rows, setRows] = useState(products);
   const [openSearchModal, setOpenSearchModal] = useState(false);
   const handleValueChange = (e) => {
     const value = e.target.value;
-    const newRows = products.filter(
-      (pro) =>
-        pro.goods.goodsName.includes(value) || pro.goods.goodsId.includes(value)
+    const newRows = products.filter((pro) =>
+      pro.goodsName.toLowerCase().includes(value.toLowerCase())
     );
     setRows(newRows);
   };
@@ -23,7 +29,7 @@ function SearchProduct(props) {
   };
 
   return (
-    <div className="p-3">
+    <div className="relative">
       <div className="w-full shadow-md rounded-lg inline-flex bg-white hover:border hover:border-green-500">
         <i className="pl-4 fa-solid fa-magnifying-glass my-auto"></i>
         <input
@@ -31,20 +37,28 @@ function SearchProduct(props) {
           placeholder="Tìm theo tên, mã hàng hoá"
           onChange={handleValueChange}
           onFocus={handleFocus}
-          onBlur={handleBlur}
+          // onBlur={handleBlur}
         />
       </div>
       {openSearchModal && (
-        <div className="absolute bg-white rounded-lg max-h-96 w-3/12 py-3 z-10 overflow-auto">
+        <div className="absolute bg-white rounded-lg max-h-96 w-full py-3 z-10 overflow-auto">
           {rows.length > 0 ? (
             rows.map((row, index) => (
-              <div key={index} className="m-2 p-2 rounded-lg hover:bg-gray-300">
-                <button type="button" className="w-full">
-                  <h2 className="text-left">{`${row.goods.goodsName} (${row.listGoodsUnit[0].goodsUnitName})`}</h2>
-                  <div className="flex text-sm text-gray-500">
-                    <p>{row.goods.goodsId}</p>
-                    <p className="ml-auto">{row.listGoodsUnit[0].price}</p>
-                  </div>
+              <div key={index}>
+                <button
+                  type="button"
+                  className="w-full m-2 p-2 rounded-lg hover:bg-gray-300"
+                  onClick={() => {
+                    props.handleProductClick(row.goodsUnitId);
+                    setRows(
+                      products.filter(
+                        (pro) => pro.goodsUnitId !== row.goodsUnitId
+                      )
+                    );
+                    setOpenSearchModal(false);
+                  }}
+                >
+                  <h2 className="text-left">{`${row.goodsName} (${row.goodsUnitName})`}</h2>
                 </button>
               </div>
             ))

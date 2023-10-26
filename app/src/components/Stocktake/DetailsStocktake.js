@@ -31,7 +31,9 @@ function DetailsStocktake(props) {
 
   stocktake.listInventoryCheckDetails.map((inven) => {
     balance.actualInventory += inven.actualInventory;
-    balance.actualPriceInventory += Math.abs(inven.actualInventory * inven.valueDiscrepancy);
+    balance.actualPriceInventory += Math.abs(
+      inven.actualInventory * inven.valueDiscrepancy
+    );
     if (inven.quantityDiscrepancy > 0) {
       balance.incDif += inven.quantityDiscrepancy;
       balance.incPriceDif += inven.quantityDiscrepancy * inven.valueDiscrepancy;
@@ -127,22 +129,38 @@ function DetailsStocktake(props) {
             <table className="m-4 w-full">
               <tbody>
                 <tr className="border-0 border-b">
-                  <td className="w-5/12 pt-2">Tổng thực tế ({balance.actualInventory}):</td>
+                  <td className="w-5/12 pt-2">
+                    Tổng thực tế ({balance.actualInventory.toLocaleString()}):
+                  </td>
                   <td className="w-7/12 pt-2">
-                    {balance.actualPriceInventory}
+                    {balance.actualPriceInventory.toLocaleString()}
                   </td>
                 </tr>
                 <tr className="border-0 border-b">
-                  <td className="w-5/12 pt-2">Tổng lệch tăng ({balance.incDif}):</td>
-                  <td className="w-7/12 pt-2">{balance.incPriceDif}</td>
+                  <td className="w-5/12 pt-2">
+                    Tổng lệch tăng ({balance.incDif}):
+                  </td>
+                  <td className="w-7/12 pt-2">
+                    {balance.incPriceDif.toLocaleString()}
+                  </td>
                 </tr>
                 <tr className="border-0 border-b">
-                  <td className="w-5/12 pt-2">Tổng lệch giảm ({balance.decDif}):</td>
-                  <td className="w-7/12 pt-2">{balance.decPriceDif}</td>
+                  <td className="w-5/12 pt-2">
+                    Tổng lệch giảm ({balance.decDif}):
+                  </td>
+                  <td className="w-7/12 pt-2">
+                    {balance.decPriceDif.toLocaleString()}
+                  </td>
                 </tr>
                 <tr className="border-0 border-b">
-                  <td className="w-5/12 pt-2">Tổng chênh lệch ({balance.incDif + balance.decDif}):</td>
-                  <td className="w-7/12 pt-2">{balance.incPriceDif + balance.decPriceDif}</td>
+                  <td className="w-5/12 pt-2">
+                    Tổng chênh lệch ({balance.incDif + balance.decDif}):
+                  </td>
+                  <td className="w-7/12 pt-2">
+                    {(
+                      balance.incPriceDif + balance.decPriceDif
+                    ).toLocaleString()}
+                  </td>
                 </tr>
               </tbody>
             </table>

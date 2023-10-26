@@ -8,7 +8,7 @@ import {
 import { useState } from "react";
 import ButtonHover from "../../components/UI/ButtonHover";
 import NewStocktakeRoom from "../../components/Stocktake/NewStocktake";
-import { defer, useLoaderData } from "react-router-dom";
+import { defer, redirect, useLoaderData } from "react-router-dom";
 import { axiosPrivate } from "../../utils/axiosConfig";
 import DetailsStocktake from "../../components/Stocktake/DetailsStocktake";
 
@@ -174,16 +174,47 @@ function StocktakeManagementPage() {
 export default StocktakeManagementPage;
 
 async function loadStocktakes() {
-  // const token = localStorage.getItem("token");
-  // if (!token) {
-  //   return redirect("/login");
-  // }
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return redirect("/login");
+  }
   const response = await axiosPrivate.get("inventory-check");
+  return response.data;
+}
+
+async function loadProducts() {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return redirect("/login");
+  }
+  const response = await axiosPrivate.get("goods");
+  return response.data;
+}
+
+async function loadGoodsUnit() {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return redirect("/login");
+  }
+  const response = await axiosPrivate.get("goods-unit");
   return response.data;
 }
 
 export async function loader() {
   return defer({
+    products: await loadProducts(),
+    goodsUnit: await loadGoodsUnit(),
     stocktakes: await loadStocktakes(),
   });
+}
+
+export async function action({ request }) {
+  const method = request.method;
+  const data = await request.formData();
+  const formData = new FormData();
+  formData.append("inventoryCheckDTO.note", data.get("note"));
+  formData.append("inventoryCheckDTO.status", data.get("status"));
+
+
+  return redirect("/manager/stocktakeManagement");
 }
