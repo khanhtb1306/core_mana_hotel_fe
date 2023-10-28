@@ -7,7 +7,7 @@ function NewStocktake(props) {
       method="post"
       open={props.open}
       onClose={props.onClose}
-      stocktake={{}}
+      stocktake={null}
     />
   );
 }

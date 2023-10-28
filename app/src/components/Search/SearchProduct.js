@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 function SearchProduct(props) {
-
   const products = props.goodsUnit.map((unit) => {
     return {
       goodsId: unit.goods.goodsId,
@@ -12,6 +11,7 @@ function SearchProduct(props) {
   });
   const [rows, setRows] = useState(products);
   const [openSearchModal, setOpenSearchModal] = useState(false);
+  const [goodsUnitId, setGoodsUnitId] = useState(null);
   const handleValueChange = (e) => {
     const value = e.target.value;
     const newRows = products.filter((pro) =>
@@ -25,6 +25,11 @@ function SearchProduct(props) {
   };
 
   const handleBlur = () => {
+    if (goodsUnitId) {
+      props.handleProductClick(goodsUnitId);
+      setRows(products.filter((pro) => pro.goodsUnitId !== goodsUnitId));
+    }
+    setGoodsUnitId(null);
     setOpenSearchModal(false);
   };
 
@@ -37,7 +42,7 @@ function SearchProduct(props) {
           placeholder="Tìm theo tên, mã hàng hoá"
           onChange={handleValueChange}
           onFocus={handleFocus}
-          // onBlur={handleBlur}
+          onBlur={handleBlur}
         />
       </div>
       {openSearchModal && (
@@ -48,14 +53,11 @@ function SearchProduct(props) {
                 <button
                   type="button"
                   className="w-full m-2 p-2 rounded-lg hover:bg-gray-300"
-                  onClick={() => {
-                    props.handleProductClick(row.goodsUnitId);
-                    setRows(
-                      products.filter(
-                        (pro) => pro.goodsUnitId !== row.goodsUnitId
-                      )
-                    );
-                    setOpenSearchModal(false);
+                  onMouseOver={() => {
+                    setGoodsUnitId(row.goodsUnitId);
+                  }}
+                  onMouseLeave={() => {
+                    setGoodsUnitId(null);
                   }}
                 >
                   <h2 className="text-left">{`${row.goodsName} (${row.goodsUnitName})`}</h2>

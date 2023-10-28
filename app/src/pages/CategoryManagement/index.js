@@ -23,7 +23,7 @@ import DeleteCategoryRoom from "../../components/CategoryRoom/DeleteCategoryRoom
 import Swal from "sweetalert2";
 import ButtonClick from "../../components/UI/ButtonClick";
 import { Tooltip } from "react-tooltip";
-import SetStatusCategoryRoom from "../../components/CategoryRoom/SetStatusCategoryRoom";
+import SetStatusCategoryRoom from "../../components/CategoryRoom/SetStateCategoryRoom";
 
 function CategoryManagementPage() {
   const token = useRouteLoaderData("root");
@@ -378,6 +378,7 @@ export async function action({ request }) {
           },
         })
         .then((response) => {
+          console.log(response);
           Swal.fire({
             position: "center",
             icon: "success",

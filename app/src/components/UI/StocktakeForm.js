@@ -7,8 +7,30 @@ import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
 function StocktakeForm({ name, open, onClose, method, stocktake }) {
   const { goodsUnit } = useLoaderData();
   const productUnit = goodsUnit.filter((unit) => unit.goods.goodsCategory);
-  const [products, setProducts] = useState([]);
-  const [productsAdd, setProductsAdd] = useState(productUnit);
+  let array = [];
+  if (stocktake) {
+    array = goodsUnit.filter((unit) => {
+      for (const stock of stocktake.listInventoryCheckDetails) {
+        if (stock.goods.goodsId === unit.goods.goodsId && unit.isDefault) {
+          return true;
+        }
+      }
+      return false;
+    });
+  }
+  const listUnit = productUnit.filter((unit) => {
+    if (stocktake) {
+      for (const stock of stocktake.listInventoryCheckDetails) {
+        if (stock.goods.goodsId === unit.goods.goodsId && unit.isDefault) {
+          return false;
+        }
+      }
+    }
+    return true;
+  });
+
+  const [products, setProducts] = useState(array);
+  const [productsAdd, setProductsAdd] = useState(listUnit);
   const handleProductClick = (goodsUnitId) => {
     const updateProducts = [
       ...products,
@@ -21,9 +43,17 @@ function StocktakeForm({ name, open, onClose, method, stocktake }) {
   };
   const [formData, setFormData] = useState(() => {
     const initialFormData = productUnit.reduce((acc, unit) => {
+      let actualInventory = 0;
+      if (stocktake) {
+        stocktake.listInventoryCheckDetails.map((check) => {
+          if (check.goods.goodsId === unit.goods.goodsId && unit.isDefault) {
+            actualInventory = check.actualInventory;
+          }
+        });
+      }
       return {
         ...acc,
-        [`actualInventory${unit.id}`]: 0,
+        [`actualInventory${unit.goodsUnitId}`]: actualInventory,
       };
     }, {});
 
@@ -116,11 +146,18 @@ function StocktakeForm({ name, open, onClose, method, stocktake }) {
   let rows = [];
   if (products.length > 0) {
     rows = products.map((pro, index) => {
+      let inventory = pro.goods.inventory;
+      if (!pro.isDefault) {
+        const defaultPro = goodsUnit.find(
+          (unit) => unit.goods.goodsId && unit.isDefault
+        );
+        inventory /= pro.cost / defaultPro.cost;
+      }
       return {
         id: pro.goodsUnitId,
         goodsId: pro.goods.goodsId,
         goodsName: pro.goods.goodsName + ` (${pro.goodsUnitName})`,
-        inventory: pro.goods.inventory,
+        inventory: inventory,
         actualInventory: 0,
       };
     });
@@ -139,7 +176,7 @@ function StocktakeForm({ name, open, onClose, method, stocktake }) {
   };
 
   return (
-    <Form method={method}>
+    <Form method={method} onSubmit={onClose}>
       <Modal open={open} onClose={onClose} button={true} size="w-8/12 h-.5/6">
         <div className="p-2 w-full">
           <div>
@@ -147,6 +184,7 @@ function StocktakeForm({ name, open, onClose, method, stocktake }) {
             <div className="flex w-5/12">
               <div className="w-6/12">
                 <button
+                  type="button"
                   className={`border-0 border-b border-gray-500 w-full ${
                     openInfo ? "border-b-2 border-green-500 ring-0" : ""
                   }`}
@@ -157,6 +195,7 @@ function StocktakeForm({ name, open, onClose, method, stocktake }) {
               </div>
               <div className="w-6/12">
                 <button
+                  type="button"
                   className={`border-0 border-b border-gray-500 w-full ${
                     openNote ? "border-b-2 border-green-500 ring-0" : ""
                   }`}
@@ -186,6 +225,13 @@ function StocktakeForm({ name, open, onClose, method, stocktake }) {
               </table>
             </div>
             <input type="hidden" name="status" value={inputStatus} />
+            {stocktake && (
+              <input
+                type="hidden"
+                name="inventoryCheckId"
+                value={stocktake.inventoryCheck.inventoryCheckId}
+              />
+            )}
             {rows.length > 0 && (
               <div className="pt-10">
                 <DataGrid
@@ -195,6 +241,28 @@ function StocktakeForm({ name, open, onClose, method, stocktake }) {
                     pagination: { paginationModel: { pageSize: 5 } },
                   }}
                   pageSizeOptions={[5, 10, 25]}
+                />
+                <input
+                  type="hidden"
+                  name="products"
+                  value={products.map((pro) => {
+                    if (pro.isDefault) {
+                      return (
+                        pro.goodsUnitId + "|" + pro.goods.goodsId + "|" + 1
+                      );
+                    } else {
+                      const defaultPro = goodsUnit.find(
+                        (unit) => unit.goods.goodsId && unit.isDefault
+                      );
+                      return (
+                        pro.goodsUnitId +
+                        "|" +
+                        pro.goods.goodsId +
+                        "|" +
+                        pro.cost / defaultPro.cost
+                      );
+                    }
+                  })}
                 />
               </div>
             )}

@@ -36,10 +36,10 @@ function DetailsStocktake(props) {
     );
     if (inven.quantityDiscrepancy > 0) {
       balance.incDif += inven.quantityDiscrepancy;
-      balance.incPriceDif += inven.quantityDiscrepancy * inven.valueDiscrepancy;
+      balance.incPriceDif += inven.valueDiscrepancy;
     } else if (inven.quantityDiscrepancy < 0) {
       balance.decDif += inven.quantityDiscrepancy;
-      balance.decPriceDif -= inven.quantityDiscrepancy * inven.valueDiscrepancy;
+      balance.decPriceDif += inven.valueDiscrepancy;
     }
   });
   console.log(props.stocktake);
