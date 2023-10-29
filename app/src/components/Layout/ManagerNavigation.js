@@ -11,7 +11,7 @@ function ManagerNavigation() {
         <div
           className={`${
             location.pathname === "/manager/overview" ||
-             location.pathname === "/manager"
+            location.pathname === "/manager"
               ? "bg-blue-800"
               : "hover:bg-blue-800"
           }`}
@@ -23,21 +23,28 @@ function ManagerNavigation() {
             </NavLink>
           </li>
         </div>
-        <div
-          className={`${
+        <ButtonHeader
+          name="Phòng"
+          icon="fa-solid fa-table"
+          isActive={
             location.pathname === "/manager/categoryRoomManagement" ||
-            location.pathname === "/manager/roomManagement"
-              ? "bg-blue-800"
-              : "hover:bg-blue-800"
-          }`}
-        >
-          <li className="pt-4">
-            <NavLink to="/manager/categoryRoomManagement" className="text-white p-4">
-              <i className="fa-solid fa-table pr-3"></i>
-              Phòng
-            </NavLink>
-          </li>
-        </div>
+            location.pathname === "/manager/priceBook"
+          }
+          list={[
+            {
+              name: "Hạng phòng & Phòng",
+              icon: "fa-solid fa-bed",
+              link: "/manager/categoryRoomManagement",
+              isActive: location.pathname === "/manager/categoryRoomManagement",
+            },
+            {
+              name: "Thiết lập giá",
+              icon: "fa-solid fa-tags",
+              link: "/manager/priceBook",
+              isActive: location.pathname === "/manager/priceBook",
+            },
+          ]}
+        />
         <ButtonHeader
           name="Danh mục"
           icon="fa-solid fa-box"

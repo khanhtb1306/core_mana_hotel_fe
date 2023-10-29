@@ -12,6 +12,7 @@ function SearchProduct(props) {
   const [rows, setRows] = useState(products);
   const [openSearchModal, setOpenSearchModal] = useState(false);
   const [goodsUnitId, setGoodsUnitId] = useState(null);
+  
   const handleValueChange = (e) => {
     const value = e.target.value;
     const newRows = products.filter((pro) =>

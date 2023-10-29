@@ -37,6 +37,9 @@ import ForgetPasswordPage, {
 import ResetPasswordPage, {
   action as actionChangePassword,
 } from "./pages/Authentication/resetPassword";
+import PriceManagementPage, {
+  loader as loadPriceBooks,
+} from "./pages/PriceManagementPage";
 
 const routesForManager = [
   {
@@ -76,6 +79,12 @@ const routesForManager = [
     element: <CustomerManagementPage />,
     loader: loadCustomers,
     action: actionCustomer,
+  },
+  {
+    path: "priceBook",
+    element: <PriceManagementPage />,
+    loader: loadPriceBooks,
+    // action: actionCustomer,
   },
 ];
 
