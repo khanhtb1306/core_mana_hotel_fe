@@ -18,7 +18,8 @@ import NewPriceBook from "../../components/PriceBook/NewPriceBook";
 import EditPriceBook from "../../components/PriceBook/EditPriceBook";
 
 function PriceManagementPage() {
-  const { priceBooks } = useLoaderData();
+  const { dataPriceBooks } = useLoaderData();
+  const priceBooks = dataPriceBooks.result;
 
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openDetailsPriceBookModal, setOpenDetailsPriceBookModal] =
@@ -204,6 +205,6 @@ async function loadCategories() {
 export async function loader() {
   return defer({
     categories: await loadCategories(),
-    priceBooks: await loadPriceBooks(),
+    dataPriceBooks: await loadPriceBooks(),
   });
 }

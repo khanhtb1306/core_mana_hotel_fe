@@ -10,9 +10,43 @@ import SearchCateRoom from "../Search/SearchCateRoom";
 import { useState } from "react";
 
 function PriceBookForm({ name, open, onClose, method, priceBook }) {
+  console.log(priceBook);
   const { categories } = useLoaderData();
-
-  const [listCate, setListCate] = useState(categories);
+  console.log(categories);
+  const priceBooks = categories.map((cate) => {
+    if (priceBook) {
+      const listPrice = [
+        {
+          id: 0,
+          date: [0],
+          priceByHour: cate.roomCategory.priceByHour,
+          priceByDay: cate.roomCategory.priceByDay,
+          priceByNight: cate.roomCategory.priceByNight,
+        },
+      ];
+      return {
+        roomCategoryId: cate.roomCategory.roomCategoryId,
+        roomCategoryName: cate.roomCategory.roomCategoryName,
+        listPrice: listPrice,
+      };
+    } else {
+      return {};
+    }
+  });
+  const [listPriceBook, setListPriceBook] = useState(priceBooks);
+  const [categoriesAdd, setCategoriesAdd] = useState(
+    categories.filter((cate) => {
+      console.log(listPriceBook);
+      if (listPriceBook.length > 0) {
+        for (const prices of listPriceBook) {
+          if (cate.roomCategory.roomCategoryId === prices.roomCategoryId) {
+            return false;
+          }
+        }
+      }
+      return true;
+    })
+  );
   return (
     <Form method={method} onSubmit={onClose} encType="multipart/form-data">
       <Modal open={open} onClose={onClose} size="w-8/12 h-.5/6">
@@ -21,7 +55,7 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
             <h1 className="text-lg pb-5 font-bold">{name}</h1>
           </div>
           <div className="flex w-full">
-            <table className="ml-auto w-5/12 mr-5">
+            <table className="ml-auto w-4/12 mr-5">
               <tbody>
                 {method === "put" && (
                   <tr>
@@ -53,7 +87,7 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
                 </tr>
               </tbody>
             </table>
-            <table className="mr-auto w-7/12">
+            <table className="mr-auto w-8/12">
               <tbody>
                 <tr>
                   <td className="w-3/12">
@@ -106,7 +140,7 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
           <div className="mt-5">
             <h2 className="px-4 py-2 bg-gray-200">Đơn vị tính</h2>
             <div className="flex px-4 py-4">
-              <SearchCateRoom categories={categories} />
+              <SearchCateRoom categories={categoriesAdd} />
             </div>
             <div className="px-4">
               <table className="min-w-full border border-gray-300 divide-y divide-gray-300">
@@ -120,13 +154,16 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {listCate.map((cate) => (
+                  {listPriceBook.map((priceBook) => (
                     <>
                       <tr className="border-t">
-                        <td className="py-2 px-4 w-3/12">
-                          <h2>{cate.roomCategory.roomCategoryName}</h2>
+                        <td
+                          className="py-2 px-4 w-3/12"
+                          rowspan={priceBook.listPrice.length + 2}
+                        >
+                          <h2>{priceBook.roomCategoryName}</h2>
                           <p className="text-sm text-gray-500">
-                            {cate.roomCategory.roomCategoryId}
+                            {priceBook.roomCategoryId}
                           </p>
                         </td>
                         <td className="py-2 px-4 w-3/12">
@@ -143,7 +180,7 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
                               className="border-0 border-b text-right border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                               type="number"
                               name="priceByHour"
-                              defaultValue={cate.roomCategory.priceByHour}
+                              defaultValue={priceBook.listPrice[0].priceByHour}
                               min={0}
                             />
                           </div>
@@ -152,7 +189,7 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
                               className="border-0 border-b text-right border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                               type="number"
                               name="priceByDay"
-                              defaultValue={cate.roomCategory.priceByDay}
+                              defaultValue={priceBook.listPrice[0].priceByDay}
                               min={0}
                             />
                           </div>
@@ -161,7 +198,7 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
                               className="border-0 border-b text-right border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                               type="number"
                               name="priceByNight"
-                              defaultValue={cate.roomCategory.priceByNight}
+                              defaultValue={priceBook.listPrice[0].priceByNight}
                               min={0}
                             />
                           </div>
@@ -172,8 +209,52 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
                           </button>
                         </td>
                       </tr>
+                      {priceBook.listPrice.map((prices) => (
+                        <tr>
+                          <td className="py-2 px-4 w-3/12 border-t">
+                            <div className="">Mặc định</div>
+                          </td>
+                          <td className="py-2 px-4 w-2/12 border-t">
+                            <div className="pb-4">Giá giờ</div>
+                            <div>Giá ngày</div>
+                            <div className="pt-4">Giá đêm</div>
+                          </td>
+                          <td className="py-2 px-4 w-2/12 border-t">
+                            <div>
+                              <input
+                                className="border-0 border-b text-right border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
+                                type="number"
+                                name="priceByHour"
+                                defaultValue={
+                                  priceBook.listPrice[0].priceByHour
+                                }
+                                min={0}
+                              />
+                            </div>
+                            <div>
+                              <input
+                                className="border-0 border-b text-right border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
+                                type="number"
+                                name="priceByDay"
+                                defaultValue={priceBook.listPrice[0].priceByDay}
+                                min={0}
+                              />
+                            </div>
+                            <div>
+                              <input
+                                className="border-0 border-b text-right border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
+                                type="number"
+                                name="priceByNight"
+                                defaultValue={
+                                  priceBook.listPrice[0].priceByNight
+                                }
+                                min={0}
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
                       <tr>
-                        <td></td>
                         <td className="border-t">
                           <div className="text-blue-500 p-2">
                             <button type="button">

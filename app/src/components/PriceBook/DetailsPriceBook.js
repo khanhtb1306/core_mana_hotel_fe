@@ -30,19 +30,6 @@ function DetailsPriceBook(props) {
     return `${year}-${month}-${day} ${hours}:${minutes}`;
   };
 
-  const columnsRoom = [
-    { field: "nameCateRoom", headerName: "Hạng phòng", width: 150 },
-    { field: "date", headerName: "Ngày lưu trú", width: 200 },
-    { field: "typePrice", headerName: "Loại giá", width: 200 },
-    { field: "Price", headerName: "Giá tiền", width: 200 },
-  ];
-
-  let rowsRoom = priceBook.ListPriceListDetail.map((details, index) => {
-    return {
-        id: index
-    }
-  });
-
   return (
     props.priceBook && (
       <Modal
@@ -87,21 +74,21 @@ function DetailsPriceBook(props) {
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Mã bảng giá:</td>
                         <td className="w-7/12 pt-2">
-                          {priceBook.PriceList.priceListId}
+                          {/* {priceBook.PriceList.priceListId} */}
                         </td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Tên bảng giá:</td>
                         <td className="w-7/12 pt-2">
-                          {priceBook.PriceList.priceListName}
+                          {/* {priceBook.PriceList.priceListName} */}
                         </td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Trạng thái:</td>
                         <td className="w-7/12 pt-2">
-                          {priceBook.PriceList.status === 1
+                          {/* {priceBook.PriceList.status === 1
                             ? "Đang hoạt động"
-                            : "Ngừng hoạt động"}
+                            : "Ngừng hoạt động"} */}
                         </td>
                       </tr>
                     </tbody>
@@ -120,7 +107,9 @@ function DetailsPriceBook(props) {
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Ghi chú:</td>
-                        <td className="w-7/12 pt-2">{priceBook.PriceList.note}</td>
+                        <td className="w-7/12 pt-2">
+                          {priceBook.PriceList.note}
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -129,16 +118,79 @@ function DetailsPriceBook(props) {
             </>
           ) : null}
           {openListPrice ? (
-            <>
-              <DataGrid
-                columns={columnsRoom}
-                rows={rowsRoom}
-                initialState={{
-                  pagination: { paginationModel: { pageSize: 5 } },
-                }}
-                pageSizeOptions={[5, 10, 25]}
-              />
-            </>
+            <table className="min-w-full border border-gray-300 divide-y divide-gray-300">
+              <thead className="bg-blue-100">
+                <tr>
+                  <td className="py-2 px-4 w-3/12">Hạng phòng</td>
+                  <td className="py-2 px-4 w-3/12">Ngày lưu trú</td>
+                  <td className="py-2 px-4 w-2/12">Loại giá</td>
+                  <td className="py-2 px-4 w-4/12">Mức giá</td>
+                </tr>
+              </thead>
+              <tbody>
+                {priceBook.ListPriceListDetail.map((priceBook) => (
+                  <>
+                    <tr className="border-t">
+                      <td
+                        className="py-2 px-4 w-3/12"
+                        rowspan={
+                          priceBook.PriceListDetailWithDayOfWeek.length + 1
+                        }
+                      >
+                        <h2>
+                          {priceBook.RoomClass.roomCategoryName}
+                        </h2>
+                        <p className="text-sm text-gray-500">
+                          {priceBook.RoomClass.roomCategoryId}
+                        </p>
+                      </td>
+                      <td className="py-2 px-4 w-3/12">
+                        <div className="">Mặc định</div>
+                      </td>
+                      <td className="py-2 px-4 w-2/12">
+                        <div className="pb-4">Giá giờ</div>
+                        <div>Giá ngày</div>
+                        <div className="pt-4">Giá đêm</div>
+                      </td>
+                      <td className="py-2 px-4 w-4/12">
+                        <div className="pb-4">
+                          {priceBook.RoomClass.priceByHour}
+                        </div>
+                        <div>{priceBook.RoomClass.priceByDay}</div>
+                        <div className="pt-4">
+                          {priceBook.RoomClass.priceByNight}
+                        </div>
+                      </td>
+                    </tr>
+                    {priceBook.PriceListDetailWithDayOfWeek.map((prices) => (
+                      <tr>
+                        <td className="py-2 px-4 w-3/12 border-t">
+                          <div className="">{prices.DayOfWeekList.map((day, index) => {
+                            if (day === 8) {
+                                return "Chủ nhật"
+                            }
+                            if (index === prices.DayOfWeekList.length - 1) {
+                                return "Thứ " + day;
+                            }
+                            return "Thứ " + day + ", ";
+                          })}</div>
+                        </td>
+                        <td className="py-2 px-4 w-2/12 border-t">
+                          <div className="pb-4">Giá giờ</div>
+                          <div>Giá ngày</div>
+                          <div className="pt-4">Giá đêm</div>
+                        </td>
+                        <td className="py-2 px-4 w-2/12 border-t">
+                          <div className="pb-4">{prices.PriceListDetail.priceByNight}</div>
+                          <div>{prices.PriceListDetail.priceByNight}</div>
+                          <div className="pt-4">{prices.PriceListDetail.priceByNight}</div>
+                        </td>
+                      </tr>
+                    ))}
+                  </>
+                ))}
+              </tbody>
+            </table>
           ) : null}
         </div>
       </Modal>
