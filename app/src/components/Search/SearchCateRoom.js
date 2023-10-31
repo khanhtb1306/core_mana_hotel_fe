@@ -4,7 +4,7 @@ import NewCustomer from "../Customer/NewCustomer";
 
 function SearchCateRoom(props) {
   const categories = props.categories;
-  console.log(categories);
+  // console.log(categories);
   const [rows, setRows] = useState(categories);
   const [openSearchModal, setOpenSearchModal] = useState(false);
 

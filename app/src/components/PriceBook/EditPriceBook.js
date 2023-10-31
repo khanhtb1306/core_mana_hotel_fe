@@ -4,7 +4,7 @@ function EditPriceBook(props) {
   return (
     <PriceBookForm
       name="Chỉnh sửa bảng giá phòng"
-      method="post"
+      method="put"
       open={props.open}
       onClose={props.onClose}
       priceBook={props.priceBook}
