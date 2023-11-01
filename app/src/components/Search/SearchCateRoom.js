@@ -4,14 +4,21 @@ import NewCustomer from "../Customer/NewCustomer";
 
 function SearchCateRoom(props) {
   const categories = props.categories;
-  // console.log(categories);
   const [rows, setRows] = useState(categories);
   const [openSearchModal, setOpenSearchModal] = useState(false);
+  const [categoryRoomId, setCategoryRoomId] = useState(null);
 
   const handleValueChange = (e) => {
     const value = e.target.value;
-    const newRows = categories.filter((pro) =>
-      pro.goodsName.toLowerCase().includes(value.toLowerCase())
+    console.log(value);
+    const newRows = categories.filter(
+      (pro) =>
+        pro.roomCategory.roomCategoryId
+          .toLowerCase()
+          .includes(value.toLowerCase()) ||
+        pro.roomCategory.roomCategoryName
+          .toLowerCase()
+          .includes(value.toLowerCase())
     );
     setRows(newRows);
   };
@@ -21,6 +28,15 @@ function SearchCateRoom(props) {
   };
 
   const handleBlur = () => {
+    if (categoryRoomId) {
+      props.clickCateRoom(categoryRoomId);
+      setRows(
+        categories.filter(
+          (cate) => cate.roomCategory.roomCategoryId !== categoryRoomId
+        )
+      );
+    }
+    setCategoryRoomId(null);
     setOpenSearchModal(false);
   };
 
@@ -41,9 +57,20 @@ function SearchCateRoom(props) {
           {rows.length > 0 ? (
             rows.map((row, index) => (
               <div key={index} className="m-2 p-2 rounded-lg hover:bg-gray-300">
-                <button type="button" className="w-full text-left">
+                <button
+                  type="button"
+                  className="w-full text-left"
+                  onMouseOver={() => {
+                    setCategoryRoomId(row.roomCategory.roomCategoryId);
+                  }}
+                  onMouseLeave={() => {
+                    setCategoryRoomId(null);
+                  }}
+                >
                   <h2>{row.roomCategory.roomCategoryName}</h2>
-                  <p className="text-sm text-gray-500">{row.roomCategory.roomCategoryId}</p>
+                  <p className="text-sm text-gray-500">
+                    {row.roomCategory.roomCategoryId}
+                  </p>
                 </button>
               </div>
             ))

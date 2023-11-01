@@ -2,6 +2,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import ImageDisplay from "../UI/ImageDisplay";
 import Modal from "../UI/Modal";
 import { useEffect, useState } from "react";
+import dayjs from "dayjs";
 
 function DetailsPriceBook(props) {
   const [openInfo, setOpenInfo] = useState(true);
@@ -18,16 +19,6 @@ function DetailsPriceBook(props) {
   const handleListPrice = () => {
     setOpenInfo(false);
     setOpenListPrice(true);
-  };
-
-  const transferDate = (dateTampt) => {
-    const date = new Date(dateTampt);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    return `${year}-${month}-${day} ${hours}:${minutes}`;
   };
 
   return (
@@ -74,21 +65,21 @@ function DetailsPriceBook(props) {
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Mã bảng giá:</td>
                         <td className="w-7/12 pt-2">
-                          {/* {priceBook.PriceList.priceListId} */}
+                          {priceBook.PriceList.priceListId}
                         </td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Tên bảng giá:</td>
                         <td className="w-7/12 pt-2">
-                          {/* {priceBook.PriceList.priceListName} */}
+                          {priceBook.PriceList.priceListName}
                         </td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Trạng thái:</td>
                         <td className="w-7/12 pt-2">
-                          {/* {priceBook.PriceList.status === 1
+                          {priceBook.PriceList.status === 1
                             ? "Đang hoạt động"
-                            : "Ngừng hoạt động"} */}
+                            : "Ngừng hoạt động"}
                         </td>
                       </tr>
                     </tbody>
@@ -99,11 +90,15 @@ function DetailsPriceBook(props) {
                     <tbody>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Thời gian hiệu lực:</td>
-                        <td className="w-7/12 pt-2">{`${transferDate(
-                          priceBook.PriceList.effectiveTimeStart
-                        )} đến ${transferDate(
-                          priceBook.PriceList.effectiveTimeEnd
-                        )}`}</td>
+                        <td className="w-7/12 pt-2">
+                          {dayjs(priceBook.PriceList.effectiveTimeStart).format(
+                            "DD/MM/YYYY"
+                          )}
+                          -
+                          {dayjs(priceBook.PriceList.effectiveTimeEnd).format(
+                            "DD/MM/YYYY"
+                          )}
+                        </td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Ghi chú:</td>
@@ -133,13 +128,11 @@ function DetailsPriceBook(props) {
                     <tr className="border-t">
                       <td
                         className="py-2 px-4 w-3/12"
-                        rowspan={
+                        rowSpan={
                           priceBook.PriceListDetailWithDayOfWeek.length + 1
                         }
                       >
-                        <h2>
-                          {priceBook.RoomClass.roomCategoryName}
-                        </h2>
+                        <h2>{priceBook.RoomClass.roomCategoryName}</h2>
                         <p className="text-sm text-gray-500">
                           {priceBook.RoomClass.roomCategoryId}
                         </p>
@@ -165,15 +158,22 @@ function DetailsPriceBook(props) {
                     {priceBook.PriceListDetailWithDayOfWeek.map((prices) => (
                       <tr>
                         <td className="py-2 px-4 w-3/12 border-t">
-                          <div className="">{prices.DayOfWeekList.map((day, index) => {
-                            if (day === 8) {
-                                return "Chủ nhật"
-                            }
-                            if (index === prices.DayOfWeekList.length - 1) {
-                                return "Thứ " + day;
-                            }
-                            return "Thứ " + day + ", ";
-                          })}</div>
+                          <div className="">
+                            <div>
+                              {prices.DayOfWeekList.map((day, index) => {
+                                if (day === 8) {
+                                  return "Chủ nhật";
+                                }
+                                if (index === prices.DayOfWeekList.length - 1) {
+                                  return "Thứ " + day;
+                                }
+                                return "Thứ " + day + ", ";
+                              })}
+                            </div>
+                            <div>
+                              {dayjs(prices.PriceListDetail.timeApply).format("DD/MM/YYYY")}
+                            </div>
+                          </div>
                         </td>
                         <td className="py-2 px-4 w-2/12 border-t">
                           <div className="pb-4">Giá giờ</div>
@@ -181,9 +181,13 @@ function DetailsPriceBook(props) {
                           <div className="pt-4">Giá đêm</div>
                         </td>
                         <td className="py-2 px-4 w-2/12 border-t">
-                          <div className="pb-4">{prices.PriceListDetail.priceByNight}</div>
-                          <div>{prices.PriceListDetail.priceByNight}</div>
-                          <div className="pt-4">{prices.PriceListDetail.priceByNight}</div>
+                          <div className="pb-4">
+                            {prices.PriceListDetail.priceByHour}
+                          </div>
+                          <div>{prices.PriceListDetail.priceByDay}</div>
+                          <div className="pt-4">
+                            {prices.PriceListDetail.priceByNight}
+                          </div>
                         </td>
                       </tr>
                     ))}

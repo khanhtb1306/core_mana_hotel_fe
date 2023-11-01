@@ -4,14 +4,13 @@ import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { viVN } from "@mui/x-date-pickers/locales";
-import { DateTimePicker } from "@mui/x-date-pickers";
+import { DatePicker, DateTimePicker } from "@mui/x-date-pickers";
 import SearchCateRoom from "../Search/SearchCateRoom";
 import { useState } from "react";
 import DayInputForm from "./DayInputForm";
 
 function PriceBookForm({ name, open, onClose, method, priceBook }) {
   const { categories } = useLoaderData();
-  console.log(priceBook);
   let priceList = [];
   if (priceBook) {
     priceList = priceBook.ListPriceListDetail.map((price) => {
@@ -21,7 +20,9 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
           priceByDay: row.PriceListDetail.priceByDay,
           priceByNight: row.PriceListDetail.priceByNight,
           listDay: row.DayOfWeekList,
-          timeApply: row.PriceListDetail.timeApply.split("T")[0],
+          timeApply: row.PriceListDetail.timeApply
+            ? row.PriceListDetail.timeApply
+            : null,
         };
       });
       return {
@@ -35,10 +36,22 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
         listPrice: listPrice,
       };
     });
+  } else {
+    priceList = categories.map((cate) => {
+      return {
+        roomCategoryId: cate.roomCategory.roomCategoryId,
+        roomCategoryName: cate.roomCategory.roomCategoryName,
+        defaultPrice: {
+          priceByHour: cate.roomCategory.priceByHour,
+          priceByDay: cate.roomCategory.priceByDay,
+          priceByNight: cate.roomCategory.priceByNight,
+        },
+        listPrice: [],
+      };
+    });
   }
 
   const [listPriceBook, setListPriceBook] = useState(priceList);
-  console.log(listPriceBook);
   const [categoriesAdd, setCategoriesAdd] = useState(
     categories.filter((cate) => {
       if (listPriceBook.length > 0) {
@@ -55,6 +68,14 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
   const [openNewDateModal, setOpenNewDateModal] = useState(false);
   const [openEditDateModal, setEditOpenDateModal] = useState(false);
   const [dayInput, setDayInput] = useState(null);
+  const [dateStart, setDateStart] = useState(
+    priceBook ? dayjs(priceBook.PriceList.effectiveTimeStart) : dayjs()
+  );
+  const [dateEnd, setDateEnd] = useState(
+    priceBook
+      ? dayjs(priceBook.PriceList.effectiveTimeEnd)
+      : dayjs().add(1, "year")
+  );
 
   const handleNewDayInput = (index, categoryRoomId) => {
     setDayInput([index, categoryRoomId]);
@@ -97,9 +118,47 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
     priceBook.listPrice = updatePrice;
   };
 
+  const handleCateRoomAdd = (categoryRoomId) => {
+    setCategoriesAdd(
+      categoriesAdd.filter(
+        (cate) => cate.roomCategory.roomCategoryId !== categoryRoomId
+      )
+    );
+    const cate = categoriesAdd.find(
+      (cate) => cate.roomCategory.roomCategoryId === categoryRoomId
+    );
+    setListPriceBook([
+      ...listPriceBook,
+      {
+        roomCategoryId: cate.roomCategory.roomCategoryId,
+        roomCategoryName: cate.roomCategory.roomCategoryName,
+        defaultPrice: {
+          priceByHour: cate.roomCategory.priceByHour,
+          priceByDay: cate.roomCategory.priceByDay,
+          priceByNight: cate.roomCategory.priceByNight,
+        },
+        listPrice: [],
+      },
+    ]);
+  };
+
+  const handleCateRoomDelete = (roomCategoryId) => {
+    setCategoriesAdd([
+      ...categoriesAdd,
+      categories.find(
+        (cate) => cate.roomCategory.roomCategoryId === roomCategoryId
+      ),
+    ]);
+    setListPriceBook(
+      listPriceBook.filter(
+        (priceBook) => priceBook.roomCategoryId !== roomCategoryId
+      )
+    );
+  };
+
   return (
     <>
-      <Form method={method} onSubmit={onClose} encType="multipart/form-data">
+      <Form method={method} onSubmit={onClose}>
         <Modal open={open} onClose={onClose} size="w-10/12 h-.5/6">
           <div className="p-2 w-full">
             <div>
@@ -160,28 +219,34 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
                               .localeText
                           }
                         >
-                          <DateTimePicker
-                            ampm={false}
+                          <input
+                            type="hidden"
+                            name="effectiveTimeStart"
+                            value={`${dateStart.year()}-${dateStart.month() + 1}-${dateStart.date()}`}
+                          />
+                          <DatePicker
                             sx={{
                               ".MuiInputBase-input": { padding: 1, width: 150 },
                             }}
-                            defaultValue={
-                              priceBook
-                                ? dayjs(priceBook.PriceList.effectiveTimeStart)
-                                : ""
-                            }
+                            value={dateStart}
+                            onChange={(value) => setDateStart(value)}
+                            format="DD/MM/YYYY"
                           />
                           <div className="px-2">đến</div>
-                          <DateTimePicker
-                            ampm={false}
+                          <input
+                            type="hidden"
+                            name="effectiveTimeEnd"
+                            value={`${dateEnd.year()}-${dateEnd.month() + 1}-${dateEnd.date()}`}
+                          />
+                          <DatePicker
                             sx={{
                               ".MuiInputBase-input": { padding: 1, width: 150 },
                             }}
-                            defaultValue={
-                              priceBook
-                                ? dayjs(priceBook.PriceList.effectiveTimeStart)
-                                : ""
-                            }
+                            value={dateEnd}
+                            onChange={(value) => {
+                              setDateEnd(value);
+                            }}
+                            format="DD/MM/YYYY"
                           />
                         </LocalizationProvider>
                       </div>
@@ -205,9 +270,12 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
               </table>
             </div>
             <div className="mt-5">
-              <h2 className="px-4 py-2 bg-gray-200">Đơn vị tính</h2>
+              <h2 className="px-4 py-2 bg-gray-200">Danh sách phòng</h2>
               <div className="flex px-4 py-4">
-                <SearchCateRoom categories={categoriesAdd} />
+                <SearchCateRoom
+                  categories={categoriesAdd}
+                  clickCateRoom={handleCateRoomAdd}
+                />
               </div>
               <div className="px-4">
                 <table className="min-w-full border border-gray-300 divide-y divide-gray-300">
@@ -221,6 +289,13 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
                     </tr>
                   </thead>
                   <tbody>
+                    <input
+                      type="hidden"
+                      name="listCateRoomId"
+                      value={listPriceBook
+                        .map((priceBook) => priceBook.roomCategoryId)
+                        .toString()}
+                    />
                     {listPriceBook.map((priceBook, index) => (
                       <>
                         <tr className="border-t">
@@ -283,11 +358,21 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
                             className="pl-20 w-2/12"
                             rowSpan={priceBook.listPrice.length + 2}
                           >
-                            <button type="button">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleCateRoomDelete(priceBook.roomCategoryId)
+                              }
+                            >
                               <i className="fa-solid fa-trash fa-lg"></i>
                             </button>
                           </td>
                         </tr>
+                        <input
+                          type="hidden"
+                          name={`${priceBook.roomCategoryId}`}
+                          value={priceBook.listPrice.length}
+                        />
                         {priceBook.listPrice.map((prices, index) => (
                           <tr key={index}>
                             <td className="py-2 px-4 w-3/12 border-t">
@@ -304,6 +389,16 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
                                 >
                                   <i className="fa-solid fa-pen"></i>
                                 </button>
+                                <input
+                                  type="hidden"
+                                  name={`dayOfWeek-${priceBook.roomCategoryId}-${index}`}
+                                  value={prices.listDay.toString()}
+                                />
+                                <input
+                                  type="hidden"
+                                  name={`timeApply-${priceBook.roomCategoryId}-${index}`}
+                                  value={prices.timeApply}
+                                />
                                 {prices.listDay.map((day, index) => {
                                   if (day == 8) {
                                     return "Chủ nhật";
@@ -314,7 +409,7 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
                                   return "Thứ " + day + ", ";
                                 })}
                               </div>
-                              <div>{prices.timeApply}</div>
+                              <div>{dayjs(prices.timeApply).format("DD/MM/YYYY")}</div>
                             </td>
                             <td className="py-2 px-4 w-2/12 border-t">
                               <div className="pb-4">Giá giờ</div>
@@ -326,7 +421,7 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
                                 <input
                                   className="border-0 border-b text-right border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                                   type="number"
-                                  name={`priceByHour${index}`}
+                                  name={`priceByHour-${priceBook.roomCategoryId}-${index}`}
                                   defaultValue={prices.priceByHour}
                                   min={0}
                                 />
@@ -335,7 +430,7 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
                                 <input
                                   className="border-0 border-b text-right border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                                   type="number"
-                                  name="priceByDay"
+                                  name={`priceByDay-${priceBook.roomCategoryId}-${index}`}
                                   defaultValue={prices.priceByDay}
                                   min={0}
                                 />
@@ -344,7 +439,7 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
                                 <input
                                   className="border-0 border-b text-right border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                                   type="number"
-                                  name="priceByNight"
+                                  name={`priceByNight-${priceBook.roomCategoryId}-${index}`}
                                   defaultValue={prices.priceByNight}
                                   min={0}
                                 />

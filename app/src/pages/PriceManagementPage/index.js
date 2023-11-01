@@ -9,8 +9,6 @@ import { useState } from "react";
 import ButtonHover from "../../components/UI/ButtonHover";
 import { axiosPrivate } from "../../utils/axiosConfig";
 import { defer, redirect, useLoaderData } from "react-router-dom";
-import EditCustomer from "../../components/Customer/EditCustomer";
-import DeleteCustomer from "../../components/Customer/DeleteCustomer";
 import ButtonClick from "../../components/UI/ButtonClick";
 import Swal from "sweetalert2";
 import DetailsPriceBook from "../../components/PriceBook/DetailsPriceBook";
@@ -207,4 +205,122 @@ export async function loader() {
     categories: await loadCategories(),
     dataPriceBooks: await loadPriceBooks(),
   });
+}
+
+export async function action({ request }) {
+  const method = request.method;
+  const data = await request.formData();
+  const formData = new FormData();
+  formData.append("priceListDTO.priceListName", data.get("priceListName"));
+  formData.append(
+    "priceListDTO.effectiveTimeStart",
+    data.get("effectiveTimeStart")
+  );
+  formData.append(
+    "priceListDTO.effectiveTimeEnd",
+    data.get("effectiveTimeEnd")
+  );
+  formData.append("priceListDTO.status", 1);
+  formData.append("priceListDTO.note", data.get("note"));
+  const listCateRoomId = data.get("listCateRoomId").split(",");
+  listCateRoomId.map((cateRoomId, index) => {
+    const indexes = data.get(`${cateRoomId}`);
+    for (let i = 0; i < indexes; i++) {
+      formData.append(`priceListDetailDTO[${i}].roomCategoryId`, cateRoomId);
+      console.log(`priceListDetailDTO[${i}].roomCategoryId`);
+      formData.append(
+        `priceListDetailDTO[${i}].priceByHour`,
+        data.get(`priceByHour-${cateRoomId}-${i}`)
+      );
+      formData.append(
+        `priceListDetailDTO[${i}].priceByDay`,
+        data.get(`priceByDay-${cateRoomId}-${i}`)
+      );
+      formData.append(
+        `priceListDetailDTO[${i}].priceByNight`,
+        data.get(`priceByNight-${cateRoomId}-${i}`)
+      );
+      if (data.get(`timeApply-${cateRoomId}-${i}`)) {
+        formData.append(
+          `priceListDetailDTO[${i}].timeApply`,
+          data.get(`timeApply-${cateRoomId}-${i}`)
+        );
+      }
+      const list = data.get(`dayOfWeek-${cateRoomId}-${i}`).split(",");
+      list.map((row, ind) => {
+        formData.append(`priceListDetailDTO[${i}].dayOfWeek[${ind}]`, row);
+      });
+    }
+  });
+  // return redirect("/manager/priceBook");
+  if (method === "POST") {
+    await axiosPrivate
+      .post("price-list", formData)
+      .then((response) => {
+        const data = response.data;
+        if (data.success) {
+          Swal.fire({
+            position: "center",
+            icon: "success",
+            title: data.displayMessage,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        } else {
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            title: data.displayMessage,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        }
+      })
+      .catch((e) => {
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: e.response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      });
+    return redirect("/manager/priceBook");
+  }
+
+  if (method === "PUT") {
+    await axiosPrivate
+      .put("price-list/" + data.get("priceListId"), formData)
+      .then((response) => {
+        const data = response.data;
+        if (data.success) {
+          Swal.fire({
+            position: "center",
+            icon: "success",
+            title: data.displayMessage,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        } else {
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            title: data.displayMessage,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        }
+      })
+      .catch((e) => {
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: e.response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      });
+    return redirect("/manager/priceBook");
+  }
+  return redirect("/manager/priceBook");
 }

@@ -29,7 +29,9 @@ function DayInputForm(props) {
   ];
   const [dayList, setDayList] = useState(listDay);
   const [time, setTime] = useState(timeApply);
-  const [dayWeek, setDayWeek] = useState(listDays.filter((day) => !list.includes(day.value)));
+  const [dayWeek, setDayWeek] = useState(
+    listDays.filter((day) => !list.includes(day.value))
+  );
   const handleChangeDay = (event) => {
     const { value } = event.target;
     setDayList(value);
@@ -91,6 +93,7 @@ function DayInputForm(props) {
                     }}
                     value={dayjs(time)}
                     onChange={handleChangeTime}
+                    format="DD/MM/YYYY"
                   />
                 </LocalizationProvider>
               </td>
