@@ -26,7 +26,6 @@ import StocktakeManagementPage, {
 import { checkAuthLoader, tokenLoader } from "./contexts/auth";
 import ManagerLayout from "./pages/ManagerLayout";
 import ReceptionistLayout from "./pages/ReceptionistLayout";
-import ReservationPage from "./pages/Reservation";
 import AddReservationPage, {
   loader as loadNewReservation,
 } from "./pages/Reservation/addReservation";
@@ -41,6 +40,9 @@ import PriceManagementPage, {
   loader as loadPriceBooks,
   action as actionPriceBooks,
 } from "./pages/PriceManagementPage";
+import ReservationLayout from "./pages/ReservationLayout";
+import ListReservationPage from "./pages/Reservation/listReservation";
+import ListRoomPage from "./pages/Reservation/listRoom";
 
 const routesForManager = [
   {
@@ -92,11 +94,17 @@ const routesForManager = [
 const routesForReceptionist = [
   {
     index: true,
-    element: <ReservationPage />,
+    element: <ListReservationPage />,
   },
   {
-    path: "reservation",
-    element: <ReservationPage />,
+    path: "listReservation",
+    element: <ListReservationPage />,
+    // loader: loadNewReservation,
+  },
+  {
+    path: "listRoom",
+    element: <ListRoomPage />,
+    // loader: loadNewReservation,
   },
   {
     path: "addReservation",
