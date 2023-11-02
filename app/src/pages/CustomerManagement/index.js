@@ -3,7 +3,6 @@ import {
   DataGrid,
   GridActionsCellItem,
   GridToolbar,
-  viVN,
 } from "@mui/x-data-grid";
 import { useState } from "react";
 import ButtonHover from "../../components/UI/ButtonHover";
@@ -152,7 +151,6 @@ function CustomerManagementPage() {
             setRowSelectionModel(newRowSelectionModel);
           }}
           rowSelectionModel={rowSelectionModel}
-          localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
           slots={{ toolbar: GridToolbar }}
         />
       </Box>

@@ -8,6 +8,7 @@ import { DatePicker, DateTimePicker } from "@mui/x-date-pickers";
 import SearchCateRoom from "../Search/SearchCateRoom";
 import { useState } from "react";
 import DayInputForm from "./DayInputForm";
+require("dayjs/locale/vi");
 
 function PriceBookForm({ name, open, onClose, method, priceBook }) {
   const { categories } = useLoaderData();
@@ -214,10 +215,7 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
                       <div className="inline-flex">
                         <LocalizationProvider
                           dateAdapter={AdapterDayjs}
-                          localeText={
-                            viVN.components.MuiLocalizationProvider.defaultProps
-                              .localeText
-                          }
+                          adapterLocale="vi-VN"
                         >
                           <input
                             type="hidden"

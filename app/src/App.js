@@ -1,4 +1,8 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { viVN as dataGridViVN } from "@mui/x-data-grid";
+import { viVN as coreViVN } from "@mui/material/locale";
+import { viVN } from "@mui/x-date-pickers/locales";
 import RootLayout from "./pages/RootLayout";
 import ErrorPage from "./pages/Error";
 import LoginPage, { action as loginAction } from "./pages/Authentication/login";
@@ -41,7 +45,9 @@ import PriceManagementPage, {
   action as actionPriceBooks,
 } from "./pages/PriceManagementPage";
 import ReservationLayout from "./pages/ReservationLayout";
-import ListReservationPage from "./pages/Reservation/listReservation";
+import ListReservationPage, {
+  loader as loadReservations,
+} from "./pages/Reservation/listReservation";
 import ListRoomPage from "./pages/Reservation/listRoom";
 
 const routesForManager = [
@@ -95,11 +101,12 @@ const routesForReceptionist = [
   {
     index: true,
     element: <ListReservationPage />,
+    loader: loadReservations,
   },
   {
     path: "listReservation",
     element: <ListReservationPage />,
-    // loader: loadNewReservation,
+    loader: loadReservations,
   },
   {
     path: "listRoom",
@@ -166,11 +173,24 @@ const router = createBrowserRouter([
   },
 ]);
 
+const theme = createTheme(
+  {
+    palette: {
+      primary: { main: "#1976d2" },
+    },
+  },
+  viVN,
+  dataGridViVN,
+  coreViVN
+);
+
 function App() {
   return (
-    <div className="bg-gray-100 min-h-screen max-h-full w-screen">
-      <RouterProvider router={router} />
-    </div>
+    <ThemeProvider theme={theme}>
+      <div className="bg-gray-100 min-h-screen max-h-full w-screen">
+        <RouterProvider router={router} />
+      </div>
+    </ThemeProvider>
   );
 }
 

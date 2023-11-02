@@ -12,10 +12,11 @@ function ReceptionistNavigation() {
         <div>
           <li className="py-3 px-2">
             <Link
-              to="/reservation"
+              to="/listReservation"
               className={`rounded-2xl bg-green-500 py-2 px-4 ${
                 location.pathname === "/" || 
-                location.pathname === "/reservation"
+                location.pathname === "/listReservation" || 
+                location.pathname === "/listRoom"
                   ? "text-green-500 bg-white"
                   : "text-white hover:bg-white hover:text-green-500"
               }`}
