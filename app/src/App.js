@@ -48,7 +48,9 @@ import ReservationLayout from "./pages/ReservationLayout";
 import ListReservationPage, {
   loader as loadReservations,
 } from "./pages/Reservation/listReservation";
-import ListRoomPage from "./pages/Reservation/listRoom";
+import ListRoomPage, {
+  loader as loadRooms,
+} from "./pages/Reservation/listRoom";
 
 const routesForManager = [
   {
@@ -111,7 +113,7 @@ const routesForReceptionist = [
   {
     path: "listRoom",
     element: <ListRoomPage />,
-    // loader: loadNewReservation,
+    loader: loadRooms,
   },
   {
     path: "addReservation",
