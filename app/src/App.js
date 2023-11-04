@@ -44,13 +44,15 @@ import PriceManagementPage, {
   loader as loadPriceBooks,
   action as actionPriceBooks,
 } from "./pages/PriceManagementPage";
-import ReservationLayout from "./pages/ReservationLayout";
 import ListReservationPage, {
   loader as loadReservations,
 } from "./pages/Reservation/listReservation";
 import ListRoomPage, {
   loader as loadRooms,
 } from "./pages/Reservation/listRoom";
+import EditReservationPage, {
+  loader as loadReservationById,
+} from "./pages/Reservation/editReservation";
 
 const routesForManager = [
   {
@@ -111,6 +113,11 @@ const routesForReceptionist = [
     loader: loadReservations,
   },
   {
+    path: "editReservation/:reservationId",
+    element: <EditReservationPage />,
+    loader: loadReservationById,
+  },
+  {
     path: "listRoom",
     element: <ListRoomPage />,
     loader: loadRooms,
@@ -118,6 +125,11 @@ const routesForReceptionist = [
   {
     path: "addReservation",
     element: <AddReservationPage />,
+    loader: loadNewReservation,
+  },
+  {
+    path: "editReservation",
+    element: <EditReservationPage />,
     loader: loadNewReservation,
   },
   {

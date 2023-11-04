@@ -9,6 +9,8 @@ import { useState } from "react";
 function AddReservationPage() {
   const { products, customers } = useLoaderData();
 
+  const [ listRooms, setListRooms ] = useState();
+
   return (
     <div className="h-[45.5rem] px-5">
       <div className="w-full py-2 h-1/6">
