@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { axiosConfig } from "../../utils/axiosConfig";
+import { axiosConfig, axiosPrivate } from "../../utils/axiosConfig";
 import RoomForm from "../UI/RoomForm";
 
 function EditRoom(props) {
@@ -7,7 +7,7 @@ function EditRoom(props) {
   useEffect(() => {
     async function fetchRoom() {
       try {
-        const response = await axiosConfig.get(
+        const response = await axiosPrivate.get(
           "room/" + props.roomId
         );
         setRoom(response.data);

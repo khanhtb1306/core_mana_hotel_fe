@@ -1,4 +1,8 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { viVN as dataGridViVN } from "@mui/x-data-grid";
+import { viVN as coreViVN } from "@mui/material/locale";
+import { viVN } from "@mui/x-date-pickers/locales";
 import RootLayout from "./pages/RootLayout";
 import ErrorPage from "./pages/Error";
 import LoginPage, { action as loginAction } from "./pages/Authentication/login";
@@ -19,11 +23,13 @@ import CustomerManagementPage, {
   loader as loadCustomers,
   action as actionCustomer,
 } from "./pages/CustomerManagement";
-import StocktakeManagementPage from "./pages/StocktakeManagement";
+import StocktakeManagementPage, {
+  loader as loadStocktakes,
+  action as actionStocktakes,
+} from "./pages/StocktakeManagement";
 import { checkAuthLoader, tokenLoader } from "./contexts/auth";
 import ManagerLayout from "./pages/ManagerLayout";
 import ReceptionistLayout from "./pages/ReceptionistLayout";
-import ReservationPage from "./pages/Reservation";
 import AddReservationPage, {
   loader as loadNewReservation,
 } from "./pages/Reservation/addReservation";
@@ -34,6 +40,19 @@ import ForgetPasswordPage, {
 import ResetPasswordPage, {
   action as actionChangePassword,
 } from "./pages/Authentication/resetPassword";
+import PriceManagementPage, {
+  loader as loadPriceBooks,
+  action as actionPriceBooks,
+} from "./pages/PriceManagementPage";
+import ListReservationPage, {
+  loader as loadReservations,
+} from "./pages/Reservation/listReservation";
+import ListRoomPage, {
+  loader as loadRooms,
+} from "./pages/Reservation/listRoom";
+import EditReservationPage, {
+  loader as loadReservationById,
+} from "./pages/Reservation/editReservation";
 
 const routesForManager = [
   {
@@ -65,6 +84,8 @@ const routesForManager = [
   {
     path: "stocktakeManagement",
     element: <StocktakeManagementPage />,
+    loader: loadStocktakes,
+    action: actionStocktakes,
   },
   {
     path: "customerManagement",
@@ -72,20 +93,43 @@ const routesForManager = [
     loader: loadCustomers,
     action: actionCustomer,
   },
+  {
+    path: "priceBook",
+    element: <PriceManagementPage />,
+    loader: loadPriceBooks,
+    action: actionPriceBooks,
+  },
 ];
 
 const routesForReceptionist = [
   {
     index: true,
-    element: <ReservationPage />,
+    element: <ListReservationPage />,
+    loader: loadReservations,
   },
   {
-    path: "reservation",
-    element: <ReservationPage />,
+    path: "listReservation",
+    element: <ListReservationPage />,
+    loader: loadReservations,
+  },
+  {
+    path: "editReservation/:reservationId",
+    element: <EditReservationPage />,
+    loader: loadReservationById,
+  },
+  {
+    path: "listRoom",
+    element: <ListRoomPage />,
+    loader: loadRooms,
   },
   {
     path: "addReservation",
     element: <AddReservationPage />,
+    loader: loadNewReservation,
+  },
+  {
+    path: "editReservation",
+    element: <EditReservationPage />,
     loader: loadNewReservation,
   },
   {
@@ -143,11 +187,24 @@ const router = createBrowserRouter([
   },
 ]);
 
+const theme = createTheme(
+  {
+    palette: {
+      primary: { main: "#1976d2" },
+    },
+  },
+  viVN,
+  dataGridViVN,
+  coreViVN
+);
+
 function App() {
   return (
-    <div className="bg-gray-100 min-h-screen max-h-full w-screen">
-      <RouterProvider router={router} />
-    </div>
+    <ThemeProvider theme={theme}>
+      <div className="bg-gray-100 min-h-screen max-h-full w-screen">
+        <RouterProvider router={router} />
+      </div>
+    </ThemeProvider>
   );
 }
 

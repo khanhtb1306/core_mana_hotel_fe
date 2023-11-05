@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { axiosConfig } from "../../utils/axiosConfig";
+import { axiosConfig, axiosPrivate } from "../../utils/axiosConfig";
 import CategoryRoomForm from "../UI/CategoryRoomForm";
 
 function EditCategoryRoom(props) {
@@ -7,7 +7,7 @@ function EditCategoryRoom(props) {
   useEffect(() => {
     async function fetchCategory() {
       try {
-        const response = await axiosConfig.get(
+        const response = await axiosPrivate.get(
           "room-class/" + props.cateRoomId
         );
         setCategory(response.data);

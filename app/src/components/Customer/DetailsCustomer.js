@@ -2,7 +2,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import ImageDisplay from "../UI/ImageDisplay";
 import Modal from "../UI/Modal";
 import { useEffect, useState } from "react";
-import { axiosConfig } from "../../utils/axiosConfig";
+import { axiosConfig, axiosPrivate } from "../../utils/axiosConfig";
 
 function DetailsCustomer(props) {
   const [openInfo, setOpenInfo] = useState(true);
@@ -12,7 +12,7 @@ function DetailsCustomer(props) {
   useEffect(() => {
     async function fetchCategory() {
       try {
-        const response = await axiosConfig.get("customer/" + props.customerId);
+        const response = await axiosPrivate.get("customer/" + props.customerId);
         setCustomer(response.data);
       } catch (error) {
         console.log(error);

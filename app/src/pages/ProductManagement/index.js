@@ -181,7 +181,7 @@ function ProductManagementPage() {
       unitDefault: unitDefault.goodsUnitName,
       goodsCategory: category,
       sellingPrice: unitDefault.price,
-      capitalPrice: unitDefault.cost,
+      capitalPrice: product.goods.goodsCategory ? unitDefault.cost : "...",
       quantityInStock: product.goods.goodsCategory
         ? (product.goods.inventory * defaultCost) / unitDefault.cost
         : "...",
@@ -313,9 +313,9 @@ function ProductManagementPage() {
 export default ProductManagementPage;
 
 async function loadProducts() {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   if (!token) {
-    return redirect('/login');
+    return redirect("/login");
   }
   const response = await axiosPrivate.get("goods");
   return response.data;
@@ -334,11 +334,9 @@ export async function action({ request }) {
 
   if (method === "DELETE") {
     const dataArray = data.get("listGoodsId").split(",");
-    console.log(dataArray);
     const response = await axiosPrivate
       .delete("goods/" + dataArray)
       .then((response) => {
-        console.log(response);
         let message = "";
         dataArray.map((id) => {
           message += response.data[id] + " có mã sản phẩm là " + id + "<br/>";
@@ -350,7 +348,6 @@ export async function action({ request }) {
         });
       })
       .catch((e) => {
-        console.log(e);
         Swal.fire({
           position: "center",
           icon: "error",
@@ -365,8 +362,6 @@ export async function action({ request }) {
     const formData = new FormData();
     formData.append("goodsDTO.goodsName", data.get("goodsName"));
     formData.append("goodsDTO.goodsCategory", true);
-    formData.append("goodsDTO.status", 1);
-    formData.append("goodsDTO.inventory", data.get("inventory"));
     formData.append("goodsDTO.minInventory", data.get("minInventory"));
     formData.append("goodsDTO.maxInventory", data.get("maxInventory"));
     formData.append("goodsDTO.note", data.get("note"));
@@ -378,9 +373,9 @@ export async function action({ request }) {
     formData.append("goodsUnitDTO.goodsUnitName", defaultUnit);
     formData.append("goodsUnitDTO.cost", defaultCost);
     formData.append("goodsUnitDTO.price", defaultPrice);
-
     const units = data.get("numberUnit");
     if (method === "POST") {
+      formData.append("goodsDTO.inventory", 10);
       const response = await axiosPrivate
         .post("goods", formData, {
           headers: {
@@ -438,7 +433,6 @@ export async function action({ request }) {
           },
         })
         .catch((e) => {
-          console.log(e);
           Swal.fire({
             position: "center",
             icon: "error",
@@ -495,7 +489,6 @@ export async function action({ request }) {
     const formData = new FormData();
     formData.append("goodsDTO.goodsName", data.get("goodsName"));
     formData.append("goodsDTO.goodsCategory", false);
-    formData.append("goodsDTO.status", 1);
     formData.append("goodsDTO.note", data.get("note"));
     formData.append("goodsDTO.description", data.get("description"));
     formData.append("goodsDTO.image", data.get("image1"));
@@ -509,7 +502,6 @@ export async function action({ request }) {
           },
         })
         .then((response) => {
-          console.log(response);
           Swal.fire({
             position: "center",
             icon: "success",
@@ -519,7 +511,6 @@ export async function action({ request }) {
           });
         })
         .catch((e) => {
-          console.log(e);
           Swal.fire({
             position: "center",
             icon: "error",
@@ -546,7 +537,6 @@ export async function action({ request }) {
           });
         })
         .catch((e) => {
-          console.log(e);
           Swal.fire({
             position: "center",
             icon: "error",

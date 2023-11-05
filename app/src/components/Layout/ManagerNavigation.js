@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import ButtonHeader from "../UI/ButtonHeader";
 import { useLocation } from "react-router-dom";
 
@@ -11,33 +11,40 @@ function ManagerNavigation() {
         <div
           className={`${
             location.pathname === "/manager/overview" ||
-             location.pathname === "/manager"
+            location.pathname === "/manager"
               ? "bg-blue-800"
               : "hover:bg-blue-800"
           }`}
         >
-          <li className="text-white p-4">
-            <Link to="/manager/overview" className="">
+          <li className="pt-4">
+            <NavLink to="/manager/overview" className="text-white p-4">
               <i className="fa-solid fa-eye pr-3"></i>
               Tổng quan
-            </Link>
+            </NavLink>
           </li>
         </div>
-        <div
-          className={`${
+        <ButtonHeader
+          name="Phòng"
+          icon="fa-solid fa-table"
+          isActive={
             location.pathname === "/manager/categoryRoomManagement" ||
-            location.pathname === "/manager/roomManagement"
-              ? "bg-blue-800"
-              : "hover:bg-blue-800"
-          }`}
-        >
-          <li className="text-white p-4">
-            <Link to="/manager/categoryRoomManagement">
-              <i className="fa-solid fa-table pr-3"></i>
-              Phòng
-            </Link>
-          </li>
-        </div>
+            location.pathname === "/manager/priceBook"
+          }
+          list={[
+            {
+              name: "Hạng phòng & Phòng",
+              icon: "fa-solid fa-bed",
+              link: "/manager/categoryRoomManagement",
+              isActive: location.pathname === "/manager/categoryRoomManagement",
+            },
+            {
+              name: "Thiết lập giá",
+              icon: "fa-solid fa-tags",
+              link: "/manager/priceBook",
+              isActive: location.pathname === "/manager/priceBook",
+            },
+          ]}
+        />
         <ButtonHeader
           name="Danh mục"
           icon="fa-solid fa-box"

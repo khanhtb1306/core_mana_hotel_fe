@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import RoomNavigation from "../../components/RoomNavigation";
+import RoomNavigation from "../../components/Layout/RoomNavigation";
 
 function RoomRootLayout(props) {
   return (

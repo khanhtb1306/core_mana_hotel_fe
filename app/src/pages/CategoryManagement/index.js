@@ -3,7 +3,6 @@ import {
   DataGrid,
   GridActionsCellItem,
   GridToolbar,
-  viVN,
 } from "@mui/x-data-grid";
 import { useState } from "react";
 import RoomRootLayout from "../RoomLayout";
@@ -23,6 +22,7 @@ import DeleteCategoryRoom from "../../components/CategoryRoom/DeleteCategoryRoom
 import Swal from "sweetalert2";
 import ButtonClick from "../../components/UI/ButtonClick";
 import { Tooltip } from "react-tooltip";
+import SetStatusCategoryRoom from "../../components/CategoryRoom/SetStateCategoryRoom";
 
 function CategoryManagementPage() {
   const token = useRouteLoaderData("root");
@@ -33,6 +33,7 @@ function CategoryManagementPage() {
   const [openDeleteCateRoomsModal, setOpenDeleteCateRoomsModal] =
     useState(false);
   const [openDeleteCateRoomModal, setOpenDeleteCateRoomModal] = useState(false);
+  const [openStatusCateRoomModal, setOpenStatusCateRoomModal] = useState(false);
   const [openNewCateRoomModal, setOpenNewCateRoomModal] = useState(false);
   const [openDetailsCateRoom, setOpenDetailsCateRoom] = useState(false);
   const [openEditCateRoom, setOpenEditCateRoom] = useState(false);
@@ -44,10 +45,8 @@ function CategoryManagementPage() {
   };
 
   const handleStatusCateRoom = (id) => {
-    const cate = categories.find(
-      (cate) => cate.roomCategory.roomCategoryId === id
-    );
-    console.log(cate);
+    setOpenStatusCateRoomModal(true);
+    setSelectedCateRoomId(id);
   };
 
   const handleEditCateRoom = (id) => {
@@ -71,10 +70,11 @@ function CategoryManagementPage() {
     { field: "idCateRoom", headerName: "Mã hạng phòng", width: 150 },
     { field: "name", headerName: "Tên hạng phòng", width: 200 },
     { field: "amount", headerName: "SL phòng", width: 100 },
+    { field: "emptyRoom", headerName: "Phòng còn trống", width: 100 },
     { field: "priceHour", headerName: "Giá theo giờ", width: 100 },
     { field: "priceDay", headerName: "Giá theo ngày", width: 100 },
     { field: "priceNight", headerName: "Giá theo đêm", width: 100 },
-    { field: "status", headerName: "Trạng thái", width: 200 },
+    { field: "status", headerName: "Trạng thái", width: 150 },
     {
       field: "actions",
       headerName: "Hoạt động",
@@ -94,15 +94,17 @@ function CategoryManagementPage() {
             onClick={() => handleDetailsCateRoom(row.id)}
           />,
           isActive ? (
-            <GridActionsCellItem
-              icon={<i className="fa-solid fa-lock inactive-action p-1"></i>}
-              label="Đang hoạt động"
-              onClick={() => handleStatusCateRoom(row.id)}
-            />
+            <>
+              <GridActionsCellItem
+                icon={<i className="fa-solid fa-lock inactive-action p-1"></i>}
+                label="Dừng hoạt động"
+                onClick={() => handleStatusCateRoom(row.id)}
+              />
+            </>
           ) : (
             <GridActionsCellItem
               icon={<i className="fa-solid fa-unlock active-action p-1"></i>}
-              label="Ngừng hoạt động"
+              label="Hoạt động"
               onClick={() => handleStatusCateRoom(row.id)}
             />
           ),
@@ -127,12 +129,14 @@ function CategoryManagementPage() {
 
   const rows = categories.map((row) => {
     const cateRoom = row.roomCategory;
-    const status = cateRoom.status ? "Đang hoạt động" : "Ngừng hoạt động";
+    const status = cateRoom.status === 1 ? "Đang hoạt động" : "Ngừng hoạt động";
+    const emptyRoom = row.ListRoom.filter((room) => room.bookingStatus === 0);
     return {
       id: cateRoom.roomCategoryId,
       idCateRoom: cateRoom.roomCategoryId,
       name: cateRoom.roomCategoryName,
       amount: row.roomTotal,
+      emptyRoom: emptyRoom.length,
       priceHour: cateRoom.priceByHour
         ? cateRoom.priceByHour.toLocaleString()
         : 0,
@@ -192,10 +196,8 @@ function CategoryManagementPage() {
           disableRowSelectionOnClick
           onRowSelectionModelChange={(newRowSelectionModel) => {
             setRowSelectionModel(newRowSelectionModel);
-            console.log(newRowSelectionModel);
           }}
           rowSelectionModel={rowSelectionModel}
-          localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
           slots={{ toolbar: GridToolbar }}
         />
       </Box>
@@ -241,6 +243,15 @@ function CategoryManagementPage() {
           listCateRoomId={[selectedCateRoomId]}
         />
       )}
+      {openStatusCateRoomModal && selectedCateRoomId && (
+        <SetStatusCategoryRoom
+          open={openStatusCateRoomModal}
+          onClose={() => setOpenStatusCateRoomModal(false)}
+          categoryRoom={categories.find(
+            (cate) => cate.roomCategory.roomCategoryId === selectedCateRoomId
+          )}
+        />
+      )}
       <Tooltip anchorSelect=".view-details" place="top">
         Xem chi tiết
       </Tooltip>
@@ -263,18 +274,18 @@ function CategoryManagementPage() {
 export default CategoryManagementPage;
 
 async function loadFloors() {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   if (!token) {
-    return redirect('/login');
+    return redirect("/login");
   }
   const response = await axiosPrivate.get("Floor");
   return response.data;
 }
 
 async function loadCategories() {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   if (!token) {
-    return redirect('/login');
+    return redirect("/login");
   }
   const response = await axiosPrivate.get("room-class");
   return response.data;
@@ -322,7 +333,7 @@ export async function action({ request }) {
     formData.append("roomName", data.get("roomName"));
     formData.append("roomCategoryId", data.get("roomCategoryId"));
     formData.append("floorId", data.get("floorId"));
-    formData.append("status", 1);
+    formData.append("status", data.get("status"));
     formData.append("bookingStatus", 0);
     formData.append("conditionStatus", 0);
     formData.append("note", data.get("note"));
@@ -355,14 +366,47 @@ export async function action({ request }) {
     }
     return redirect("/manager/categoryRoomManagement");
   }
+  if (data.get("status")) {
+    formData.append("status", data.get("status"));
+    if (method === "PUT") {
+      const response = await axiosPrivate
+        .put("room-class/" + data.get("roomCategoryId"), formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((response) => {
+          console.log(response);
+          Swal.fire({
+            position: "center",
+            icon: "success",
+            title: "Cập nhật trạng thái hạng phòng thành công",
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        })
+        .catch((e) => {
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            title: "Cập nhật trạng thái hạng phòng thất bại",
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        });
+      return redirect("/manager/categoryRoomManagement");
+    }
+  }
+
   formData.append("roomCategoryName", data.get("roomCategoryName"));
   formData.append("numOfAdults", data.get("numOfAdults"));
   formData.append("numOfChildren", data.get("numOfChildren"));
+  formData.append("numMaxOfAdults", data.get("numMaxOfAdults"));
+  formData.append("numMaxOfChildren", data.get("numMaxOfChildren"));
   formData.append("roomArea", data.get("roomArea"));
   formData.append("priceByHour", data.get("priceByHour"));
   formData.append("priceByDay", data.get("priceByDay"));
   formData.append("priceByNight", data.get("priceByNight"));
-  formData.append("status", 1);
   formData.append("description", data.get("description"));
   formData.append("image", data.get("image"));
 
@@ -426,7 +470,6 @@ export async function action({ request }) {
     const response = await axiosPrivate
       .delete("room-class/" + dataArray)
       .then((response) => {
-        console.log(response);
         let message = "";
         dataArray.map((id) => {
           message += response.data[id] + " có mã hạng phòng là " + id + "<br/>";

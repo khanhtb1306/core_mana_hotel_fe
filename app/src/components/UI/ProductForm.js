@@ -6,6 +6,7 @@ import Modal from "./Modal";
 function ProductForm({ name, open, onClose, method, product }) {
   const [openInfo, setOpenInfo] = useState(true);
   const [openDetails, setOpenDetails] = useState(false);
+
   let defautUnit = product.listGoodsUnit.find((unit) => unit.isDefault);
   let newUnits = [];
   if (product.listGoodsUnit.length > 1) {
@@ -17,6 +18,22 @@ function ProductForm({ name, open, onClose, method, product }) {
         exchange: exchange,
         price: unit.price,
       };
+    });
+  }
+  const [formData, setFormData] = useState({
+    minInventory: product.goods.minInventory ? product.goods.minInventory : 0,
+    maxInventory: product.goods.maxInventory
+      ? product.goods.maxInventory
+      : 1000,
+    cost: defautUnit ? defautUnit.cost : 0,
+    price: defautUnit ? defautUnit.price : 0,
+  });
+
+  function handleChange(e) {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: parseInt(value),
     });
   }
   const [units, setUnits] = useState(newUnits);
@@ -163,12 +180,9 @@ function ProductForm({ name, open, onClose, method, product }) {
                           className="border-0 border-b border-gray-500 w-4/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
                           type="number"
                           name="minInventory"
-                          defaultValue={
-                            product.goods.minInventory
-                              ? product.goods.minInventory
-                              : 0
-                          }
+                          value={formData.minInventory}
                           min={0}
+                          onChange={handleChange}
                           required
                         />
                         Nhiều nhất
@@ -176,12 +190,9 @@ function ProductForm({ name, open, onClose, method, product }) {
                           className="border-0 border-b border-gray-500 w-4/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
                           type="number"
                           name="maxInventory"
-                          defaultValue={
-                            product.goods.maxInventory
-                              ? product.goods.maxInventory
-                              : 10000
-                          }
-                          min={0}
+                          value={formData.maxInventory}
+                          min={formData.minInventory + 1}
+                          onChange={handleChange}
                           required
                         />
                       </td>
@@ -199,7 +210,9 @@ function ProductForm({ name, open, onClose, method, product }) {
                           className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                           type="number"
                           name="cost"
-                          defaultValue={defautUnit ? defautUnit.cost : 0}
+                          value={formData.cost}
+                          min={0}
+                          onChange={handleChange}
                           required
                         />
                       </td>
@@ -213,25 +226,9 @@ function ProductForm({ name, open, onClose, method, product }) {
                           className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                           type="number"
                           name="price"
-                          defaultValue={defautUnit ? defautUnit.price : 0}
-                          required
-                        />
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                        <h2>Tồn kho</h2>
-                      </td>
-                      <td>
-                        <input
-                          className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
-                          type="number"
-                          name="inventory"
-                          defaultValue={
-                            product.goods.inventory
-                              ? product.goods.inventory
-                              : 0
-                          }
+                          value={formData.price}
+                          min={formData.cost}
+                          onChange={handleChange}
                           required
                         />
                       </td>

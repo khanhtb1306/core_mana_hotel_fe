@@ -49,7 +49,7 @@ function SearchCustomer(props) {
         </button>
       </div>
       {openSearchModal && (
-        <div className="absolute bg-white rounded-lg max-h-96 w-full py-3 overflow-auto">
+        <div className="absolute bg-white rounded-lg max-h-96 w-full py-3 overflow-auto z-10">
           {rows.length > 0 ? (
             rows.map((row, index) => (
               <div key={index} className="m-2 p-2 rounded-lg hover:bg-gray-300">

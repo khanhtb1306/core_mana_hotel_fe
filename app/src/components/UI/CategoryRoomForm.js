@@ -1,4 +1,4 @@
-import { Form, redirect } from "react-router-dom";
+import { Form, redirect, useLoaderData } from "react-router-dom";
 import Image from "../UI/ImageInput";
 import { useState } from "react";
 import Modal from "./Modal";
@@ -7,6 +7,24 @@ import { axiosConfig } from "../../utils/axiosConfig";
 function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
   const [openInfo, setOpenInfo] = useState(true);
   const [openDetails, setOpenDetails] = useState(false);
+  const [formData, setFormData] = useState({
+    roomCategoryName: cateRoom.roomCategoryName ? cateRoom.roomCategoryName : "",
+    numOfAdults: cateRoom.numOfAdults ? cateRoom.numOfAdults : 0,
+    numOfChildren: cateRoom.numOfChildren ? cateRoom.numOfChildren : 0,
+    numMaxOfAdults: cateRoom.numMaxOfAdults ? cateRoom.numMaxOfAdults : 0,
+    numMaxOfChildren: cateRoom.numMaxOfChildren ? cateRoom.numMaxOfChildren : 0,
+    priceByHour: cateRoom.priceByHour ? cateRoom.priceByHour : 0,
+    priceByDay: cateRoom.priceByDay ? cateRoom.priceByDay : 0,
+    priceByNight: cateRoom.priceByNight ? cateRoom.priceByNight : 0,
+  });
+
+  function handleChange(e) {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: parseInt(value),
+    });
+  }
 
   const handleInfo = () => {
     setOpenInfo(true);
@@ -102,10 +120,9 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                           className="border-0 border-b border-gray-500 w-4/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
                           type="number"
                           name="numOfAdults"
-                          defaultValue={
-                            cateRoom.numOfAdults ? cateRoom.numOfAdults : 0
-                          }
+                          value={formData.numOfAdults}
                           min={0}
+                          onChange={handleChange}
                           required
                         />
                         Trẻ em
@@ -113,17 +130,43 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                           className="border-0 border-b border-gray-500 w-4/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
                           type="number"
                           name="numOfChildren"
-                          defaultValue={
-                            cateRoom.numOfChildren ? cateRoom.numOfChildren : 0
-                          }
+                          value={formData.numOfChildren}
                           min={0}
+                          onChange={handleChange}
                           required
                         />
                       </td>
                     </tr>
                     <tr>
                       <td className="w-3/12">
-                        <h2>Diện tích</h2>
+                        <h2>Sức chứa tối đa</h2>
+                      </td>
+                      <td className="w-9/12">
+                        Người lớn
+                        <input
+                          className="border-0 border-b border-gray-500 w-4/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                          type="number"
+                          name="numMaxOfAdults"
+                          value={formData.numMaxOfAdults}
+                          min={formData.numOfAdults}
+                          onChange={handleChange}
+                          required
+                        />
+                        Trẻ em
+                        <input
+                          className="border-0 border-b border-gray-500 w-4/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                          type="number"
+                          name="numMaxOfChildren"
+                          value={formData.numMaxOfChildren}
+                          min={formData.numOfChildren}
+                          onChange={handleChange}
+                          required
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="w-3/12">
+                        <h2>Diện tích (m<sup>2</sup>)</h2>
                       </td>
                       <td className="w-9/12">
                         <input
@@ -131,8 +174,9 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                           type="number"
                           name="roomArea"
                           defaultValue={
-                            cateRoom.roomArea ? cateRoom.roomArea : 0
+                            cateRoom.roomArea ? cateRoom.roomArea : 1
                           }
+                          min={1}
                           required
                         />
                       </td>
@@ -150,9 +194,8 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                           className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                           type="number"
                           name="priceByHour"
-                          defaultValue={
-                            cateRoom.priceByHour ? cateRoom.priceByHour : 0
-                          } 
+                          value={formData.priceByHour}
+                          onChange={handleChange}
                           required
                         />
                       </td>
@@ -166,9 +209,9 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                           className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                           type="number"
                           name="priceByDay"
-                          defaultValue={
-                            cateRoom.priceByDay ? cateRoom.priceByDay : 0
-                          }
+                          value={formData.priceByDay}
+                          min={formData.priceByNight}
+                          onChange={handleChange}
                           required
                         />
                       </td>
@@ -182,9 +225,9 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                           className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                           type="number"
                           name="priceByNight"
-                          defaultValue={
-                            cateRoom.priceByNight ? cateRoom.priceByNight : 0
-                          }
+                          value={formData.priceByNight}
+                          min={formData.priceByHour}
+                          onChange={handleChange}
                           required
                         />
                       </td>
@@ -201,10 +244,6 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                       : null
                   }
                 />
-                {/* <Image name="image2" />
-              <Image name="image3" />
-              <Image name="image4" />
-              <Image name="image5" /> */}
               </div>
             </div>
             <div className={`mt-10 ${openDetails ? "" : "hidden"}`}>

@@ -1,10 +1,10 @@
-import { Form, Link, useActionData, useNavigate } from "react-router-dom";
+import { Form, Link, useActionData, useNavigate, useNavigation } from "react-router-dom";
 import logo from "../../assets/images/logohotel.png";
 import background from "../../assets/images/background-login.jpg";
 
 function LoginForm() {
   let data = useActionData();
-  const navigation = useNavigate();
+  const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
 
   return (

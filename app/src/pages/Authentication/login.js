@@ -25,9 +25,9 @@ export async function action({ request }) {
       const token = response.data.response;
       localStorage.setItem("token", token);
       const expiration = new Date();
-      expiration.setHours(expiration.getHours() + 1);
+      expiration.setHours(expiration.getHours() + 24);
       localStorage.setItem("expiration", expiration.toISOString());
-      return redirect("/manager");
+      return redirect("/");
     } else {
       return response.data.response;
     }

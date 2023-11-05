@@ -23,16 +23,17 @@ import {
 import EditRoom from "../../components/Room/EditRoom";
 import Swal from "sweetalert2";
 import { Tooltip } from "react-tooltip";
+import SetStatusRoom from "../../components/Room/SetStatusRoom";
+import ButtonClick from "../../components/UI/ButtonClick";
 
 function RoomManagementPage() {
   const token = useRouteLoaderData("root");
   const { rooms, categories, floors } = useLoaderData();
-  // let response = useActionData();
-
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openNewRoomModal, setOpenNewRoomModal] = useState(false);
   const [openDeleteRoomsModal, setOpenDeleteRoomsModal] = useState(false);
   const [openDeleteRoomModal, setOpenDeleteRoomModal] = useState(false);
+  const [openStatusRoomModal, setOpenStatusRoomModal] = useState(false);
   const [openNewCateRoomModal, setOpenNewCateRoomModal] = useState(false);
   const [openDetailsRoom, setOpenDetailsRoom] = useState(false);
   const [openEditRoom, setOpenEditRoom] = useState(false);
@@ -49,10 +50,8 @@ function RoomManagementPage() {
   };
 
   const handleStatusRoom = (id) => {
-    const cate = categories.find(
-      (cate) => cate.roomCategory.roomCategoryId === id
-    );
-    console.log(cate);
+    setOpenStatusRoomModal(true);
+    setSelectedRoomId(id);
   };
 
   const columns = [
@@ -84,13 +83,13 @@ function RoomManagementPage() {
           isActive ? (
             <GridActionsCellItem
               icon={<i className="fa-solid fa-lock inactive-action p-1"></i>}
-              label="Đang hoạt động"
+              label="Dừng hoạt động"
               onClick={() => handleStatusRoom(row.id)}
             />
           ) : (
             <GridActionsCellItem
               icon={<i className="fa-solid fa-unlock active-action p-1"></i>}
-              label="Ngừng hoạt động"
+              label="Hoạt động"
               onClick={() => handleStatusRoom(row.id)}
             />
           ),
@@ -114,7 +113,7 @@ function RoomManagementPage() {
   ];
 
   const rows = rooms.map((room) => {
-    const status = room.status ? "Đang hoạt động" : "Ngừng hoạt động";
+    const status = room.status === 1 ? "Đang hoạt động" : "Ngừng hoạt động";
     return {
       id: room.roomId,
       name: room.roomName,
@@ -153,16 +152,10 @@ function RoomManagementPage() {
           <div className="ml-auto flex">
             {rowSelectionModel.length > 0 ? (
               <div className="mx-2">
-                <ButtonHover
-                  action="Thao tác"
-                  iconAction="fa-solid fa-ellipsis-vertical"
-                  names={[
-                    {
-                      name: "Xoá phòng",
-                      icon: "fa-solid fa-trash",
-                      action: deleteRoomsHandler,
-                    },
-                  ]}
+                <ButtonClick
+                  name="Xoá phòng"
+                  iconAction="fa-solid fa-trash"
+                  action={deleteRoomsHandler}
                 />
               </div>
             ) : null}
@@ -249,6 +242,13 @@ function RoomManagementPage() {
           listRoomId={[selectedRoomId]}
         />
       )}
+      {openStatusRoomModal && selectedRoomId && (
+        <SetStatusRoom
+          open={openStatusRoomModal}
+          onClose={() => setOpenStatusRoomModal(false)}
+          room={rooms.find((room) => room.roomId === selectedRoomId)}
+        />
+      )}
       <Tooltip anchorSelect=".view-details" place="top">
         Xem chi tiết
       </Tooltip>
@@ -271,27 +271,27 @@ function RoomManagementPage() {
 export default RoomManagementPage;
 
 async function loadRooms() {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   if (!token) {
-    return redirect('/login');
+    return redirect("/login");
   }
   const response = await axiosPrivate.get("room");
   return response.data;
 }
 
 async function loadFloors() {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   if (!token) {
-    return redirect('/login');
+    return redirect("/login");
   }
   const response = await axiosPrivate.get("Floor");
   return response.data;
 }
 
 async function loadCategories() {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   if (!token) {
-    return redirect('/login');
+    return redirect("/login");
   }
   const response = await axiosPrivate.get("room-class");
   return response.data;
@@ -376,6 +376,37 @@ export async function action({ request }) {
       });
     return redirect("/manager/roomManagement");
   }
+  if (data.get("status")) {
+    formData.append("status", data.get("status"));
+    if (method === "PUT") {
+      console.log(data.get("roomId"));
+      const response = await axiosPrivate
+        .put("room/" + data.get("roomId"), formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((response) => {
+          Swal.fire({
+            position: "center",
+            icon: "success",
+            title: "Cập nhật trạng thái phòng thành công",
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        })
+        .catch((e) => {
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            title: e.response.data,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        });
+      return redirect("/manager/roomManagement");
+    }
+  }
   formData.append("roomName", data.get("roomName"));
   formData.append("roomCategoryId", data.get("roomCategoryId"));
   formData.append("floorId", data.get("floorId"));
@@ -412,7 +443,6 @@ export async function action({ request }) {
     return redirect("/manager/roomManagement");
   }
   if (method === "PUT") {
-    console.log(data.get("roomId"));
     const response = await axiosPrivate
       .put("room/" + data.get("roomId"), formData, {
         headers: {
@@ -441,28 +471,28 @@ export async function action({ request }) {
   }
   if (method === "DELETE") {
     const dataArray = data.get("roomId").split(",");
-    dataArray.map(async (id) => {
-      await axiosPrivate
-        .delete("room/" + id)
-        .then((response) => {
-          Swal.fire({
-            position: "center",
-            icon: "success",
-            title: response.data,
-            showConfirmButton: false,
-            timer: 1500,
-          });
-        })
-        .catch((e) => {
-          Swal.fire({
-            position: "center",
-            icon: "error",
-            title: e.response.data,
-            showConfirmButton: false,
-            timer: 1500,
-          });
+    await axiosPrivate
+      .delete("room/" + dataArray)
+      .then((response) => {
+        let message = "";
+        dataArray.map((id) => {
+          message += response.data[id] + " có mã phòng là " + id + "<br/>";
         });
-    });
+        Swal.fire({
+          position: "center",
+          html: `<p>${message}</p>`,
+          showConfirmButton: true,
+        });
+      })
+      .catch((e) => {
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: e.response.data,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      });
     return redirect("/manager/roomManagement");
   }
 }

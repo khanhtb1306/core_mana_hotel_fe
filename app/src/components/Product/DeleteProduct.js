@@ -2,7 +2,6 @@ import { Form } from "react-router-dom";
 import Modal from "../UI/Modal";
 
 function DeleteProduct(props) {
-  console.log(props.listGoodsId);
   return (
     <Form method="delete" onSubmit={() => props.onClose()}>
       <Modal open={props.open} onClose={props.onClose} size="w-5/12 h-.5/6">
