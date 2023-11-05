@@ -9,6 +9,7 @@ import ReservationForm from "../../components/UI/ReservationForm";
 
 function EditReservationPage() {
   const { reservation } = useLoaderData();
+//   console.log(reservation);
 
   return <ReservationForm reservation={reservation} />;
 }
@@ -18,6 +19,15 @@ export default EditReservationPage;
 async function loadCustomers() {
   const response = await axiosPrivate.get("customer");
   return response.data;
+}
+
+async function loadPriceList() {
+  const response = await axiosPrivate.get("price-list");
+  if (response.data.success) {
+    return response.data.result;
+  } else {
+    return redirect("login");
+  }
 }
 
 async function loadCategories() {
@@ -43,6 +53,7 @@ export async function loader({ request, params }) {
 
   return defer({
     categories: await loadCategories(),
+    prices: await loadPriceList(),
     customers: await loadCustomers(),
     reservation: await loadReservationById(id),
   });

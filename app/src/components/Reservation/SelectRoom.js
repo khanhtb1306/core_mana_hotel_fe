@@ -19,7 +19,7 @@ function SelectRoom(props) {
     listRoomsByCate.ListRoom.filter((r) => !listRoomIdByRes.includes(r.roomId))
   );
 
-  console.log(room);
+  // console.log(room);
 
   const type =
     room.reservationType === "HOURLY"
@@ -109,7 +109,6 @@ function SelectRoom(props) {
             <div className="pr-2">
               <DateTimePicker
                 ampm={false}
-                disablePast
                 sx={{ ".MuiInputBase-input": { padding: 1, width: 150 } }}
                 value={fromTime}
                 onChange={handleChangeFromTime}
@@ -119,7 +118,6 @@ function SelectRoom(props) {
             <div className="pr-2">
               <DateTimePicker
                 ampm={false}
-                disablePast
                 sx={{ ".MuiInputBase-input": { padding: 1, width: 150 } }}
                 value={toTime}
                 onChange={handleChangeToTime}

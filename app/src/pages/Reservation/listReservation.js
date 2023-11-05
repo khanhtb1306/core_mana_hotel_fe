@@ -652,7 +652,7 @@ function ListReservationPage() {
   });
 
   return (
-    <div className="h-full w-11/12 mx-auto mt-5">
+    <div className="h-full w-11/12 mx-auto mt-2">
       <div className="flex">
         <div>
           <FormControlLabel

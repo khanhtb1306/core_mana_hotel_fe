@@ -2,10 +2,12 @@ import { useState } from "react";
 import SelectRoom from "../Reservation/SelectRoom";
 import SearchCustomer from "../Search/SearchCustomer";
 import { useLoaderData } from "react-router-dom";
+import { MenuItem, Select } from "@mui/material";
 
 function ReservationForm(props) {
-  const { customers } = useLoaderData();
+  const { customers, prices } = useLoaderData();
   const reservation = props.reservation;
+  console.log(prices);
 
   const [listRooms, setListRooms] = useState(
     reservation.listReservationDetails
@@ -22,7 +24,16 @@ function ReservationForm(props) {
       {roomActive && (
         <>
           <div className="w-full py-2 h-1/6">
-            <SearchCustomer customers={customers} />
+            <div className="flex">
+              <SearchCustomer customers={customers} />
+              <div className="ml-auto">
+                <Select
+                  sx={{ width: 200, height: 40, backgroundColor: "white" }}
+                >
+                  <MenuItem value={1}>Giờ</MenuItem>
+                </Select>
+              </div>
+            </div>
             <div className="flex my-auto rounded-lg py-2">
               <div className="px-2 py-1 mr-2 rounded-lg bg-white">
                 {listRooms.map((room, index) => {
