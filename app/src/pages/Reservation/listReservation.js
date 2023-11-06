@@ -10,6 +10,7 @@ import { orange, green, grey } from "@mui/material/colors";
 import ReservationLayout from "../ReservationLayout";
 import { useState } from "react";
 import dayjs from "dayjs";
+import 'dayjs/locale/vi'
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import {
@@ -20,10 +21,11 @@ import {
 import { Link, defer, redirect, useLoaderData } from "react-router-dom";
 import { axiosPrivate } from "../../utils/axiosConfig";
 import { DataGrid, GridActionsCellItem, GridToolbar } from "@mui/x-data-grid";
-require("dayjs/locale/vi");
+// require("dayjs/locale/vi");
 
 function ListReservationPage() {
   const { reservations } = useLoaderData();
+  console.log(reservations);
   const [type, setType] = useState(1);
   const [listReservations, setListReservations] = useState(
     reservations.filter(
@@ -95,16 +97,16 @@ function ListReservationPage() {
           (res) =>
             ((check1 &&
               res.listReservationDetails
-                .map((details) => details.room.bookingStatus)
-                .includes("ROOM_BOOKING")) ||
+                .map((details) => details.status)
+                .includes("BOOKING")) ||
               (isChecked2 &&
                 res.listReservationDetails
-                  .map((details) => details.room.bookingStatus)
-                  .includes("ROOM_USING")) ||
+                  .map((details) => details.status)
+                  .includes("CHECK_IN")) ||
               (isChecked3 &&
                 res.listReservationDetails
-                  .map((details) => details.room.bookingStatus)
-                  .includes("ROOM_EMPTY"))) &&
+                  .map((details) => details.status)
+                  .includes("CHECK_OUT"))) &&
             ((type === 1 &&
               (dayjs(res.reservation.durationStart).isSame(day, "day") ||
                 dayjs(res.reservation.durationEnd).isSame(day, "day")) &&
@@ -194,16 +196,16 @@ function ListReservationPage() {
           (res) =>
             ((isChecked1 &&
               res.listReservationDetails
-                .map((details) => details.room.bookingStatus)
-                .includes("ROOM_BOOKING")) ||
+                .map((details) => details.status)
+                .includes("BOOKING")) ||
               (check2 &&
                 res.listReservationDetails
-                  .map((details) => details.room.bookingStatus)
-                  .includes("ROOM_USING")) ||
+                  .map((details) => details.status)
+                  .includes("CHECK_IN")) ||
               (isChecked3 &&
                 res.listReservationDetails
-                  .map((details) => details.room.bookingStatus)
-                  .includes("ROOM_EMPTY"))) &&
+                  .map((details) => details.status)
+                  .includes("CHECK_OUT"))) &&
             ((type === 1 &&
               (dayjs(res.reservation.durationStart).isSame(day, "day") ||
                 dayjs(res.reservation.durationEnd).isSame(day, "day")) &&
@@ -293,16 +295,16 @@ function ListReservationPage() {
           (res) =>
             ((isChecked1 &&
               res.listReservationDetails
-                .map((details) => details.room.bookingStatus)
-                .includes("ROOM_BOOKING")) ||
+                .map((details) => details.status)
+                .includes("BOOKING")) ||
               (isChecked2 &&
                 res.listReservationDetails
-                  .map((details) => details.room.bookingStatus)
-                  .includes("ROOM_USING")) ||
+                  .map((details) => details.status)
+                  .includes("CHECK_IN")) ||
               (check3 &&
                 res.listReservationDetails
-                  .map((details) => details.room.bookingStatus)
-                  .includes("ROOM_EMPTY"))) &&
+                  .map((details) => details.status)
+                  .includes("CHECK_OUT"))) &&
             ((type === 1 &&
               (dayjs(res.reservation.durationStart).isSame(day, "day") ||
                 dayjs(res.reservation.durationEnd).isSame(day, "day")) &&
@@ -378,16 +380,16 @@ function ListReservationPage() {
           (res) =>
             ((isChecked1 &&
               res.listReservationDetails
-                .map((details) => details.room.bookingStatus)
-                .includes("ROOM_BOOKING")) ||
+                .map((details) => details.status)
+                .includes("BOOKING")) ||
               (isChecked2 &&
                 res.listReservationDetails
-                  .map((details) => details.room.bookingStatus)
-                  .includes("ROOM_USING")) ||
+                  .map((details) => details.status)
+                  .includes("CHECK_IN")) ||
               (isChecked3 &&
                 res.listReservationDetails
-                  .map((details) => details.room.bookingStatus)
-                  .includes("ROOM_EMPTY"))) &&
+                  .map((details) => details.status)
+                  .includes("CHECK_OUT"))) &&
             (dayjs(res.reservation.durationStart).isSame(value, "day") ||
               dayjs(res.reservation.durationEnd).isSame(value, "day")) &&
             (dayjs(res.reservation.durationStart).isSame(value, "month") ||
@@ -435,16 +437,16 @@ function ListReservationPage() {
           (res) =>
             ((isChecked1 &&
               res.listReservationDetails
-                .map((details) => details.room.bookingStatus)
-                .includes("ROOM_BOOKING")) ||
+                .map((details) => details.status)
+                .includes("BOOKING")) ||
               (isChecked2 &&
                 res.listReservationDetails
-                  .map((details) => details.room.bookingStatus)
-                  .includes("ROOM_USING")) ||
+                  .map((details) => details.status)
+                  .includes("CHECK_IN")) ||
               (isChecked3 &&
                 res.listReservationDetails
-                  .map((details) => details.room.bookingStatus)
-                  .includes("ROOM_EMPTY"))) &&
+                  .map((details) => details.status)
+                  .includes("CHECK_OUT"))) &&
             ((dayjs(res.reservation.durationStart).isAfter(
               value.add(-1, "day")
             ) &&
@@ -490,16 +492,16 @@ function ListReservationPage() {
           (res) =>
             ((isChecked1 &&
               res.listReservationDetails
-                .map((details) => details.room.bookingStatus)
-                .includes("ROOM_BOOKING")) ||
+                .map((details) => details.status)
+                .includes("BOOKING")) ||
               (isChecked2 &&
                 res.listReservationDetails
-                  .map((details) => details.room.bookingStatus)
-                  .includes("ROOM_USING")) ||
+                  .map((details) => details.status)
+                  .includes("CHECK_IN")) ||
               (isChecked3 &&
                 res.listReservationDetails
-                  .map((details) => details.room.bookingStatus)
-                  .includes("ROOM_EMPTY"))) &&
+                  .map((details) => details.status)
+                  .includes("CHECK_OUT"))) &&
             (dayjs(res.reservation.durationStart).isSame(value, "month") ||
               dayjs(res.reservation.durationEnd).isSame(value, "month")) &&
             (dayjs(res.reservation.durationStart).isSame(value, "year") ||
@@ -540,13 +542,13 @@ function ListReservationPage() {
       getActions: (params) => {
         const row = params.row;
         let status = 3;
-        if (row.status.some((room) => room.bookingStatus === "ROOM_BOOKING")) {
+        if (row.status.some((room) => room.bookingStatus === "BOOKING")) {
           status = 1;
-          if (row.status.some((room) => room.bookingStatus === "ROOM_USING")) {
+          if (row.status.some((room) => room.bookingStatus === "CHECK_IN")) {
             status = 4;
           }
         } else if (
-          row.status.some((room) => room.bookingStatus === "ROOM_USING")
+          row.status.some((room) => room.bookingStatus === "CHECK_IN")
         ) {
           status = 2;
         }
@@ -626,17 +628,17 @@ function ListReservationPage() {
       dayjs(res.reservation.durationEnd).format("DD-MM, hh:mm");
     const listRoom = res.listReservationDetails.map((resDetails) => {
       let color = "";
-      if (resDetails.room.bookingStatus === "ROOM_EMPTY") {
+      if (resDetails.status === "CHECK_OUT") {
         color = "gray";
-      } else if (resDetails.room.bookingStatus === "ROOM_BOOKING") {
+      } else if (resDetails.status === "BOOKING") {
         color = "orange";
-      } else if (resDetails.room.bookingStatus === "ROOM_USING") {
+      } else if (resDetails.status === "CHECK_IN") {
         color = "green";
       }
       return {
         roomName: resDetails.room.roomName,
         color: color,
-        bookingStatus: resDetails.room.bookingStatus,
+        bookingStatus: resDetails.status,
       };
     });
     return {
@@ -652,7 +654,7 @@ function ListReservationPage() {
   });
 
   return (
-    <div className="h-full w-11/12 mx-auto mt-2">
+    <div className="h-full px-4 mx-auto">
       <div className="flex">
         <div>
           <FormControlLabel

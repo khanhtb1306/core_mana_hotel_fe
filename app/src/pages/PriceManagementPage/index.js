@@ -223,33 +223,37 @@ export async function action({ request }) {
   formData.append("priceListDTO.status", 1);
   formData.append("priceListDTO.note", data.get("note"));
   const listCateRoomId = data.get("listCateRoomId").split(",");
+  let count = 0;
   listCateRoomId.map((cateRoomId, index) => {
     const indexes = data.get(`${cateRoomId}`);
     for (let i = 0; i < indexes; i++) {
-      formData.append(`priceListDetailDTO[${i}].roomCategoryId`, cateRoomId);
-      console.log(`priceListDetailDTO[${i}].roomCategoryId`);
       formData.append(
-        `priceListDetailDTO[${i}].priceByHour`,
+        `priceListDetailDTO[${count}].roomCategoryId`,
+        cateRoomId
+      );
+      formData.append(
+        `priceListDetailDTO[${count}].priceByHour`,
         data.get(`priceByHour-${cateRoomId}-${i}`)
       );
       formData.append(
-        `priceListDetailDTO[${i}].priceByDay`,
+        `priceListDetailDTO[${count}].priceByDay`,
         data.get(`priceByDay-${cateRoomId}-${i}`)
       );
       formData.append(
-        `priceListDetailDTO[${i}].priceByNight`,
+        `priceListDetailDTO[${count}].priceByNight`,
         data.get(`priceByNight-${cateRoomId}-${i}`)
       );
       if (data.get(`timeApply-${cateRoomId}-${i}`)) {
         formData.append(
-          `priceListDetailDTO[${i}].timeApply`,
+          `priceListDetailDTO[${count}].timeApply`,
           data.get(`timeApply-${cateRoomId}-${i}`)
         );
       }
       const list = data.get(`dayOfWeek-${cateRoomId}-${i}`).split(",");
       list.map((row, ind) => {
-        formData.append(`priceListDetailDTO[${i}].dayOfWeek[${ind}]`, row);
+        formData.append(`priceListDetailDTO[${count}].dayOfWeek[${ind}]`, row);
       });
+      count++;
     }
   });
   // return redirect("/manager/priceBook");

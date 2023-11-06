@@ -22,7 +22,7 @@ function ListRoomPage() {
   const handleCheckboxChange3 = (event) => {};
 
   return (
-    <div className="h-full w-11/12 mx-auto mt-2">
+    <div className="h-full px-4 mx-auto mt-2">
       <div className="flex">
         <div>
           <FormControlLabel
@@ -80,7 +80,7 @@ function ListRoomPage() {
         <div className="ml-auto">
           <button
             type="button"
-            className="bg-green-500 p-2 ml-4 rounded-lg text-white"
+            className="bg-green-500 p-2 rounded-lg text-white"
           >
             <i className="fa-solid fa-plus px-2"></i>
             <span className="pr-2">Đặt phòng</span>

@@ -1,15 +1,10 @@
 import { defer, redirect, useLoaderData } from "react-router-dom";
 import { axiosPrivate } from "../../utils/axiosConfig";
-import SearchProduct from "../../components/Search/SearchProduct";
-import SearchCustomer from "../../components/Search/SearchCustomer";
-import NewCustomer from "../../components/Customer/NewCustomer";
-import SelectRoom from "../../components/Reservation/SelectRoom";
-import { useState } from "react";
 import ReservationForm from "../../components/UI/ReservationForm";
 
 function EditReservationPage() {
   const { reservation } = useLoaderData();
-//   console.log(reservation);
+  console.log(reservation);
 
   return <ReservationForm reservation={reservation} />;
 }
@@ -40,7 +35,7 @@ async function loadCategories() {
 }
 
 async function loadReservationById(id) {
-  const response = await axiosPrivate.get("reservation/{id}?id=" + id);
+  const response = await axiosPrivate.get("reservation/" + id);
   if (response.data.success) {
     return response.data.result;
   } else {

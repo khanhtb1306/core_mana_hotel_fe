@@ -7,13 +7,25 @@ import { MenuItem, Select } from "@mui/material";
 function ReservationForm(props) {
   const { customers, prices } = useLoaderData();
   const reservation = props.reservation;
-  console.log(prices);
-
+  // console.log(prices);
   const [listRooms, setListRooms] = useState(
     reservation.listReservationDetails
   );
-
+  console.log(reservation);
+  let priceByCateRoom = null;
+  if (reservation) {
+    const priceById = prices.find(
+      (price) => price.PriceList.priceListId === reservation.reservation.priceList.priceListId
+    );
+    priceByCateRoom = priceById.ListPriceListDetail.find(
+      (details) =>
+        details.RoomClass.roomCategoryId ===
+        listRooms[0].room.roomCategory.roomCategoryId
+    ).PriceListDetailWithDayOfWeek;
+  }
+  // console.log(priceByCateRoom);
   const [roomActive, setRoomActive] = useState(listRooms ? listRooms[0] : null);
+  const [price, setPrice] = useState();
 
   const handleRoomChange = (room) => {
     setRoomActive(room);
@@ -29,8 +41,22 @@ function ReservationForm(props) {
               <div className="ml-auto">
                 <Select
                   sx={{ width: 200, height: 40, backgroundColor: "white" }}
+                  defaultValue={0}
                 >
-                  <MenuItem value={1}>Giờ</MenuItem>
+                  <MenuItem key={0} value={0}>
+                    Bảng giá chung
+                  </MenuItem>
+                  {prices.map((price) => {
+                    const details = price.PriceList;
+                    return (
+                      <MenuItem
+                        key={details.priceListId}
+                        value={details.priceListId}
+                      >
+                        {details.priceListName}
+                      </MenuItem>
+                    );
+                  })}
                 </Select>
               </div>
             </div>
@@ -38,9 +64,9 @@ function ReservationForm(props) {
               <div className="px-2 py-1 mr-2 rounded-lg bg-white">
                 {listRooms.map((room, index) => {
                   let status = 3;
-                  if (room.room.bookingStatus === "ROOM_USING") {
+                  if (room.status === "CHECK_IN") {
                     status = 2;
-                  } else if (room.room.bookingStatus === "ROOM_BOOKING") {
+                  } else if (room.status === "BOOKING") {
                     status = 1;
                   }
                   return status === 1 ? (
@@ -121,6 +147,7 @@ function ReservationForm(props) {
                       listRoomByRes={reservation.listReservationDetails.filter(
                         (res) => res.room.roomId !== room.room.roomId
                       )}
+                      price={priceByCateRoom}
                     />
                   </div>
                 );
@@ -132,6 +159,7 @@ function ReservationForm(props) {
                       listRoomByRes={reservation.listReservationDetails.filter(
                         (res) => res.room.roomId !== room.room.roomId
                       )}
+                      price={priceByCateRoom}
                     />
                   </div>
                 );

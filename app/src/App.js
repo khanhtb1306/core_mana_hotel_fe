@@ -201,7 +201,7 @@ const theme = createTheme(
 function App() {
   return (
     <ThemeProvider theme={theme}>
-      <div className="bg-gray-100 min-h-screen max-h-full w-screen">
+      <div className="bg-gray-100 min-h-screen max-h-full">
         <RouterProvider router={router} />
       </div>
     </ThemeProvider>
