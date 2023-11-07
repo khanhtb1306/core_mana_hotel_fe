@@ -5,17 +5,47 @@ import { useLoaderData } from "react-router-dom";
 import { MenuItem, Select } from "@mui/material";
 
 function ReservationForm(props) {
-  const { customers, prices } = useLoaderData();
+  const { customers, prices, categories } = useLoaderData();
   const reservation = props.reservation;
-  // console.log(prices);
+  const allPrices = [
+    {
+      ListPriceListDetail: categories.map((cate) => {
+        return {
+          PriceListDetailWithDayOfWeek: [
+            {
+              DayOfWeekList: ["2", "3", "4", "5", "6", "7", "8"],
+              PriceListDetail: {
+                priceByDay: cate.roomCategory.priceByDay,
+                priceByHour: cate.roomCategory.priceByHour,
+                priceByNight: cate.roomCategory.priceByNight,
+                timeApply: null,
+              },
+            },
+          ],
+          RoomClass: cate.roomCategory,
+        };
+      }),
+      PriceList: {
+        priceListId: "0",
+        priceListName: "Bảng giá chung",
+        effectiveTimeStart: "2000-08-02T17:00:00.000+00:00",
+        effectiveTimeEnd: "3000-08-02T17:00:00.000+00:00",
+        note: "",
+      },
+    },
+    ...prices,
+  ];
+  // console.log(allPrices);
   const [listRooms, setListRooms] = useState(
     reservation.listReservationDetails
   );
-  console.log(reservation);
   let priceByCateRoom = null;
+  let priceById = null;
   if (reservation) {
-    const priceById = prices.find(
-      (price) => price.PriceList.priceListId === reservation.reservation.priceList.priceListId
+    priceById = allPrices.find(
+      (price) =>
+        price.PriceList.priceListId ===
+        reservation.reservation.priceList.priceListId
     );
     priceByCateRoom = priceById.ListPriceListDetail.find(
       (details) =>
@@ -23,9 +53,25 @@ function ReservationForm(props) {
         listRooms[0].room.roomCategory.roomCategoryId
     ).PriceListDetailWithDayOfWeek;
   }
-  // console.log(priceByCateRoom);
+  console.log(priceByCateRoom);
   const [roomActive, setRoomActive] = useState(listRooms ? listRooms[0] : null);
-  const [price, setPrice] = useState();
+  const [priceBook, setPriceBook] = useState(priceById);
+  const [price, setPrice] = useState(priceByCateRoom);
+  // console.log(roomActive);
+
+  const handlePriceBookChange = (event) => {
+    const priceById = allPrices.find(
+      (price) => price.PriceList.priceListId === event.target.value
+    );
+    setPrice(
+      priceById.ListPriceListDetail.find(
+        (details) =>
+          details.RoomClass.roomCategoryId ===
+          roomActive.room.roomCategory.roomCategoryId
+      ).PriceListDetailWithDayOfWeek
+    );
+    setPriceBook(priceById);
+  };
 
   const handleRoomChange = (room) => {
     setRoomActive(room);
@@ -41,12 +87,10 @@ function ReservationForm(props) {
               <div className="ml-auto">
                 <Select
                   sx={{ width: 200, height: 40, backgroundColor: "white" }}
-                  defaultValue={0}
+                  value={priceBook.PriceList.priceListId}
+                  onChange={handlePriceBookChange}
                 >
-                  <MenuItem key={0} value={0}>
-                    Bảng giá chung
-                  </MenuItem>
-                  {prices.map((price) => {
+                  {allPrices.map((price) => {
                     const details = price.PriceList;
                     return (
                       <MenuItem
@@ -97,7 +141,6 @@ function ReservationForm(props) {
                       onClick={() => handleRoomChange(room)}
                     >
                       {room.room.roomName}
-                      <i className="fa-solid fa-xmark pl-2"></i>
                     </button>
                   ) : (
                     <button
@@ -123,12 +166,22 @@ function ReservationForm(props) {
                 <i className="fa-solid fa-circle-plus pr-2"></i>
                 Phòng
               </button>
-              <button
-                type="button"
-                className="px-4 py-2 ml-auto rounded-lg text-white bg-blue-500 hover:bg-blue-600"
-              >
-                Trả phòng
-              </button>
+              {roomActive.status === "BOOKING" && (
+                <button
+                  type="button"
+                  className="px-4 py-2 ml-auto rounded-lg text-white bg-green-500 hover:bg-green-600"
+                >
+                  Nhận phòng
+                </button>
+              )}
+              {roomActive.status === "CHECK_IN" && (
+                <button
+                  type="button"
+                  className="px-4 py-2 ml-auto rounded-lg text-white bg-blue-500 hover:bg-blue-600"
+                >
+                   Trả phòng
+                </button>
+              )}
               <button
                 type="button"
                 className="px-4 py-2 ml-2 rounded-lg border-black border"
@@ -147,7 +200,7 @@ function ReservationForm(props) {
                       listRoomByRes={reservation.listReservationDetails.filter(
                         (res) => res.room.roomId !== room.room.roomId
                       )}
-                      price={priceByCateRoom}
+                      price={price}
                     />
                   </div>
                 );
@@ -159,7 +212,7 @@ function ReservationForm(props) {
                       listRoomByRes={reservation.listReservationDetails.filter(
                         (res) => res.room.roomId !== room.room.roomId
                       )}
-                      price={priceByCateRoom}
+                      price={price}
                     />
                   </div>
                 );

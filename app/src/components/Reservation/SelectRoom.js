@@ -5,13 +5,16 @@ import { DatePicker, DateTimePicker } from "@mui/x-date-pickers";
 import { MenuItem, Select } from "@mui/material";
 import { useState } from "react";
 import { useLoaderData } from "react-router-dom";
+import Swal from "sweetalert2";
 // require("dayjs/locale/vi");
 
 function SelectRoom(props) {
   const { categories } = useLoaderData();
+  const priceNightStart = 22;
+  const priceNightEnd = 11;
+  const priceDayStart = 14;
+  const priceDayEnd = 12;
   const room = props.room;
-  console.log(room);
-  console.log(props.price);
   const listRoomIdByRes = props.listRoomByRes.map((r) => r.room.roomId);
   const listRoomsByCate = categories.find(
     (cate) =>
@@ -41,75 +44,123 @@ function SelectRoom(props) {
     time = to.diff(from, "hour");
   } else if (room.reservationType === "DAILY") {
     type = 2;
-    time = to.date() - from.date();
+    time = to.diff(from, "day");
   } else {
     type = 3;
-    time = to.date() - from.date();
-  }
-  let priceBycate = {
-    priceByHour: room.room.roomCategory.priceByHour,
-    priceByDay: room.room.roomCategory.priceByDay,
-    priceByNight: room.room.roomCategory.priceByNight,
-  }
-
-  if (props.price) {
-    let priceByHour = 0;
-    let priceByDay = 0;
-    let priceByNight = 0;
-    if (type === 1) {
-      
-    } else if (type === 2) { 
-
+    if (to.diff(from, "day") > 1) {
+      time = 1;
+      console.log("Thêm phụ thu trả muộn theo giờ");
     } else {
-
+      time = to.diff(from, "day");
     }
-    priceBycate = {
-      
-    };
   }
-
   const [typeTime, setTypeTime] = useState(type);
   const [valueTime, setValueTime] = useState(time);
-  const [price, setPrice] = useState(room.price);
+  const [price, setPrice] = useState(valueTime * room.price);
 
   const [fromTime, setFromTime] = useState(from);
   const [toTime, setToTime] = useState(to);
+  // console.log(props.price);
 
   const handleSelectRoom = (e) => {
     const value = e.target.value;
+    const now = dayjs();
+    if (value === 1) {
+      setValueTime(1);
+      setFromTime(now);
+      setToTime(now.add(1, "hour"));
+    } else if (value === 2) {
+      setValueTime(1);
+      setFromTime(now.hour(priceDayStart).minute(0));
+      setToTime(now.add(1, "day").hour(priceDayEnd).minute(0));
+    } else {
+      setFromTime(fromTime.hour(priceNightStart).minute(0));
+      setToTime(toTime.add(1, "day").hour(priceNightEnd).minute(0));
+      setValueTime(1);
+    }
     setTypeTime(value);
   };
 
   const handleChangeFromTime = (value) => {
-    setFromTime(value);
     if (typeTime === 1) {
-      setValueTime(toTime.diff(fromTime, "hour"));
+      if (value.diff(toTime, "hour") >= 0) {
+        setToTime(value.add(1, "hour"));
+        setValueTime(1);
+      } else {
+        setValueTime(toTime.diff(value, "hour"));
+      }
+      setFromTime(value);
     } else if (typeTime === 2) {
-      setValueTime(toTime.date() - fromTime.date());
+      if (value.diff(toTime, "day") >= 0) {
+        setToTime(value.add(1, "day"));
+        setValueTime(1);
+      } else {
+        setValueTime(toTime.diff(value, "day"));
+      }
+      setFromTime(value);
+      if (value.hour() < priceDayStart) {
+        console.log("Phụ thu nhận phòng sớm");
+      }
+      if (toTime.hour() > priceDayEnd) {
+        console.log("Phụ thu trả phòng muộn");
+      }
     } else {
-      setValueTime(toTime.date() - fromTime.date());
+      if (value.hour() < priceNightStart) {
+        setValueTime(1);
+        console.log("Thêm phụ thu trả muộn theo giờ");
+      }
+      setFromTime(value);
     }
-    // if (value > toTime) {
-    //   setToTime(value.add(1, "hour"));
-    // }
   };
 
   const handleChangeToTime = (value) => {
-    setToTime(value);
     if (typeTime === 1) {
       setValueTime(value.diff(fromTime, "hour"));
+      setToTime(value);
     } else if (typeTime === 2) {
       setValueTime(value.date() - fromTime.date());
+      setToTime(value);
+      if (fromTime.hour() < priceDayStart) {
+        console.log("Phụ thu nhận phòng sớm");
+      }
+      if (value.hour() > priceDayEnd) {
+        console.log("Phụ thu trả phòng muộn");
+      }
     } else {
-      setValueTime(value.date() - fromTime.date());
+      if (value.hour() > priceDayEnd) {
+        setValueTime(1);
+        console.log("Thêm phụ thu trả muộn theo giờ");
+      }
+      setToTime(value);
     }
-    // if (value <= toTime) {
-    //   setFromTime(value);
-    // }
   };
 
-  const isDateDisabled = (date) => {
-    return date < fromTime;
+  const handleError = (reason) => {
+    Swal.fire({
+      icon: "error",
+      title: "Invalid Date",
+      text: "Please enter a valid date.",
+    });
+  };
+
+  const isFromDateDisabled = (date) => {
+    if (typeTime === 1) {
+      return false;
+    } else if (typeTime === 2) {
+      return false;
+    } else {
+      return false;
+    }
+  };
+
+  const isToDateDisabled = (date) => {
+    if (typeTime === 1) {
+      return fromTime.diff(date, "hour") > 24;
+    } else if (typeTime === 2) {
+      return date < fromTime;
+    } else {
+      return date < fromTime;
+    }
   };
 
   return (
@@ -175,6 +226,7 @@ function SelectRoom(props) {
                     disabled={
                       room.status === "CHECK_IN" || room.status === "CHECK_OUT"
                     }
+                    shouldDisableDate={isFromDateDisabled}
                     sx={{ ".MuiInputBase-input": { padding: 1, width: 150 } }}
                     value={fromTime}
                     onChange={handleChangeFromTime}
@@ -185,6 +237,10 @@ function SelectRoom(props) {
                   <DateTimePicker
                     ampm={false}
                     disabled={room.status === "CHECK_OUT"}
+                    shouldDisableDate={isToDateDisabled}
+                    shouldDisableTime={(date) =>
+                      fromTime.diff(date, "hour") > -1
+                    }
                     sx={{ ".MuiInputBase-input": { padding: 1, width: 150 } }}
                     value={toTime}
                     onChange={handleChangeToTime}
@@ -196,25 +252,30 @@ function SelectRoom(props) {
               <>
                 <p className="text-gray-500 my-auto mr-2">Dự kiến:</p>
                 <div className="pr-2">
-                  <DatePicker
+                  <DateTimePicker
+                    ampm={false}
                     disabled={
                       room.status === "CHECK_IN" || room.status === "CHECK_OUT"
                     }
+                    shouldDisableDate={isFromDateDisabled}
+                    shouldDisableTime={(date) => date.minute() % 60 !== 0}
                     sx={{ ".MuiInputBase-input": { padding: 1, width: 150 } }}
                     value={fromTime}
                     onChange={handleChangeFromTime}
-                    format="DD/MM/YYYY hh:mm"
+                    format="DD/MM/YYYY HH:mm"
                   />
                 </div>
                 <p className="text-gray-500 my-auto mr-2">đến</p>
                 <div className="pr-2">
-                  <DatePicker
+                  <DateTimePicker
+                    ampm={false}
                     disabled={room.status === "CHECK_OUT"}
-                    shouldDisableDate={isDateDisabled}
+                    shouldDisableTime={(date) => date.minute() % 60 !== 0}
+                    shouldDisableDate={isToDateDisabled}
                     sx={{ ".MuiInputBase-input": { padding: 1, width: 150 } }}
                     value={toTime}
                     onChange={handleChangeToTime}
-                    format="DD/MM/YYYY hh:mm"
+                    format="DD/MM/YYYY HH:mm"
                   />
                 </div>
               </>
@@ -223,24 +284,30 @@ function SelectRoom(props) {
               <>
                 <p className="text-gray-500 my-auto mr-2">Dự kiến:</p>
                 <div className="pr-2">
-                  <DatePicker
+                  <DateTimePicker
+                    ampm={false}
                     disabled={
                       room.status === "CHECK_IN" || room.status === "CHECK_OUT"
                     }
+                    shouldDisableDate={isFromDateDisabled}
+                    shouldDisableTime={(date) => date.minute() % 60 !== 0}
                     sx={{ ".MuiInputBase-input": { padding: 1, width: 150 } }}
                     value={fromTime}
                     onChange={handleChangeFromTime}
-                    format="DD/MM/YYYY hh:mm"
+                    format="DD/MM/YYYY HH:mm"
                   />
                 </div>
                 <p className="text-gray-500 my-auto mr-2">đến</p>
                 <div className="pr-2">
-                  <DatePicker
+                  <DateTimePicker
+                    ampm={false}
                     disabled={room.status === "CHECK_OUT"}
+                    shouldDisableDate={isToDateDisabled}
+                    shouldDisableTime={(date) => date.minute() % 60 !== 0}
                     sx={{ ".MuiInputBase-input": { padding: 1, width: 150 } }}
                     value={toTime}
                     onChange={handleChangeToTime}
-                    format="DD/MM/YYYY hh:mm"
+                    format="DD/MM/YYYY HH:mm"
                   />
                 </div>
               </>
@@ -254,13 +321,17 @@ function SelectRoom(props) {
         </div>
       </div>
       <div className="flex border-t pt-2">
-        <p className="w-6/12">
+        <p className="w-8/12">
           {room.room.roomCategory.roomCategoryName} (
           {typeTime === 1 ? "Giờ" : typeTime === 2 ? "Ngày" : "Đêm"})
         </p>
-        <p className="w-2/12">{valueTime}</p>
-        <p className="w-2/12">{price}</p>
-        <p className="w-2/12">{valueTime * room.price}</p>
+        <p className="w-1/12">{valueTime}</p>
+        <p className="w-2/12 text-right">{price}</p>
+        <p className="w-1/12">
+          <button type="button" className="ml-4" onClick={() => console.log(1)}>
+            <i className="fa-solid fa-comment-dollar fa-xl"></i>
+          </button>
+        </p>
       </div>
     </div>
   );

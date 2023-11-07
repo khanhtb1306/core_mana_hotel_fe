@@ -519,7 +519,7 @@ function ListReservationPage() {
     {
       field: "status",
       headerName: "Trạng thái phòng",
-      width: 150,
+      width: 250,
       renderCell: (params) => (
         <div className="flex">
           {params.row.status.map((room, index) => (
@@ -541,6 +541,7 @@ function ListReservationPage() {
       type: "actions",
       getActions: (params) => {
         const row = params.row;
+        // console.log(row);
         let status = 3;
         if (row.status.some((room) => room.bookingStatus === "BOOKING")) {
           status = 1;
@@ -601,7 +602,7 @@ function ListReservationPage() {
           ),
           status !== 3 ? (
             <GridActionsCellItem
-              icon={<button type="button">Điều chỉnh</button>}
+              icon={<button type="button"><Link to={`editReservation/${row.reservationId}`}>Điều chỉnh</Link></button>}
               showInMenu
             />
           ) : (
