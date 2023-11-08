@@ -7,6 +7,75 @@ import { MenuItem, Select } from "@mui/material";
 function ReservationForm(props) {
   const { customers, prices, categories } = useLoaderData();
   const reservation = props.reservation;
+  console.log(reservation);
+  // console.log(categories);
+  const dayInWeek = ["2", "3", "4", "5", "6", "7", "8"];
+  const pricesMore = prices.map((price) => {
+    // console.log(price);
+    const addClassRooms = categories
+      .filter(
+        (cate) =>
+          !price.ListPriceListDetail.map(
+            (row) => row.RoomClass.roomCategoryId
+          ).includes(cate.roomCategory.roomCategoryId)
+      )
+      .map((cate) => {
+        return {
+          PriceListDetailWithDayOfWeek: [
+            {
+              DayOfWeekList: dayInWeek,
+              PriceListDetail: {
+                priceByDay: cate.roomCategory.priceByDay,
+                priceByHour: cate.roomCategory.priceByHour,
+                priceByNight: cate.roomCategory.priceByNight,
+                timeApply: null,
+              },
+            },
+          ],
+          RoomClass: cate.roomCategory,
+        };
+      });
+    const classRooms = price.ListPriceListDetail.map((priceDetails) => {
+      const dayWithPriceBook = priceDetails.PriceListDetailWithDayOfWeek.reduce(
+        (all, cur) => {
+          return all.concat(cur.DayOfWeekList);
+        },
+        []
+      );
+      const dayWithoutPriceBook = dayInWeek.filter(
+        (day) => !dayWithPriceBook.includes(day)
+      );
+      // console.log(priceDetails);
+      let newPriceDetails = priceDetails.PriceListDetailWithDayOfWeek;
+      if (dayWithoutPriceBook.length > 0) {
+        const cate = categories.find(
+          (cate) =>
+            cate.roomCategory.roomCategoryId ===
+            priceDetails.RoomClass.roomCategoryId
+        );
+        newPriceDetails = [
+          ...newPriceDetails,
+          {
+            DayOfWeekList: dayWithoutPriceBook,
+            PriceListDetail: {
+              priceByDay: cate.roomCategory.priceByDay,
+              priceByHour: cate.roomCategory.priceByHour,
+              priceByNight: cate.roomCategory.priceByNight,
+              timeApply: null,
+            },
+          },
+        ];
+      }
+      return {
+        PriceListDetailWithDayOfWeek: newPriceDetails,
+        RoomClass: priceDetails.RoomClass,
+      };
+    });
+    return {
+      ListPriceListDetail: classRooms.concat(addClassRooms),
+      PriceList: price.PriceList,
+    };
+  });
   const allPrices = [
     {
       ListPriceListDetail: categories.map((cate) => {
@@ -33,7 +102,7 @@ function ReservationForm(props) {
         note: "",
       },
     },
-    ...prices,
+    ...pricesMore,
   ];
   // console.log(allPrices);
   const [listRooms, setListRooms] = useState(
@@ -53,7 +122,7 @@ function ReservationForm(props) {
         listRooms[0].room.roomCategory.roomCategoryId
     ).PriceListDetailWithDayOfWeek;
   }
-  console.log(priceByCateRoom);
+  // console.log(priceByCateRoom);
   const [roomActive, setRoomActive] = useState(listRooms ? listRooms[0] : null);
   const [priceBook, setPriceBook] = useState(priceById);
   const [price, setPrice] = useState(priceByCateRoom);
