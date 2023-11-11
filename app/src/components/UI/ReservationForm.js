@@ -3,6 +3,7 @@ import SelectRoom from "../Reservation/SelectRoom";
 import SearchCustomer from "../Search/SearchCustomer";
 import { useLoaderData } from "react-router-dom";
 import { MenuItem, Select } from "@mui/material";
+import AddRoom from "../Reservation/AddRoom";
 
 function ReservationForm(props) {
   const { customers, prices, categories } = useLoaderData();
@@ -104,7 +105,8 @@ function ReservationForm(props) {
     },
     ...pricesMore,
   ];
-  // console.log(allPrices);
+  console.log(allPrices);
+  const [openAddRoomModal, setOpenAddRoomModal] = useState(false);
   const [listRooms, setListRooms] = useState(
     reservation.listReservationDetails
   );
@@ -231,6 +233,7 @@ function ReservationForm(props) {
               <button
                 type="button"
                 className="px-4 py-2 rounded-lg text-green-500 hover:bg-green-100"
+                onClick={() => setOpenAddRoomModal(true)}
               >
                 <i className="fa-solid fa-circle-plus pr-2"></i>
                 Phòng
@@ -290,6 +293,12 @@ function ReservationForm(props) {
           </div>
           <div className="w-full py-2 h-1/6">3</div>
         </>
+      )}
+      {openAddRoomModal && (
+        <AddRoom
+          open={openAddRoomModal}
+          onClose={() => setOpenAddRoomModal(false)}
+        />
       )}
     </div>
   );

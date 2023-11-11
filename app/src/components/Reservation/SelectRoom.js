@@ -108,8 +108,8 @@ function SelectRoom(props) {
           ).price
         );
       } else {
-        setFromTime(fromTime.hour(priceNightStart).minute(0));
-        setToTime(toTime.add(1, "day").hour(priceNightEnd).minute(0));
+        setFromTime(dayjs().hour(priceNightStart).minute(0));
+        setToTime(dayjs().add(1, "day").hour(priceNightEnd).minute(0));
         setValueTime(1);
         setPrice(
           getPrice(
@@ -122,32 +122,58 @@ function SelectRoom(props) {
     } else {
       setLateCheckout(0);
       if (value === 1) {
-        setValueTime(1);
         setToTime(now.add(1, "hour"));
-        setPrice(getPrice(value, now, now.add(1, "hour")).price);
+        setValueTime(getPrice(value, fromTime, now.add(1, "hour")).time);
+        setSoonCheckin(0);
       } else if (value === 2) {
-        setValueTime(1);
         setToTime(now.add(1, "day").hour(priceDayEnd).minute(0));
+        setValueTime(
+          getPrice(
+            value,
+            fromTime,
+            now.add(1, "day").hour(priceDayEnd).minute(0)
+          ).time
+        );
         setPrice(
           getPrice(
             value,
-            now.hour(priceDayStart).minute(0),
+            fromTime,
             now.add(1, "day").hour(priceDayEnd).minute(0)
           ).price
         );
+        if (fromTime.hour() > priceDayEnd) {
+          setSoonCheckin(priceDayStart - fromTime.hour());
+        } else {
+          setSoonCheckin(0);
+        }
       } else {
         setToTime(toTime.add(1, "day").hour(priceNightEnd).minute(0));
-        setValueTime(1);
+        setValueTime(
+          getPrice(
+            value,
+            fromTime,
+            toTime.add(1, "day").hour(priceNightEnd).minute(0)
+          ).time
+        );
         setPrice(
           getPrice(
             value,
-            fromTime.hour(priceNightStart).minute(0),
+            fromTime,
             toTime.add(1, "day").hour(priceNightEnd).minute(0)
           ).price
         );
+        if (fromTime.hour() < priceNightStart) {
+          setSoonCheckin(priceNightStart - fromTime.hour());
+        } else {
+          setSoonCheckin(0);
+        }
+        if (fromTime.add(1, "day").hour(priceNightEnd).minute(0).isBefore(toTime)) {
+          setLateCheckout(toTime.diff(fromTime.add(1, "day").hour(priceNightEnd).minute(0), "hour"));
+        } else {
+          setLateCheckout(0);
+        }
       }
     }
-
     setTypeTime(value);
   };
 
@@ -156,6 +182,8 @@ function SelectRoom(props) {
     setValueTime(priceTime.time);
     setPrice(priceTime.price);
     if (typeTime === 1) {
+      setSoonCheckin(0);
+      setLateCheckout(0);
       if (value.diff(toTime, "hour") >= 0) {
         setToTime(value.add(1, "hour"));
         setValueTime(1);
@@ -171,22 +199,12 @@ function SelectRoom(props) {
       } else {
         setSoonCheckin(0);
       }
-      if (toTime.hour() > priceDayEnd) {
-        setLateCheckout(toTime.hour() - priceDayEnd);
-      } else {
-        setLateCheckout(0);
-      }
       setFromTime(value);
     } else {
       if (value.hour() < priceNightStart) {
         setSoonCheckin(priceNightStart - value.hour());
       } else {
         setSoonCheckin(0);
-      }
-      if (toTime.hour() > priceNightEnd) {
-        setLateCheckout(toTime.hour() - priceNightEnd);
-      } else {
-        setLateCheckout(0);
       }
       setFromTime(value);
     }
@@ -197,25 +215,17 @@ function SelectRoom(props) {
     setValueTime(priceTime.time);
     setPrice(priceTime.price);
     if (typeTime === 1) {
+      setSoonCheckin(0);
+      setLateCheckout(0);
       setToTime(value);
     } else if (typeTime === 2) {
       setToTime(value);
-      if (fromTime.hour() > priceDayEnd) {
-        setSoonCheckin(priceDayStart - fromTime.hour());
-      } else {
-        setSoonCheckin(0);
-      }
       if (value.hour() > priceDayEnd) {
         setLateCheckout(value.hour() - priceDayEnd);
       } else {
         setLateCheckout(0);
       }
     } else {
-      if (fromTime.hour() < priceNightStart) {
-        setSoonCheckin(priceNightStart - fromTime.hour());
-      } else {
-        setSoonCheckin(0);
-      }
       if (value.hour() > priceNightEnd) {
         setLateCheckout(value.hour() - priceNightEnd);
       } else {
@@ -390,7 +400,9 @@ function SelectRoom(props) {
           >
             {typeTime === 1 && (
               <>
-                <p className="text-gray-500 my-auto mr-2">Dự kiến:</p>
+                <p className="text-gray-500 my-auto mr-2">
+                  {room.status === "CHECK_OUT" ? "Thời gian:" : "Dự kiến:"}
+                </p>
                 <div className="pr-2">
                   <DateTimePicker
                     ampm={false}
@@ -423,7 +435,9 @@ function SelectRoom(props) {
             )}
             {typeTime === 2 && (
               <>
-                <p className="text-gray-500 my-auto mr-2">Dự kiến:</p>
+                <p className="text-gray-500 my-auto mr-2">
+                  {room.status === "CHECK_OUT" ? "Thời gian:" : "Dự kiến:"}
+                </p>
                 <div className="pr-2">
                   <DateTimePicker
                     ampm={false}
@@ -455,7 +469,9 @@ function SelectRoom(props) {
             )}
             {typeTime === 3 && (
               <>
-                <p className="text-gray-500 my-auto mr-2">Dự kiến:</p>
+                <p className="text-gray-500 my-auto mr-2">
+                  {room.status === "CHECK_OUT" ? "Thời gian:" : "Dự kiến:"}
+                </p>
                 <div className="pr-2">
                   <DateTimePicker
                     ampm={false}
