@@ -6,9 +6,11 @@ import Modal from "../UI/Modal";
 import { useEffect, useState } from "react";
 import { axiosPrivate } from "../../utils/axiosConfig";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
+import { name } from "dayjs/locale/vi";
+import { Form } from "react-router-dom";
 
 function AddRoom(props) {
-  const [category, setCategory] = useState(null);
+  const [category, setCategory] = useState([]);
   const [openHour, setOpenHour] = useState(false);
   const [openDay, setOpenDay] = useState(true);
   const [openNight, setOpenNight] = useState(false);
@@ -57,7 +59,7 @@ function AddRoom(props) {
               .minute(0)
               .format("YYYY-MM-DD HH:mm:ss")
         );
-        setCategory(response.data);
+        setCategory(response.data.result);
       } catch (error) {
         console.log(error);
       }
@@ -83,7 +85,7 @@ function AddRoom(props) {
         "&endDate=" +
         dayjs().add(1, "hour").format("YYYY-MM-DD HH:mm:ss")
     );
-    setCategory(response.data);
+    setCategory(response.data.result);
   };
 
   const handleDay = async () => {
@@ -106,7 +108,7 @@ function AddRoom(props) {
           .minute(0)
           .format("YYYY-MM-DD HH:mm:ss")
     );
-    setCategory(response.data);
+    setCategory(response.data.result);
   };
 
   const handleNight = async () => {
@@ -129,7 +131,7 @@ function AddRoom(props) {
           .minute(0)
           .format("YYYY-MM-DD HH:mm:ss")
     );
-    setCategory(response.data);
+    setCategory(response.data.result);
   };
 
   const handleChangeFromTime = async (value) => {
@@ -139,7 +141,7 @@ function AddRoom(props) {
         "&endDate=" +
         toTime.format("YYYY-MM-DD HH:mm:ss")
     );
-    setCategory(response.data);
+    setCategory(response.data.result);
     const priceTime = getPrice(typeTime, value, toTime);
     setValueTime(priceTime.time);
     if (typeTime === 1) {
@@ -178,7 +180,7 @@ function AddRoom(props) {
         "&endDate=" +
         value.format("YYYY-MM-DD HH:mm:ss")
     );
-    setCategory(response.data);
+    setCategory(response.data.result);
     const priceTime = getPrice(typeTime, fromTime, value);
     setValueTime(priceTime.time);
     if (typeTime === 1) {
@@ -260,16 +262,30 @@ function AddRoom(props) {
       width: 200,
       getActions: (params) => {
         const row = params.row;
+        const listCateRoomId = row.listRoom.map((cate) => cate.roomId);
         return [
           <GridActionsCellItem
             icon={
-              <input
-                type="number"
-                defaultValue={0}
-                min={0}
-                max={row.emptyRoom}
-                className="w-32"
-              />
+              <>
+                <input
+                  type="hidden"
+                  name={`listCateRoomId` + row.id}
+                  value={listCateRoomId.join("|")}
+                />
+                <input
+                  type="hidden"
+                  name={`price` + row.id}
+                  value={row.price}
+                />
+                <input
+                  type="number"
+                  name={`numberRoom` + row.id}
+                  defaultValue={0}
+                  min={0}
+                  max={row.emptyRoom}
+                  className="w-32"
+                />
+              </>
             }
             label="Nhận phòng"
           />,
@@ -284,8 +300,8 @@ function AddRoom(props) {
   ];
 
   let rows = [];
-  if (category) {
-    rows = category.result.map((cate) => {
+  if (category.length > 0) {
+    rows = category.map((cate, index) => {
       let price = 0;
       if (openHour) {
         price = cate.roomClass.priceByHour;
@@ -295,12 +311,13 @@ function AddRoom(props) {
         price = cate.roomClass.priceByNight;
       }
       return {
-        id: cate.listRoom[0].roomId,
+        id: index,
         roomCategoryName: cate.roomClass.roomCategoryName,
         numberOfPeople: {
           numOfChildren: cate.roomClass.numOfChildren,
           numOfAdults: cate.roomClass.numOfAdults,
         },
+        listRoom: cate.listRoom,
         emptyRoom: cate.listRoom.length,
         price: price,
       };
@@ -308,184 +325,210 @@ function AddRoom(props) {
   }
 
   return (
-    <Modal open={props.open} onClose={props.onClose} size="w-8/12 h-.5/6">
-      <div className="p-2 w-full">
-        <div className="mb-5">
-          <h1 className="text-lg pb-5 font-bold">Chọn phòng</h1>
-          <div className="flex">
-            <div className="flex w-80 bg-gray-200 rounded-lg text-sm mr-2">
-              <div className="w-4/12 m-2">
-                <button
-                  type="button"
-                  className={`w-full rounded p-1 ${
-                    openHour ? "bg-green-500 text-white" : "text-black"
-                  }`}
-                  onClick={handleHour}
-                >
-                  Theo giờ
-                </button>
+    <Form method="POST" onSubmit={props.onClose}>
+      <Modal open={props.open} onClose={props.onClose} size="w-8/12 h-.5/6">
+        <div className="p-2 w-full">
+          <div className="mb-5">
+            <h1 className="text-lg pb-5 font-bold">Chọn phòng</h1>
+            <div className="flex">
+              <div className="flex w-80 bg-gray-200 rounded-lg text-sm mr-2">
+                <div className="w-4/12 m-2">
+                  <button
+                    type="button"
+                    className={`w-full rounded p-1 ${
+                      openHour ? "bg-green-500 text-white" : "text-black"
+                    }`}
+                    onClick={handleHour}
+                  >
+                    Theo giờ
+                  </button>
+                </div>
+                <div className="w-4/12 m-2">
+                  <button
+                    type="button"
+                    className={`w-full rounded p-1 ${
+                      openDay ? "bg-green-500 text-white" : "text-black"
+                    }`}
+                    onClick={handleDay}
+                  >
+                    Theo ngày
+                  </button>
+                </div>
+                <div className="w-4/12 m-2">
+                  <button
+                    type="button"
+                    className={`w-full rounded p-1 ${
+                      openNight ? "bg-green-500 text-white" : "text-black"
+                    }`}
+                    onClick={handleNight}
+                  >
+                    Qua đêm
+                  </button>
+                </div>
               </div>
-              <div className="w-4/12 m-2">
-                <button
-                  type="button"
-                  className={`w-full rounded p-1 ${
-                    openDay ? "bg-green-500 text-white" : "text-black"
-                  }`}
-                  onClick={handleDay}
+              <input type="hidden" name="addRoom" value={true} />
+              <input
+                type="hidden"
+                name="reservationId"
+                value={props.reservationId}
+              />
+              <input
+                type="hidden"
+                name="fromTime"
+                value={fromTime.format("YYYY-MM-DD HH:mm:ss")}
+              />
+              <input
+                type="hidden"
+                name="toTime"
+                value={toTime.format("YYYY-MM-DD HH:mm:ss")}
+              />
+              <input
+                type="hidden"
+                name="reservationType"
+                value={openHour ? "HOURLY" : openDay ? "DAILY" : "OVERNIGHT"}
+              />
+              <div className="flex text-sm my-auto">
+                <LocalizationProvider
+                  dateAdapter={AdapterDayjs}
+                  adapterLocale="vi-VN"
                 >
-                  Theo ngày
-                </button>
-              </div>
-              <div className="w-4/12 m-2">
-                <button
-                  type="button"
-                  className={`w-full rounded p-1 ${
-                    openNight ? "bg-green-500 text-white" : "text-black"
-                  }`}
-                  onClick={handleNight}
-                >
-                  Qua đêm
-                </button>
-              </div>
-            </div>
-            <div className="flex text-sm my-auto">
-              <LocalizationProvider
-                dateAdapter={AdapterDayjs}
-                adapterLocale="vi-VN"
-              >
-                {openHour && (
-                  <>
-                    <p className="text-gray-500 my-auto mr-2">Dự kiến:</p>
-                    <div className="pr-2">
-                      <DateTimePicker
-                        ampm={false}
-                        sx={{
-                          ".MuiInputBase-input": {
-                            padding: 1,
-                            width: 120,
-                            fontSize: 14,
-                          },
-                        }}
-                        value={fromTime}
-                        onChange={handleChangeFromTime}
-                        format="DD/MM/YYYY HH:mm"
-                      />
-                    </div>
-                    <p className="text-gray-500 my-auto mr-2">đến</p>
-                    <div className="pr-2">
-                      <DateTimePicker
-                        ampm={false}
-                        sx={{
-                          ".MuiInputBase-input": {
-                            padding: 1,
-                            width: 120,
-                            fontSize: 14,
-                          },
-                        }}
-                        value={toTime}
-                        onChange={handleChangeToTime}
-                        format="DD/MM/YYYY HH:mm"
-                      />
-                    </div>
-                  </>
-                )}
-                {openDay && (
-                  <>
-                    <p className="text-gray-500 my-auto mr-2">Dự kiến:</p>
-                    <div className="pr-2">
-                      <DateTimePicker
-                        ampm={false}
-                        sx={{
-                          ".MuiInputBase-input": {
-                            padding: 1,
-                            width: 120,
-                            fontSize: 14,
-                          },
-                        }}
-                        value={fromTime}
-                        onChange={handleChangeFromTime}
-                        format="DD/MM/YYYY HH:mm"
-                      />
-                    </div>
-                    <p className="text-gray-500 my-auto mr-2">đến</p>
-                    <div className="pr-2">
-                      <DateTimePicker
-                        ampm={false}
-                        sx={{
-                          ".MuiInputBase-input": {
-                            padding: 1,
-                            width: 120,
-                            fontSize: 14,
-                          },
-                        }}
-                        value={toTime}
-                        onChange={handleChangeToTime}
-                        format="DD/MM/YYYY HH:mm"
-                      />
-                    </div>
-                  </>
-                )}
-                {openNight && (
-                  <>
-                    <p className="text-gray-500 my-auto mr-2">Dự kiến:</p>
-                    <div className="pr-2">
-                      <DateTimePicker
-                        ampm={false}
-                        sx={{
-                          ".MuiInputBase-input": {
-                            padding: 1,
-                            width: 120,
-                            fontSize: 14,
-                          },
-                        }}
-                        value={fromTime}
-                        onChange={handleChangeFromTime}
-                        format="DD/MM/YYYY HH:mm"
-                      />
-                    </div>
-                    <p className="text-gray-500 my-auto mr-2">đến</p>
-                    <div className="pr-2">
-                      <DateTimePicker
-                        ampm={false}
-                        sx={{
-                          ".MuiInputBase-input": {
-                            padding: 1,
-                            width: 120,
-                            fontSize: 14,
-                          },
-                        }}
-                        value={toTime}
-                        onChange={handleChangeToTime}
-                        format="DD/MM/YYYY HH:mm"
-                      />
-                    </div>
-                  </>
-                )}
-              </LocalizationProvider>
-              <div className="bg-gray-200 w-.5 text-center my-auto py-1 px-2 rounded text-gray-500">
-                {valueTime +
-                  " " +
-                  (openHour ? "Giờ" : openDay ? "Ngày" : "Đêm")}
-                {(lateCheckout > 0 || soonCheckin > 0) &&
-                  " " + (lateCheckout + soonCheckin) + " Giờ"}
+                  {openHour && (
+                    <>
+                      <p className="text-gray-500 my-auto mr-2">Dự kiến:</p>
+                      <div className="pr-2">
+                        <DateTimePicker
+                          ampm={false}
+                          sx={{
+                            ".MuiInputBase-input": {
+                              padding: 1,
+                              width: 120,
+                              fontSize: 14,
+                            },
+                          }}
+                          value={fromTime}
+                          onChange={handleChangeFromTime}
+                          format="DD/MM/YYYY HH:mm"
+                        />
+                      </div>
+                      <p className="text-gray-500 my-auto mr-2">đến</p>
+                      <div className="pr-2">
+                        <DateTimePicker
+                          ampm={false}
+                          sx={{
+                            ".MuiInputBase-input": {
+                              padding: 1,
+                              width: 120,
+                              fontSize: 14,
+                            },
+                          }}
+                          value={toTime}
+                          onChange={handleChangeToTime}
+                          format="DD/MM/YYYY HH:mm"
+                        />
+                      </div>
+                    </>
+                  )}
+                  {openDay && (
+                    <>
+                      <p className="text-gray-500 my-auto mr-2">Dự kiến:</p>
+                      <div className="pr-2">
+                        <DateTimePicker
+                          ampm={false}
+                          sx={{
+                            ".MuiInputBase-input": {
+                              padding: 1,
+                              width: 120,
+                              fontSize: 14,
+                            },
+                          }}
+                          value={fromTime}
+                          onChange={handleChangeFromTime}
+                          format="DD/MM/YYYY HH:mm"
+                        />
+                      </div>
+                      <p className="text-gray-500 my-auto mr-2">đến</p>
+                      <div className="pr-2">
+                        <DateTimePicker
+                          ampm={false}
+                          sx={{
+                            ".MuiInputBase-input": {
+                              padding: 1,
+                              width: 120,
+                              fontSize: 14,
+                            },
+                          }}
+                          value={toTime}
+                          onChange={handleChangeToTime}
+                          format="DD/MM/YYYY HH:mm"
+                        />
+                      </div>
+                    </>
+                  )}
+                  {openNight && (
+                    <>
+                      <p className="text-gray-500 my-auto mr-2">Dự kiến:</p>
+                      <div className="pr-2">
+                        <DateTimePicker
+                          ampm={false}
+                          sx={{
+                            ".MuiInputBase-input": {
+                              padding: 1,
+                              width: 120,
+                              fontSize: 14,
+                            },
+                          }}
+                          value={fromTime}
+                          onChange={handleChangeFromTime}
+                          format="DD/MM/YYYY HH:mm"
+                        />
+                      </div>
+                      <p className="text-gray-500 my-auto mr-2">đến</p>
+                      <div className="pr-2">
+                        <DateTimePicker
+                          ampm={false}
+                          sx={{
+                            ".MuiInputBase-input": {
+                              padding: 1,
+                              width: 120,
+                              fontSize: 14,
+                            },
+                          }}
+                          value={toTime}
+                          onChange={handleChangeToTime}
+                          format="DD/MM/YYYY HH:mm"
+                        />
+                      </div>
+                    </>
+                  )}
+                </LocalizationProvider>
+                <div className="bg-gray-200 w-.5 text-center my-auto py-1 px-2 rounded text-gray-500">
+                  {valueTime +
+                    " " +
+                    (openHour ? "Giờ" : openDay ? "Ngày" : "Đêm")}
+                  {(lateCheckout > 0 || soonCheckin > 0) &&
+                    " " + (lateCheckout + soonCheckin) + " Giờ"}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <div className="flex">
-        {category && (
-          <DataGrid
-            columns={columns}
-            rows={rows}
-            initialState={{
-              pagination: { paginationModel: { pageSize: 5 } },
-            }}
-            pageSizeOptions={[5, 10, 25]}
-          />
-        )}
-      </div>
-    </Modal>
+        <div className="flex">
+          {category.length > 0 && (
+            <>
+              <input type="hidden" name="categories" value={category.length} />
+              <DataGrid
+                columns={columns}
+                rows={rows}
+                initialState={{
+                  pagination: { paginationModel: { pageSize: 5 } },
+                }}
+                pageSizeOptions={[5, 10, 25]}
+              />
+            </>
+          )}
+        </div>
+      </Modal>
+    </Form>
   );
 }
 

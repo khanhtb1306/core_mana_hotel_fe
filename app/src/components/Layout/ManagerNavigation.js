@@ -32,22 +32,13 @@ function ManagerNavigation() {
         <ButtonHeader
           name="Phòng"
           icon="fa-solid fa-table"
-          isActive={
-            location.pathname === "/manager/categoryRoomManagement" ||
-            location.pathname === "/manager/priceBook"
-          }
+          isActive={location.pathname === "/manager/categoryRoomManagement"}
           list={[
             {
               name: "Hạng phòng & Phòng",
               icon: "fa-solid fa-bed",
               link: "/manager/categoryRoomManagement",
               isActive: location.pathname === "/manager/categoryRoomManagement",
-            },
-            {
-              name: "Thiết lập giá",
-              icon: "fa-solid fa-tags",
-              link: "/manager/priceBook",
-              isActive: location.pathname === "/manager/priceBook",
             },
           ]}
         />
@@ -95,9 +86,28 @@ function ManagerNavigation() {
             },
           ]}
         />
+        <ButtonHeader
+          name="Chính sách"
+          icon="fa-solid fa-file-shield"
+          isActive={location.pathname === "/manager/priceBook"}
+          list={[
+            {
+              name: "Thiết lập giá",
+              icon: "fa-solid fa-tags",
+              link: "/manager/priceBook",
+              isActive: location.pathname === "/manager/priceBook",
+            },
+            {
+              name: "Thiết lập",
+              icon: "fa-solid fa-users",
+              link: "/manager/supplierManagement",
+              isActive: location.pathname === "/manager/supplierManagement",
+            },
+          ]}
+        />
         <div className="ml-auto my-auto flex">
           <p className="w-10 my-auto">Tien</p>
-          <img src={user} className="w-10 mr-5 h-10"/>
+          <img src={user} className="w-10 mr-5 h-10" />
           <div
             className="ml-auto relative"
             onMouseMove={() => setShowAction(true)}

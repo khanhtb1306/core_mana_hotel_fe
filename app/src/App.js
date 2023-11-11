@@ -52,6 +52,7 @@ import ListRoomPage, {
 } from "./pages/Reservation/listRoom";
 import EditReservationPage, {
   loader as loadReservationById,
+  action as actionReservationById,
 } from "./pages/Reservation/editReservation";
 
 const routesForManager = [
@@ -116,6 +117,7 @@ const routesForReceptionist = [
     path: "editReservation/:reservationId",
     element: <EditReservationPage />,
     loader: loadReservationById,
+    action: actionReservationById,
   },
   {
     path: "listRoom",
