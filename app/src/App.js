@@ -54,6 +54,10 @@ import EditReservationPage, {
   loader as loadReservationById,
   action as actionReservationById,
 } from "./pages/Reservation/editReservation";
+import PolicyManagementPage, {
+  loader as loadPolicy,
+  action as actionPolicy,
+} from "./pages/PolicyManagement/index";
 
 const routesForManager = [
   {
@@ -99,6 +103,12 @@ const routesForManager = [
     element: <PriceManagementPage />,
     loader: loadPriceBooks,
     action: actionPriceBooks,
+  },
+  {
+    path: "policy",
+    element: <PolicyManagementPage />,
+    loader: loadPolicy,
+    action: actionPolicy,
   },
 ];
 
