@@ -1,9 +1,10 @@
 import { useState } from "react";
 import HourFeeModal from "./HourFeeModal";
 import { useLoaderData } from "react-router-dom";
+import PersonFeeModal from "./PersonFeeModal";
 
 function SurCharge() {
-  const { categories, listCheckout, listCheckin } = useLoaderData();
+  const { categories, listCheckout, listCheckin, listAdult, listChildren } = useLoaderData();
   const [openHourFeeModal, setOpenHourFeeModal] = useState(false);
   const [openPersonFeeModal, setOpenPersonFeeModal] = useState(false);
 
@@ -34,7 +35,11 @@ function SurCharge() {
           </p>
         </div>
         <div className="ml-auto my-auto rounded-lg border border-blue-500 text-blue-500 hover:text-white hover:bg-blue-500">
-          <button type="button" className="py-1 px-6 ">
+          <button
+            type="button"
+            className="py-1 px-6"
+            onClick={() => setOpenPersonFeeModal(true)}
+          >
             Chi tiết
           </button>
         </div>
@@ -46,6 +51,15 @@ function SurCharge() {
           categories={categories}
           listLateCheckout={listCheckout}
           listSoonCheckin={listCheckin}
+        />
+      )}
+      {openPersonFeeModal && (
+        <PersonFeeModal
+          open={openPersonFeeModal}
+          onClose={() => setOpenPersonFeeModal(false)}
+          categories={categories}
+          listAdult={listAdult}
+          listChildren={listChildren}
         />
       )}
     </div>

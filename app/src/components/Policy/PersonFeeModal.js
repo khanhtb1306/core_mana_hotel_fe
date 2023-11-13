@@ -2,83 +2,84 @@ import Modal from "../UI/Modal";
 import { useState } from "react";
 import { Form } from "react-router-dom";
 
-function HourFeeModal(props) {
+function PersonFeeModal(props) {
   const categories = props.categories;
-  // console.log(props.listSoonCheckin);
-  // console.log(props.listLateCheckout);
-  const listDefaultHourFee = categories.map((category, i) => {
-    const listSoonCheckinByCateId =
-      props.listSoonCheckin.LIST_EARLIER_OVERTIME_SURCHARGE_DETAIL.filter(
-        (checkin) =>
-          checkin.roomCategory.roomCategoryId ===
+  // console.log(categories);
+  // console.log(props.listAdult);
+  // console.log(props.listChildren);
+  const listDefaultPersonFee = categories.map((category, i) => {
+    const listAdultByCateId =
+      props.listAdult.LIST_ADDITIONAL_ADULT_SURCHARGE_DETAIL.filter(
+        (adult) =>
+          adult.roomCategory.roomCategoryId ===
           category.roomCategory.roomCategoryId
       );
-    let listCheckin = [];
-    if (listSoonCheckinByCateId.length > 0) {
-      listCheckin = listSoonCheckinByCateId.map((checkin) => {
+    let listAdult = [];
+    if (listAdultByCateId.length > 0) {
+      listAdult = listAdultByCateId.map((adult) => {
         return {
-          key: checkin.policyDetailId,
-          policyDetailId: checkin.policyDetailId,
-          hour: checkin.limitValue,
-          price: checkin.policyValue,
+          key: adult.policyDetailId,
+          policyDetailId: adult.policyDetailId,
+          number: adult.limitValue,
+          price: adult.policyValue,
         };
       });
     } else {
-      listCheckin = [
+      listAdult = [
         {
-          hour: 1,
+          number: 1,
           price: 0,
         },
       ];
     }
-    // console.log(listCheckin);
-    const listLateCheckoutByCateId =
-      props.listLateCheckout.LIST_LATER_OVERTIME_SURCHARGE_DETAIL.filter(
-        (checkout) =>
-          checkout.roomCategory.roomCategoryId ===
+    // console.log(listAdult);
+    const listChildrenByCateId =
+      props.listChildren.LIST_ADDITIONAL_CHILDREN_SURCHARGE_DETAIL.filter(
+        (children) =>
+          children.roomCategory.roomCategoryId ===
           category.roomCategory.roomCategoryId
       );
-    let listCheckout = [];
-    if (listLateCheckoutByCateId.length > 0) {
-      listCheckout = listLateCheckoutByCateId.map((checkout) => {
+    let listChildren = [];
+    if (listChildrenByCateId.length > 0) {
+      listChildren = listChildrenByCateId.map((children) => {
         return {
-          key: checkout.policyDetailId,
-          policyDetailId: checkout.policyDetailId,
-          hour: checkout.limitValue,
-          price: checkout.policyValue,
+          key: children.policyDetailId,
+          policyDetailId: children.policyDetailId,
+          number: children.limitValue,
+          price: children.policyValue,
         };
       });
     } else {
-      listCheckout = [
+      listChildren = [
         {
-          hour: 1,
+          number: 1,
           price: 0,
         },
       ];
     }
-    // console.log(listCheckout);
+    // console.log(listChildren);
     return {
       key: i,
       roomCategoryId: category.roomCategory.roomCategoryId,
-      listCheckin: listCheckin,
-      listCheckout: listCheckout,
+      listAdult: listAdult,
+      listChildren: listChildren,
     };
   });
 
-  const [listHourFee, setListHourFee] = useState(listDefaultHourFee);
-  // console.log(listHourFee);
+  const [listPersonFee, setListPersonFee] = useState(listDefaultPersonFee);
+  // console.log(listPersonFee);
 
-  const handleSoonCheckinAdd = (category) => {
-    const newHour = {
-      hour: category.listCheckin[category.listCheckin.length - 1].hour + 1,
+  const handleAdultAdd = (category) => {
+    const newPerson = {
+      number: category.listAdult[category.listAdult.length - 1].number + 1,
       price: 0,
     };
-    const updateListHourFee = listHourFee.map((cate, i) => {
+    const updateListPersonFee = listPersonFee.map((cate, i) => {
       if (cate.roomCategoryId === category.roomCategoryId) {
         return {
           key: i,
           ...cate,
-          listCheckin: [...cate.listCheckin, newHour],
+          listAdult: [...cate.listAdult, newPerson],
         };
       } else {
         return {
@@ -87,16 +88,16 @@ function HourFeeModal(props) {
         };
       }
     });
-    setListHourFee(updateListHourFee);
+    setListPersonFee(updateListPersonFee);
   };
 
-  const handleSoonCheckinRemove = (category, i) => {
-    const updateListHourFee = listHourFee.map((cate) => {
+  const handleAdultRemove = (category, i) => {
+    const updateListPersonFee = listPersonFee.map((cate) => {
       if (cate.roomCategoryId === category.roomCategoryId) {
         return {
           key: i,
           ...cate,
-          listCheckin: cate.listCheckin.filter((checkin, index) => index !== i),
+          listAdult: cate.listAdult.filter((adult, index) => index !== i),
         };
       } else {
         return {
@@ -105,20 +106,21 @@ function HourFeeModal(props) {
         };
       }
     });
-    setListHourFee(updateListHourFee);
+    setListPersonFee(updateListPersonFee);
   };
 
-  const handleLateCheckoutAdd = (category) => {
+  const handleChildrenAdd = (category) => {
     const newHour = {
-      hour: category.listCheckout[category.listCheckout.length - 1].hour + 1,
+      number:
+        category.listChildren[category.listChildren.length - 1].number + 1,
       price: 0,
     };
-    const updateListHourFee = listHourFee.map((cate, i) => {
+    const updateListPersonFee = listPersonFee.map((cate, i) => {
       if (cate.roomCategoryId === category.roomCategoryId) {
         return {
           key: i,
           ...cate,
-          listCheckout: [...cate.listCheckout, newHour],
+          listChildren: [...cate.listChildren, newHour],
         };
       } else {
         return {
@@ -127,18 +129,16 @@ function HourFeeModal(props) {
         };
       }
     });
-    setListHourFee(updateListHourFee);
+    setListPersonFee(updateListPersonFee);
   };
 
-  const handleLateCheckoutRemove = (category, i) => {
-    const updateListHourFee = listHourFee.map((cate) => {
+  const handleChildrenRemove = (category, i) => {
+    const updateListPersonFee = listPersonFee.map((cate) => {
       if (cate.roomCategoryId === category.roomCategoryId) {
         return {
           key: i,
           ...cate,
-          listCheckout: cate.listCheckout.filter(
-            (checkin, index) => index !== i
-          ),
+          listChildren: cate.listChildren.filter((adult, index) => index !== i),
         };
       } else {
         return {
@@ -147,18 +147,18 @@ function HourFeeModal(props) {
         };
       }
     });
-    setListHourFee(updateListHourFee);
+    setListPersonFee(updateListPersonFee);
   };
 
   return (
     <Form method="post" onSubmit={props.onClose}>
-      <Modal open={props.open} onClose={props.onClose} size="w-10/12 h-.5/6">
+      <Modal open={props.open} onClose={props.onClose} size="w-11/12 h-.5/6">
         <div className="p-2 w-full">
           <div className="mb-5">
             <h1 className="text-lg pb-5 font-bold">
-              Thiết lập phụ thu thêm giờ
+              Thiết lập phụ thu thêm người
             </h1>
-            <input type="hidden" name="isHourFee" defaultValue={true} />
+            <input type="hidden" name="isPersonFee" defaultValue={true} />
             <input
               type="hidden"
               name="numberCategories"
@@ -166,47 +166,48 @@ function HourFeeModal(props) {
             />
             <input
               type="hidden"
-              name="checkinPolicyId"
-              defaultValue={props.listSoonCheckin.Policy.policyId}
+              name="adultPolicyId"
+              defaultValue={props.listAdult.Policy.policyId}
             />
             <input
               type="hidden"
-              name="checkoutPolicyId"
-              defaultValue={props.listLateCheckout.Policy.policyId}
+              name="childrenPolicyId"
+              defaultValue={props.listChildren.Policy.policyId}
             />
           </div>
           <table className="min-w-full border border-gray-300 divide-y divide-gray-300">
             <thead className="bg-blue-100">
-              <tr>
-                <td className="py-2 px-4 w-2/12">Mã hạng phòng</td>
-                <td className="py-2 px-4 w-2/12">Tên hạng phòng</td>
-                <td className="py-2 px-4 w-1/12">Loại giá</td>
-                <td className="py-2 px-4 w-1/12">Mức giá</td>
-                <td className="py-2 px-4 w-3/12">Giá nhận sớm</td>
-                <td className="py-2 px-4 w-3/12">Giá trả muộn</td>
+              <tr className="text-center">
+                <td className="py-2 px-4 w-1/12">Mã hạng phòng</td>
+                <td className="py-2 px-4 w-1/12">Tên hạng phòng</td>
+                <td className="py-2 px-4 w-2/12">Mức giá</td>
+                <td className="py-2 px-4 w-1/12">Tiêu chuẩn</td>
+                <td className="py-2 px-4 w-1/12">Tối đa</td>
+                <td className="py-2 px-4 w-3/12">Giá thêm người lớn</td>
+                <td className="py-2 px-4 w-3/12">Giá thêm trẻ em</td>
               </tr>
             </thead>
             <tbody>
               {categories.map((category, ind) => {
-                const cate = listHourFee.find(
+                const cate = listPersonFee.find(
                   (hourFee) =>
                     hourFee.roomCategoryId ===
                     category.roomCategory.roomCategoryId
                 );
                 return (
                   <tr key={ind} className="border border-gray-300 hover:bg-gray-100">
-                    <td className="py-2 px-4">
+                    <td className="py-1 px-2">
                       <div>
                         <h2>{category.roomCategory.roomCategoryId}</h2>
                         <input
                           type="hidden"
-                          name={`numberCheckin[${ind}]`}
-                          value={cate.listCheckin.length}
+                          name={`numberAdult[${ind}]`}
+                          value={cate.listAdult.length}
                         />
                         <input
                           type="hidden"
-                          name={`numberCheckout[${ind}]`}
-                          value={cate.listCheckout.length}
+                          name={`numberChildren[${ind}]`}
+                          value={cate.listChildren.length}
                         />
                         <input
                           type="hidden"
@@ -215,64 +216,100 @@ function HourFeeModal(props) {
                         />
                       </div>
                     </td>
-                    <td className="py-2 px-4">
+                    <td className="py-1 px-2">
                       <div>{category.roomCategory.roomCategoryName}</div>
                     </td>
-                    <td className="py-2 px-4">
-                      <div className="pb-4">Giá giờ</div>
-                      <div>Giá ngày</div>
-                      <div className="pt-4">Giá đêm</div>
+                    <td className="py-1 px-2">
+                      <table>
+                        <tbody>
+                          <tr className="border-b">
+                            <td className="px-4">Giá giờ</td>
+                            <td className="px-4">
+                              {category.roomCategory.priceByHour.toLocaleString()}
+                            </td>
+                          </tr>
+                          <tr className="border-b">
+                            <td className="px-4">Giá ngày</td>
+                            <td className="px-4">
+                              {category.roomCategory.priceByDay.toLocaleString()}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="px-4">Giá đêm</td>
+                            <td className="px-4">
+                              {category.roomCategory.priceByNight.toLocaleString()}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </td>
-                    <td className="py-2 px-4">
-                      <div className="pb-4">
-                        {category.roomCategory.priceByHour.toLocaleString()}
-                      </div>
-                      <div>
-                        {category.roomCategory.priceByDay.toLocaleString()}
-                      </div>
-                      <div className="pt-4">
-                        {category.roomCategory.priceByNight.toLocaleString()}
-                      </div>
+                    <td className="py-1 px-2">
+                      <table>
+                        <tbody>
+                          <tr className="border-b">
+                            <td>Người lớn</td>
+                            <td>{category.roomCategory.numOfAdults}</td>
+                          </tr>
+                          <tr>
+                            <td>Trẻ em</td>
+                            <td>{category.roomCategory.numOfChildren}</td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </td>
-                    <td>
-                      {cate.listCheckin.map((checkin, index) => {
+                    <td className="py-1 px-2">
+                      <table>
+                        <tbody>
+                          <tr>
+                            <td className="border-b">Người lớn</td>
+                            <td>{category.roomCategory.numMaxOfAdults}</td>
+                          </tr>
+                          <tr>
+                            <td>Trẻ em</td>
+                            <td>{category.roomCategory.numMaxOfChildren}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </td>
+                    <td className="py-1 px-2">
+                      {cate.listAdult.map((adult, index) => {
                         return (
                           <div>
-                            {checkin.policyDetailId && (
+                            {adult.policyDetailId && (
                               <input
                                 type="hidden"
-                                name={`policyDetailIdCheckin[${ind}][${index}]`}
-                                defaultValue={checkin.policyDetailId}
+                                name={`policyDetailIdAdult[${ind}][${index}]`}
+                                defaultValue={adult.policyDetailId}
                               />
                             )}
-                            Từ giờ thứ
+                            Từ người thứ
                             <input
                               className="border-0 border-b border-gray-500 w-16 focus:border-b-2 focus:border-green-500 focus:ring-0"
                               type="number"
-                              name={`hourCheckin[${ind}][${index}]`}
-                              value={checkin.hour}
+                              name={`numberAdult[${ind}][${index}]`}
+                              value={adult.number}
                               onChange={(e) => {
                                 const i = index;
-                                const check = cate.listCheckin.map(
-                                  (checkin, index) => {
+                                const check = cate.listAdult.map(
+                                  (adult, index) => {
                                     if (index === i) {
                                       return {
-                                        hour: Number(e.target.value),
-                                        price: checkin.price,
+                                        number: Number(e.target.value),
+                                        price: adult.price,
                                       };
                                     } else {
-                                      return checkin;
+                                      return adult;
                                     }
                                   }
                                 );
-                                const updateListHourFee = listHourFee.map(
+                                const updateListPersonFee = listPersonFee.map(
                                   (c) => {
                                     if (
                                       c.roomCategoryId === cate.roomCategoryId
                                     ) {
                                       return {
                                         ...cate,
-                                        listCheckin: check,
+                                        listAdult: check,
                                       };
                                     } else {
                                       return {
@@ -281,47 +318,47 @@ function HourFeeModal(props) {
                                     }
                                   }
                                 );
-                                setListHourFee(updateListHourFee);
+                                setListPersonFee(updateListPersonFee);
                               }}
                               min={
                                 index > 0
-                                  ? cate.listCheckin[index - 1].hour + 1
+                                  ? cate.listAdult[index - 1].number + 1
                                   : 1
                               }
                               max={
-                                index < cate.listCheckin.length - 1
-                                  ? cate.listCheckin[index + 1].hour - 1
-                                  : 5
+                                index < cate.listAdult.length - 1
+                                  ? cate.listAdult[index + 1].number - 1
+                                  : category.roomCategory.numMaxOfAdults
                               }
                             />
                             giá
                             <input
                               className="border-0 border-b border-gray-500 w-28 focus:border-b-2 focus:border-green-500 focus:ring-0"
                               type="number"
-                              name={`priceCheckin[${ind}][${index}]`}
-                              value={checkin.price}
+                              name={`priceAdult[${ind}][${index}]`}
+                              value={adult.price}
                               onChange={(e) => {
                                 const i = index;
-                                const check = cate.listCheckin.map(
-                                  (checkin, index) => {
+                                const check = cate.listAdult.map(
+                                  (adult, index) => {
                                     if (index === i) {
                                       return {
-                                        hour: checkin.hour,
+                                        number: adult.number,
                                         price: Number(e.target.value),
                                       };
                                     } else {
-                                      return checkin;
+                                      return adult;
                                     }
                                   }
                                 );
-                                const updateListHourFee = listHourFee.map(
+                                const updateListPersonFee = listPersonFee.map(
                                   (c) => {
                                     if (
                                       c.roomCategoryId === cate.roomCategoryId
                                     ) {
                                       return {
                                         ...cate,
-                                        listCheckin: check,
+                                        listAdult: check,
                                       };
                                     } else {
                                       return {
@@ -330,16 +367,14 @@ function HourFeeModal(props) {
                                     }
                                   }
                                 );
-                                setListHourFee(updateListHourFee);
+                                setListPersonFee(updateListPersonFee);
                               }}
                               min={0}
                             />
                             {index > 0 && (
                               <button
                                 type="button"
-                                onClick={() =>
-                                  handleSoonCheckinRemove(cate, index)
-                                }
+                                onClick={() => handleAdultRemove(cate, index)}
                               >
                                 <i className="fa-solid fa-trash"></i>
                               </button>
@@ -347,59 +382,59 @@ function HourFeeModal(props) {
                           </div>
                         );
                       })}
-                      {cate.listCheckin[cate.listCheckin.length - 1].hour <
-                        5 && (
+                      {cate.listAdult[cate.listAdult.length - 1].number <
+                        category.roomCategory.numMaxOfAdults && (
                         <div className="text-center mt-2">
                           <button
                             type="button"
                             className="text-blue-500"
-                            onClick={() => handleSoonCheckinAdd(cate)}
+                            onClick={() => handleAdultAdd(cate)}
                           >
                             <i className="fa-solid fa-plus mr-2"></i>
-                            Thêm giờ
+                            Thêm người
                           </button>
                         </div>
                       )}
                     </td>
-                    <td>
-                      {cate.listCheckout.map((checkout, index) => {
+                    <td className="py-1 px-2">
+                      {cate.listChildren.map((children, index) => {
                         return (
                           <div>
-                            {checkout.policyDetailId && (
+                            {children.policyDetailId && (
                               <input
                                 type="hidden"
-                                name={`policyDetailIdCheckout[${ind}][${index}]`}
-                                defaultValue={checkout.policyDetailId}
+                                name={`policyDetailIdChildren[${ind}][${index}]`}
+                                defaultValue={children.policyDetailId}
                               />
                             )}
-                            Từ giờ thứ
+                            Từ người thứ
                             <input
                               className="border-0 border-b border-gray-500 w-16 focus:border-b-2 focus:border-green-500 focus:ring-0"
                               type="number"
-                              name={`hourCheckout[${ind}][${index}]`}
-                              value={checkout.hour}
+                              name={`numberChildren[${ind}][${index}]`}
+                              value={children.number}
                               onChange={(e) => {
                                 const i = index;
-                                const check = cate.listCheckout.map(
-                                  (checkin, index) => {
+                                const check = cate.listChildren.map(
+                                  (adult, index) => {
                                     if (index === i) {
                                       return {
-                                        hour: Number(e.target.value),
-                                        price: checkin.price,
+                                        number: Number(e.target.value),
+                                        price: adult.price,
                                       };
                                     } else {
-                                      return checkin;
+                                      return adult;
                                     }
                                   }
                                 );
-                                const updateListHourFee = listHourFee.map(
+                                const updateListPersonFee = listPersonFee.map(
                                   (c) => {
                                     if (
                                       c.roomCategoryId === cate.roomCategoryId
                                     ) {
                                       return {
                                         ...cate,
-                                        listCheckout: check,
+                                        listChildren: check,
                                       };
                                     } else {
                                       return {
@@ -408,47 +443,47 @@ function HourFeeModal(props) {
                                     }
                                   }
                                 );
-                                setListHourFee(updateListHourFee);
+                                setListPersonFee(updateListPersonFee);
                               }}
                               min={
                                 index > 0
-                                  ? cate.listCheckout[index - 1].hour + 1
+                                  ? cate.listChildren[index - 1].number + 1
                                   : 1
                               }
                               max={
-                                index < cate.listCheckout.length - 1
-                                  ? cate.listCheckout[index + 1].hour - 1
-                                  : 5
+                                index < cate.listChildren.length - 1
+                                  ? cate.listChildren[index + 1].number - 1
+                                  : category.roomCategory.numMaxOfChildren
                               }
                             />
                             giá
                             <input
                               className="border-0 border-b border-gray-500 w-28 focus:border-b-2 focus:border-green-500 focus:ring-0"
                               type="number"
-                              name={`priceCheckout[${ind}][${index}]`}
-                              value={checkout.price}
+                              name={`priceChildren[${ind}][${index}]`}
+                              value={children.price}
                               onChange={(e) => {
                                 const i = index;
-                                const check = cate.listCheckout.map(
-                                  (checkin, index) => {
+                                const check = cate.listChildren.map(
+                                  (adult, index) => {
                                     if (index === i) {
                                       return {
-                                        hour: checkin.hour,
+                                        number: adult.number,
                                         price: Number(e.target.value),
                                       };
                                     } else {
-                                      return checkin;
+                                      return adult;
                                     }
                                   }
                                 );
-                                const updateListHourFee = listHourFee.map(
+                                const updateListPersonFee = listPersonFee.map(
                                   (c) => {
                                     if (
                                       c.roomCategoryId === cate.roomCategoryId
                                     ) {
                                       return {
                                         ...cate,
-                                        listCheckout: check,
+                                        listChildren: check,
                                       };
                                     } else {
                                       return {
@@ -457,7 +492,7 @@ function HourFeeModal(props) {
                                     }
                                   }
                                 );
-                                setListHourFee(updateListHourFee);
+                                setListPersonFee(updateListPersonFee);
                               }}
                               min={0}
                             />
@@ -466,7 +501,7 @@ function HourFeeModal(props) {
                                 <i
                                   className="fa-solid fa-trash"
                                   onClick={() =>
-                                    handleLateCheckoutRemove(cate, index)
+                                    handleChildrenRemove(cate, index)
                                   }
                                 ></i>
                               </button>
@@ -474,16 +509,16 @@ function HourFeeModal(props) {
                           </div>
                         );
                       })}
-                      {cate.listCheckout[cate.listCheckout.length - 1].hour <
-                        5 && (
+                      {cate.listChildren[cate.listChildren.length - 1].number <
+                        category.roomCategory.numMaxOfChildren && (
                         <div className="text-center mt-2">
                           <button
                             type="button"
                             className="text-blue-500"
-                            onClick={() => handleLateCheckoutAdd(cate)}
+                            onClick={() => handleChildrenAdd(cate)}
                           >
                             <i className="fa-solid fa-plus mr-2"></i>
-                            Thêm giờ
+                            Thêm người
                           </button>
                         </div>
                       )}
@@ -499,4 +534,4 @@ function HourFeeModal(props) {
   );
 }
 
-export default HourFeeModal;
+export default PersonFeeModal;

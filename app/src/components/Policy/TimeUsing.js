@@ -1,4 +1,8 @@
+import { useState } from "react";
+import TimeUsingModal from "./TimeUsingModal";
+
 function TimeUsing() {
+  const [openTimeUsingModal, setOpenTimeUsingModal] = useState(false);
   return (
     <div className="ml-4 my-4">
       <div className="bg-white py-4 px-8 flex">
@@ -9,11 +13,21 @@ function TimeUsing() {
           </p>
         </div>
         <div className="ml-auto my-auto rounded-lg border border-blue-500 text-blue-500 hover:text-white hover:bg-blue-500">
-          <button type="button" className="py-1 px-6 ">
+          <button
+            type="button"
+            className="py-1 px-6"
+            onClick={() => setOpenTimeUsingModal(true)}
+          >
             Chi tiết
           </button>
         </div>
       </div>
+      {openTimeUsingModal && (
+        <TimeUsingModal
+          open={openTimeUsingModal}
+          onClose={() => setOpenTimeUsingModal(false)}
+        />
+      )}
     </div>
   );
 }
