@@ -252,7 +252,7 @@ function StocktakeForm({ name, open, onClose, method, stocktake }) {
                       );
                     } else {
                       const defaultPro = goodsUnit.find(
-                        (unit) => unit.goods.goodsId && unit.isDefault
+                        (unit) => pro.goods.goodsId === unit.goods.goodsId && unit.isDefault
                       );
                       return (
                         pro.goodsUnitId +

@@ -300,11 +300,12 @@ export async function action({ request }) {
     } else {
       acc.push({
         productId: curr.productId,
-        actualInventory: Number(actualInventory) * Number(curr.amount),
+        actualInventory: (Number(actualInventory) * Number(curr.amount)),
       });
     }
     return acc;
   }, []);
+  console.log(result);
   result.map((pro, index) => {
     formData.append(
       `listInventoryCheckDetailDTO[${index}].goodsId`,

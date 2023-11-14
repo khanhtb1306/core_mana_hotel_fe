@@ -43,7 +43,7 @@ function DetailsPriceInRoom(props) {
       return {
         id: index,
         time: hour.format("dddd, DD/MM/YYYY HH:mm"),
-        price: priceInHour,
+        price: priceInHour.toLocaleString(),
       };
     });
   } else if (typeTime === 2) {
@@ -74,7 +74,7 @@ function DetailsPriceInRoom(props) {
       return {
         id: index,
         time: day.format("dddd, DD/MM/YYYY"),
-        price: priceInDay,
+        price: priceInDay.toLocaleString(),
       };
     });
   } else {
@@ -99,7 +99,7 @@ function DetailsPriceInRoom(props) {
       {
         id: 1,
         time: fromTime.format("dddd, DD/MM/YYYY"),
-        price: priceInNight,
+        price: priceInNight.toLocaleString(),
       },
     ];
   }

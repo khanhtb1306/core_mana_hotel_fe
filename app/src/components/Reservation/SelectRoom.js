@@ -44,7 +44,7 @@ function SelectRoom(props) {
     from = dayjs(room.checkInActual);
     to = dayjs(room.checkOutEstimate);
   } else {
-    from = dayjs(room.checkInActual);
+    from = dayjs(room.checkInActual); 
     to = dayjs(room.checkOutActual);
   }
   if (room.reservationType === "HOURLY") {
@@ -64,7 +64,6 @@ function SelectRoom(props) {
   } else {
     type = 3;
     time = getPrice(type, from, to).time;
-    defaultPrice = getPrice(type, from, to).price;
     if (from.hour() > priceNightStart) {
       soonCheckIn = from.hour() - priceDayStart;
     }
@@ -77,7 +76,6 @@ function SelectRoom(props) {
   }
   const [typeTime, setTypeTime] = useState(type);
   const [valueTime, setValueTime] = useState(time);
-  const [price, setPrice] = useState(defaultPrice);
 
   const [fromTime, setFromTime] = useState(from);
   const [toTime, setToTime] = useState(to);
@@ -95,29 +93,14 @@ function SelectRoom(props) {
         setValueTime(1);
         setFromTime(now);
         setToTime(now.add(1, "hour"));
-        setPrice(getPrice(value, now, now.add(1, "hour")).price);
       } else if (value === 2) {
         setValueTime(1);
         setFromTime(now.hour(priceDayStart).minute(0));
         setToTime(now.add(1, "day").hour(priceDayEnd).minute(0));
-        setPrice(
-          getPrice(
-            value,
-            now.hour(priceDayStart).minute(0),
-            now.add(1, "day").hour(priceDayEnd).minute(0)
-          ).price
-        );
       } else {
         setFromTime(dayjs().hour(priceNightStart).minute(0));
         setToTime(dayjs().add(1, "day").hour(priceNightEnd).minute(0));
         setValueTime(1);
-        setPrice(
-          getPrice(
-            value,
-            fromTime.hour(priceNightStart).minute(0),
-            toTime.add(1, "day").hour(priceNightEnd).minute(0)
-          ).price
-        );
       }
     } else {
       setLateCheckout(0);
@@ -134,14 +117,7 @@ function SelectRoom(props) {
             now.add(1, "day").hour(priceDayEnd).minute(0)
           ).time
         );
-        setPrice(
-          getPrice(
-            value,
-            fromTime,
-            now.add(1, "day").hour(priceDayEnd).minute(0)
-          ).price
-        );
-        if (fromTime.hour() > priceDayEnd) {
+        if (fromTime.hour() < priceDayStart) {
           setSoonCheckin(priceDayStart - fromTime.hour());
         } else {
           setSoonCheckin(0);
@@ -154,13 +130,6 @@ function SelectRoom(props) {
             fromTime,
             toTime.add(1, "day").hour(priceNightEnd).minute(0)
           ).time
-        );
-        setPrice(
-          getPrice(
-            value,
-            fromTime,
-            toTime.add(1, "day").hour(priceNightEnd).minute(0)
-          ).price
         );
         if (fromTime.hour() < priceNightStart) {
           setSoonCheckin(priceNightStart - fromTime.hour());
@@ -180,7 +149,6 @@ function SelectRoom(props) {
   const handleChangeFromTime = (value) => {
     const priceTime = getPrice(typeTime, value, toTime);
     setValueTime(priceTime.time);
-    setPrice(priceTime.price);
     if (typeTime === 1) {
       setSoonCheckin(0);
       setLateCheckout(0);
@@ -213,7 +181,6 @@ function SelectRoom(props) {
   const handleChangeToTime = (value) => {
     const priceTime = getPrice(typeTime, fromTime, value);
     setValueTime(priceTime.time);
-    setPrice(priceTime.price);
     if (typeTime === 1) {
       setSoonCheckin(0);
       setLateCheckout(0);
@@ -263,7 +230,6 @@ function SelectRoom(props) {
     }
   };
 
-  // console.log(props.price);
   function getPrice(typeTime, fromTime, toTime) {
     let price = 0;
     let time = 0;
@@ -517,7 +483,7 @@ function SelectRoom(props) {
           {typeTime === 1 ? "Giờ" : typeTime === 2 ? "Ngày" : "Đêm"})
         </p>
         <p className="w-1/12">{valueTime}</p>
-        <p className="w-2/12 text-right">{price}</p>
+        <p className="w-2/12 text-right">{getPrice(typeTime, fromTime, toTime).price.toLocaleString()}</p>
         <p className="w-1/12">
           <button
             type="button"
@@ -532,7 +498,7 @@ function SelectRoom(props) {
         <div className="flex border-t pt-2">
           <p className="w-8/12">Phụ thu nhận sớm (Giờ)</p>
           <p className="w-1/12">{soonCheckin}</p>
-          <p className="w-2/12 text-right">{soonCheckin * priceSoonCheckIn}</p>
+          <p className="w-2/12 text-right">{(soonCheckin * priceSoonCheckIn).toLocaleString()}</p>
           <p className="w-1/12"></p>
         </div>
       )}
@@ -541,7 +507,7 @@ function SelectRoom(props) {
           <p className="w-8/12">Phụ thu trả muộn (Giờ)</p>
           <p className="w-1/12">{lateCheckout}</p>
           <p className="w-2/12 text-right">
-            {lateCheckout * priceLateCheckOut}
+            {(lateCheckout * priceLateCheckOut).toLocaleString()}
           </p>
           <p className="w-1/12"></p>
         </div>

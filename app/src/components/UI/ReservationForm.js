@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SelectRoom from "../Reservation/SelectRoom";
 import SearchCustomer from "../Search/SearchCustomer";
 import { useLoaderData } from "react-router-dom";
 import { MenuItem, Select } from "@mui/material";
 import AddRoom from "../Reservation/AddRoom";
+import RemoveRoom from "../Reservation/RemoveRoom";
+import AddInvoice from "../Reservation/AddInvoice";
+import { axiosPrivate } from "../../utils/axiosConfig";
 
 function ReservationForm(props) {
   const { customers, prices, categories } = useLoaderData();
@@ -107,9 +110,9 @@ function ReservationForm(props) {
   ];
   console.log(allPrices);
   const [openAddRoomModal, setOpenAddRoomModal] = useState(false);
-  const [listRooms, setListRooms] = useState(
-    reservation.listReservationDetails
-  );
+  const [openAddInvoiceModal, setOpenAddInvoiceModal] = useState(false);
+  const [removeRoomModal, setRemoveRoomModal] = useState(null);
+  const [listInvoices, setListInvoices] = useState(null);
   let priceByCateRoom = null;
   let priceById = null;
   if (reservation) {
@@ -121,14 +124,36 @@ function ReservationForm(props) {
     priceByCateRoom = priceById.ListPriceListDetail.find(
       (details) =>
         details.RoomClass.roomCategoryId ===
-        listRooms[0].room.roomCategory.roomCategoryId
+        reservation.listReservationDetails[0].room.roomCategory.roomCategoryId
     ).PriceListDetailWithDayOfWeek;
   }
+  useEffect(() => {
+    async function fetchListInvoices() {
+      try {
+        if (reservation) {
+          console.log(reservation.listReservationDetails[0]);
+          const response = await axiosPrivate.get(
+            "order/reservation/" +
+              reservation.listReservationDetails[0].reservationDetailId
+          );
+          setListInvoices(response.data.result);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchListInvoices();
+  }, []);
   // console.log(priceByCateRoom);
-  const [roomActive, setRoomActive] = useState(listRooms ? listRooms[0] : null);
+  console.log(listInvoices);
+  const [roomActive, setRoomActive] = useState(
+    reservation.listReservationDetails
+      ? reservation.listReservationDetails[0]
+      : null
+  );
   const [priceBook, setPriceBook] = useState(priceById);
   const [price, setPrice] = useState(priceByCateRoom);
-  // console.log(roomActive);
+  console.log(roomActive);
 
   const handlePriceBookChange = (event) => {
     const priceById = allPrices.find(
@@ -144,7 +169,12 @@ function ReservationForm(props) {
     setPriceBook(priceById);
   };
 
-  const handleRoomChange = (room) => {
+  const handleRoomChange = async (room) => {
+    console.log(room);
+    const response = await axiosPrivate.get(
+      "order/reservation/" + room.reservationDetailId
+    );
+    setListInvoices(response.data.result);
     setRoomActive(room);
   };
 
@@ -177,7 +207,7 @@ function ReservationForm(props) {
             </div>
             <div className="flex my-auto rounded-lg py-2">
               <div className="px-2 py-1 mr-2 rounded-lg bg-white">
-                {listRooms.map((room, index) => {
+                {reservation.listReservationDetails.map((room, index) => {
                   let status = 3;
                   if (room.status === "CHECK_IN") {
                     status = 2;
@@ -197,7 +227,13 @@ function ReservationForm(props) {
                       onClick={() => handleRoomChange(room)}
                     >
                       {room.room.roomName}
-                      <i className="fa-solid fa-xmark pl-2"></i>
+                      <i
+                        className="fa-solid fa-xmark ml-2 p-1 px-1.5 hover:bg-orange-300 hover:rounded-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setRemoveRoomModal(room);
+                        }}
+                      ></i>
                     </button>
                   ) : status === 2 ? (
                     <button
@@ -239,34 +275,45 @@ function ReservationForm(props) {
                 Phòng
               </button>
               {roomActive.status === "BOOKING" && (
-                <button
-                  type="button"
-                  className="px-4 py-2 ml-auto rounded-lg text-white bg-green-500 hover:bg-green-600"
-                >
-                  Nhận phòng
-                </button>
+                <>
+                  <button
+                    type="button"
+                    className="px-4 py-2 ml-auto rounded-lg text-white bg-green-500 hover:bg-green-600"
+                  >
+                    Nhận phòng
+                  </button>
+                  <button
+                    type="button"
+                    className="px-4 py-2 ml-2 rounded-lg text-white bg-gray-500 hover:bg-gray-600"
+                  >
+                    Đổi phòng
+                  </button>
+                </>
               )}
               {roomActive.status === "CHECK_IN" && (
-                <button
-                  type="button"
-                  className="px-4 py-2 ml-auto rounded-lg text-white bg-blue-500 hover:bg-blue-600"
-                >
-                   Trả phòng
-                </button>
+                <>
+                  <button
+                    type="button"
+                    className="px-4 py-2 ml-auto rounded-lg text-white bg-blue-500 hover:bg-blue-600"
+                  >
+                     Trả phòng
+                  </button>
+                  <button
+                    type="button"
+                    className="px-4 py-2 ml-2 rounded-lg text-white bg-gray-500 hover:bg-gray-600"
+                  >
+                    Đổi phòng
+                  </button>
+                </>
               )}
-              <button
-                type="button"
-                className="px-4 py-2 ml-2 rounded-lg border-black border"
-              >
-                <i className="fa-solid fa-ellipsis-vertical"></i>
-              </button>
             </div>
           </div>
-          <div className="w-full py-2 h-4/6">
-            {listRooms.map((room, index) => {
+          <div className="w-full py-2 h-5/6 overflow-y-auto">
+            {reservation.listReservationDetails.map((room, index) => {
               if (room.reservationDetailId === roomActive.reservationDetailId) {
                 return (
                   <div key={index}>
+                    <div></div>
                     <SelectRoom
                       room={room}
                       listRoomByRes={reservation.listReservationDetails.filter(
@@ -290,14 +337,108 @@ function ReservationForm(props) {
                 );
               }
             })}
+            {listInvoices &&
+              listInvoices.length > 0 &&
+              listInvoices.map((invoice) => {
+                return (
+                  <div className="bg-white p-4 mt-2 flex">
+                    <div className="w-3/12">
+                      Mã hoá đơn: {invoice.order.orderId}
+                    </div>
+                    <div
+                      className={`w-3/12 ${
+                        invoice.order.status === "UNCONFIMRED" &&
+                        "text-orange-500"
+                      } ${
+                        invoice.order.status === "CONFIMRED" && "text-blue-500"
+                      } ${
+                        invoice.order.status === "PAID" && "text-green-500"
+                      } ${
+                        invoice.order.status === "CANCEL_ORDER" &&
+                        "text-gray-500"
+                      }`}
+                    >
+                      Trạng thái: {invoice.order.status}
+                    </div>
+                    <div className="w-3/12">
+                      Tổng tiền: {invoice.order.totalPay.toLocaleString()}
+                    </div>
+                    <div className="w-1/12">
+                      <button>
+                        <i className="fa-solid fa-eye"></i>
+                      </button>
+                    </div>
+                    <div className="w-1/12">
+                      <button>
+                        <i className="fa-solid fa-pen"></i>
+                      </button>
+                    </div>
+                    <div className="w-1/12">
+                      <button>
+                        <i className="fa-solid fa-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            <button
+              className="rounded p-2 mt-2 text-white bg-green-500"
+              onClick={() => setOpenAddInvoiceModal(true)}
+            >
+              <i className="fa-solid fa-plus mr-2"></i>Tạo hoá đơn
+            </button>
           </div>
-          <div className="w-full py-2 h-1/6">3</div>
+          <div className="w-full py-2 h-.5/6 flex">
+            <div>
+              <button>
+                <i className="fa-solid fa-trash fa-lg"></i>
+              </button>
+            </div>
+            <div className="ml-auto">
+              <button
+                type="button"
+                className="px-4 py-2 bg-white border border-green-500 rounded-lg text-green-500 mr-2"
+              >
+                In
+              </button>
+            </div>
+            <div>
+              <button
+                type="button"
+                className="px-4 py-2 bg-white border border-green-500 rounded-lg text-green-500 mr-2"
+              >
+                Lưu
+              </button>
+            </div>
+            <div>
+              <button
+                type="button"
+                className="px-4 py-2 bg-green-500 rounded-lg text-white mr-2"
+              >
+                Thanh toán
+              </button>
+            </div>
+          </div>
         </>
       )}
       {openAddRoomModal && (
         <AddRoom
           open={openAddRoomModal}
           onClose={() => setOpenAddRoomModal(false)}
+          reservationId={reservation.reservation.reservationId}
+        />
+      )}
+      {openAddInvoiceModal && (
+        <AddInvoice
+          open={openAddInvoiceModal}
+          onClose={() => setOpenAddInvoiceModal(false)}
+        />
+      )}
+      {removeRoomModal && (
+        <RemoveRoom
+          open={removeRoomModal ? true : false}
+          onClose={() => setRemoveRoomModal(null)}
+          room={removeRoomModal}
         />
       )}
     </div>

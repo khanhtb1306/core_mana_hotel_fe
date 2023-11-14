@@ -52,7 +52,12 @@ import ListRoomPage, {
 } from "./pages/Reservation/listRoom";
 import EditReservationPage, {
   loader as loadReservationById,
+  action as actionReservationById,
 } from "./pages/Reservation/editReservation";
+import PolicyManagementPage, {
+  loader as loadPolicy,
+  action as actionPolicy,
+} from "./pages/PolicyManagement/index";
 
 const routesForManager = [
   {
@@ -99,6 +104,12 @@ const routesForManager = [
     loader: loadPriceBooks,
     action: actionPriceBooks,
   },
+  {
+    path: "policy",
+    element: <PolicyManagementPage />,
+    loader: loadPolicy,
+    action: actionPolicy,
+  },
 ];
 
 const routesForReceptionist = [
@@ -116,6 +127,7 @@ const routesForReceptionist = [
     path: "editReservation/:reservationId",
     element: <EditReservationPage />,
     loader: loadReservationById,
+    action: actionReservationById,
   },
   {
     path: "listRoom",

@@ -95,9 +95,23 @@ function ManagerNavigation() {
             },
           ]}
         />
+        <div
+          className={`${
+            location.pathname === "/manager/policy"
+              ? "bg-blue-800"
+              : "hover:bg-blue-800"
+          }`}
+        >
+          <li className="pt-4">
+            <NavLink to="/manager/policy" className="text-white p-4">
+              <i className="fa-solid fa-file-shield pr-2"></i>
+              Chính sách
+            </NavLink>
+          </li>
+        </div>
         <div className="ml-auto my-auto flex">
           <p className="w-10 my-auto">Tien</p>
-          <img src={user} className="w-10 mr-5 h-10"/>
+          <img src={user} className="w-10 mr-5 h-10" />
           <div
             className="ml-auto relative"
             onMouseMove={() => setShowAction(true)}
