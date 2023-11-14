@@ -1,4 +1,9 @@
-import { defer, redirect, useLoaderData } from "react-router-dom";
+import {
+  defer,
+  redirect,
+  useActionData,
+  useLoaderData,
+} from "react-router-dom";
 import { axiosPrivate } from "../../utils/axiosConfig";
 import { useState } from "react";
 import SurCharge from "../../components/Policy/SurChange";
@@ -7,7 +12,6 @@ import OtherFee from "../../components/Policy/OtherFee";
 import Swal from "sweetalert2";
 
 function PolicyManagementPage() {
-  const { priceBooks } = useLoaderData();
   const [surcharge, setSurcharge] = useState(true);
   const [timeUsing, setTimeUsing] = useState(false);
   const [otherFee, setOtherFee] = useState(false);
@@ -115,7 +119,7 @@ async function loadSoonCheckinSurcharge() {
   const response = await axiosPrivate
     .get("policy/EARLIER_OVERTIME_SURCHARGE")
     .catch((e) => {
-      return redirect("/login");
+      redirect("/login");
     });
   if (response.data.success) {
     return response.data.result;
@@ -163,6 +167,28 @@ async function loadChildrenSurcharge() {
   }
 }
 
+async function loadOtherRevenue() {
+  const response = await axiosPrivate.get("policy/OTHER_REVENUE").catch((e) => {
+    return redirect("/login");
+  });
+  if (response.data.success) {
+    return response.data.result;
+  } else {
+    return redirect("/login");
+  }
+}
+
+async function loadTimeUsing() {
+  const response = await axiosPrivate.get("policy/time_use").catch((e) => {
+    return redirect("/login");
+  });
+  if (response.data.success) {
+    return response.data.result;
+  } else {
+    return redirect("/login");
+  }
+}
+
 async function loadCategories() {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -178,6 +204,8 @@ export async function loader() {
     listCheckout: await loadLateCheckoutSurcharge(),
     listAdult: await loadAdultSurcharge(),
     listChildren: await loadChildrenSurcharge(),
+    timeUsing: await loadTimeUsing(),
+    listRevenue: await loadOtherRevenue(),
     categories: await loadCategories(),
   });
 }
@@ -278,7 +306,7 @@ export async function action({ request }) {
         timer: 2000,
       });
     }
-    return redirect("/manager/policy");
+    return { success: true };
   }
 
   //Setup policy surcharge person fee
@@ -358,8 +386,28 @@ export async function action({ request }) {
         countChildren++;
       }
     }
-    const response1 = await axiosPrivate.post("policy", formDataAdult);
-    const response2 = await axiosPrivate.post("policy", formDataChildren);
+    const response1 = await axiosPrivate
+      .post("policy", formDataAdult)
+      .catch((e) => {
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: "Cập nhật giá phụ thu thêm người thất bại",
+          showConfirmButton: false,
+          timer: 2000,
+        });
+      });
+    const response2 = await axiosPrivate
+      .post("policy", formDataChildren)
+      .catch((e) => {
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: "Cập nhật giá phụ thu thêm người thất bại",
+          showConfirmButton: false,
+          timer: 2000,
+        });
+      });
     if (response1.data.success && response2.data.success) {
       Swal.fire({
         position: "center",
@@ -377,6 +425,79 @@ export async function action({ request }) {
         timer: 2000,
       });
     }
-    return redirect("/manager/policy");
+    return { success: true };
+  }
+
+  //Setup policy time using
+  if (data.get("isTimeUsing")) {
+    const formData = new FormData();
+    formData.append("timeUseId", data.get("timeUseId"));
+    formData.append("timeBonusHour", data.get("overTimeHour"));
+    formData.append("startTimeNight", data.get("fromTimeNight"));
+    formData.append("endTimeNight", data.get("toTimeNight"));
+    formData.append("startTimeDay", data.get("fromTimeDay"));
+    formData.append("endTimeDay", data.get("toTimeDay"));
+    formData.append("timeBonusDay", data.get("overTimeDay"));
+    const response = await axiosPrivate
+      .put("policy/time_use", formData)
+      .catch((e) => {
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: "Cập nhật thời gian sử dụng thất bại",
+          showConfirmButton: false,
+          timer: 2000,
+        });
+      });
+    if (response) {
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: "Cập nhật thời gian sử dụng thành công",
+        showConfirmButton: false,
+        timer: 2000,
+      });
+    } else {
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        title: "Cập nhật thời gian sử dụng thất bại",
+        showConfirmButton: false,
+        timer: 2000,
+      });
+    }
+    return { success: true };
+  }
+
+  //Setup policy other fee
+  if (data.get("isOtherFee")) {
+    //Add other fee
+    if (method === "POST") {
+      const formData = new FormData();
+      
+      console.log(data.get("type"));
+      console.log(data.get("typeValue"));
+      console.log(data.get("isAuto"));
+      console.log(1);
+      return { success: true };
+    }
+    //Update other fee
+    if (method === "PUT") {
+        //Update status of other fee
+        if (data.get("isStatus")) {
+            return { success: true };
+        }
+      console.log(data.get("type"));
+      console.log(data.get("typeValue"));
+      console.log(data.get("isAuto"));
+      console.log(2);
+      return { success: true };
+    }
+    //Delete other fee
+    if (method === "DELETE") {
+      console.log(3);
+      return { success: true };
+    }
+    return { success: true };
   }
 }
