@@ -28,7 +28,7 @@ function OtherFee() {
         const row = params.row;
         const status = row.status;
         return [
-          status === 1 ? (
+          status === "Ngừng thu" ? (
             <GridActionsCellItem
               icon={<i className="fa-solid fa-lock-open p-1"></i>}
               label="Ngừng thu"
@@ -128,6 +128,7 @@ function OtherFee() {
           revenue={listRevenue.LIST_OTHER_REVENUE_DETAIL.find(
             (revenue) => revenue.policyDetailId === selectedRevenueId
           )}
+          policyId={listRevenue.Policy.policyId}
         />
       )}
       {openStatusRevenue && (
@@ -137,6 +138,7 @@ function OtherFee() {
           revenue={listRevenue.LIST_OTHER_REVENUE_DETAIL.find(
             (revenue) => revenue.policyDetailId === selectedRevenueId
           )}
+          policyId={listRevenue.Policy.policyId}
         />
       )}
     </div>

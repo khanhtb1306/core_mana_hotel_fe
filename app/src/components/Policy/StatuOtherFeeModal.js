@@ -12,10 +12,16 @@ function StatusOtherFeeModal(props) {
           <h1 className="text-lg pb-10 font-bold">Trạng thái thu phí khác</h1>
           <input type="hidden" name="isOtherFee" defaultValue={true} />
           <input type="hidden" name="isStatus" defaultValue={true} />
+          <input type="hidden" name="policyId" defaultValue={props.policyId} />
           <input
             type="hidden"
             name="policyDetailId"
             defaultValue={revenue.policyDetailId}
+          />
+          <input
+            type="hidden"
+            name="status"
+            defaultValue={revenue.status === 1 ? 2 : 1}
           />
           <div className="ml-auto mr-5 w-full">
             <p>

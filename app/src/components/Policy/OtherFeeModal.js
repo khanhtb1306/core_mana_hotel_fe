@@ -5,7 +5,7 @@ import Checkbox from "@mui/material/Checkbox";
 
 function OtherFeeModal(props) {
   const revenue = props.revenue;
-  //   console.log(revenue);
+    // console.log(revenue);
   const [isVND, setIsVND] = useState(
     revenue ? (revenue.typeValue === "VND" ? true : false) : true
   );
@@ -19,6 +19,16 @@ function OtherFeeModal(props) {
           <div className="mb-5">
             <h1 className="text-lg pb-5 font-bold">{props.name}</h1>
             <input type="hidden" name="isOtherFee" defaultValue={true} />
+            <input
+              type="hidden"
+              name="policyId"
+              defaultValue={props.policyId}
+            />
+            <input
+              type="hidden"
+              name="policyDetailId"
+              defaultValue={revenue ? revenue.policyDetailId : 0}
+            />
           </div>
           <div>
             <div className="flex mb-2">
@@ -36,16 +46,6 @@ function OtherFeeModal(props) {
             <div className="flex mb-2">
               <div className="w-3/12 my-auto">Giá trị</div>
               <div className="w-9/12">
-                <input
-                  type="hidden"
-                  name="policyId"
-                  defaultValue={props.policyId}
-                />
-                <input
-                  type="hidden"
-                  name="policyDetailId"
-                  defaultValue={revenue ? revenue.policyDetailId : 0}
-                />
                 <input type="hidden" name="isVND" value={isVND} />
                 <input
                   className="w-8/12 border-0 border-b border-gray-500 w-16 focus:border-b-2 focus:border-green-500 focus:ring-0"

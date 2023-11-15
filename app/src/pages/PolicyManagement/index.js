@@ -242,7 +242,7 @@ export async function action({ request }) {
           roomCategoryId
         );
         formDataCheckin.append(
-          `policyDetailDTO[${countCheckin}].customerGroupId`,
+          `policyDetailDTO[${countCheckin}].CustomerGroupId`,
           "NK000000"
         );
         formDataCheckin.append(
@@ -311,9 +311,6 @@ export async function action({ request }) {
 
   //Setup policy surcharge person fee
   if (data.get("isPersonFee")) {
-    // console.log(data.get("adultPolicyId"));
-    // console.log(data.get("childrenPolicyId"));
-    // return redirect("/manager/policy");
     const numberCategories = data.get("numberCategories");
     const formDataAdult = new FormData();
     const formDataChildren = new FormData();
@@ -474,28 +471,175 @@ export async function action({ request }) {
     //Add other fee
     if (method === "POST") {
       const formData = new FormData();
-      
-      console.log(data.get("type"));
-      console.log(data.get("typeValue"));
-      console.log(data.get("isAuto"));
-      console.log(1);
+      formData.append("policyDetailDTO.policyId", data.get("policyId"));
+      formData.append("policyDetailDTO.customerGroupId", "NK000000");
+      formData.append("policyDetailDTO.roomCategoryId", "HP000000");
+      formData.append("policyDetailDTO.type", data.get("type"));
+      formData.append(
+        "policyDetailDTO.typeValue",
+        data.get("isVND") === "true" ? "VND" : "%"
+      );
+      formData.append("policyDetailDTO.policyValue", data.get("typeValue"));
+      formData.append("policyDetailDTO.autoAddToInvoice", data.get("isAuto"));
+      const response = await axiosPrivate
+        .post("policy/other", formData)
+        .catch((e) => {
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            title: "Thêm phí thu khác thất bại",
+            showConfirmButton: false,
+            timer: 2000,
+          });
+        });
+      console.log(response);
+      if (response.data.success) {
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: "Thêm phí thu khác thành công",
+          showConfirmButton: false,
+          timer: 2000,
+        });
+      } else {
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: "Thêm phí thu khác thất bại",
+          showConfirmButton: false,
+          timer: 2000,
+        });
+      }
       return { success: true };
     }
     //Update other fee
     if (method === "PUT") {
-        //Update status of other fee
-        if (data.get("isStatus")) {
-            return { success: true };
+      //Update status of other fee
+      if (data.get("isStatus")) {
+        const formData = new FormData();
+        formData.append("policyDetailDTO.policyId", data.get("policyId"));
+        formData.append(
+          "policyDetailDTO.policyDetailId",
+          data.get("policyDetailId")
+        );
+        formData.append("policyDetailDTO.customerGroupId", "NK000000");
+        formData.append("policyDetailDTO.roomCategoryId", "HP000000");
+        formData.append("policyDetailDTO.status", data.get("status"));
+        const response = await axiosPrivate
+          .post("policy/other", formData)
+          .catch((e) => {
+            Swal.fire({
+              position: "center",
+              icon: "error",
+              title: "Cập nhật trạng thái phí thu khác thất bại",
+              showConfirmButton: false,
+              timer: 2000,
+            });
+          });
+        if (response.data.success) {
+          Swal.fire({
+            position: "center",
+            icon: "success",
+            title: "Cập nhật trạng thái phí thu khác thành công",
+            showConfirmButton: false,
+            timer: 2000,
+          });
+        } else {
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            title: "Cập nhật trạng thái phí thu khác thất bại",
+            showConfirmButton: false,
+            timer: 2000,
+          });
         }
-      console.log(data.get("type"));
-      console.log(data.get("typeValue"));
-      console.log(data.get("isAuto"));
-      console.log(2);
+        return { success: true };
+      }
+      const formData = new FormData();
+      formData.append("policyDetailDTO.policyId", data.get("policyId"));
+      formData.append(
+        "policyDetailDTO.policyDetailId",
+        data.get("policyDetailId")
+      );
+      formData.append("policyDetailDTO.customerGroupId", "NK000000");
+      formData.append("policyDetailDTO.roomCategoryId", "HP000000");
+      formData.append("policyDetailDTO.type", data.get("type"));
+      formData.append(
+        "policyDetailDTO.typeValue",
+        data.get("isVND") === "true" ? "VND" : "%"
+      );
+      formData.append("policyDetailDTO.policyValue", data.get("typeValue"));
+      formData.append("policyDetailDTO.autoAddToInvoice", data.get("isAuto"));
+      const response = await axiosPrivate
+        .post("policy/other", formData)
+        .catch((e) => {
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            title: "Cập nhật phí thu khác thất bại",
+            showConfirmButton: false,
+            timer: 2000,
+          });
+        });
+      if (response.data.success) {
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: "Cập nhật phí thu khác thành công",
+          showConfirmButton: false,
+          timer: 2000,
+        });
+      } else {
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: "Cập nhật phí thu khác thất bại",
+          showConfirmButton: false,
+          timer: 2000,
+        });
+      }
       return { success: true };
     }
     //Delete other fee
     if (method === "DELETE") {
-      console.log(3);
+      const formData = new FormData();
+      formData.append("policyDetailDTO.policyId", data.get("policyId"));
+      formData.append(
+        "policyDetailDTO.policyDetailId",
+        data.get("policyDetailId")
+      );
+      formData.append("policyDetailDTO.customerGroupId", "NK000000");
+      formData.append("policyDetailDTO.roomCategoryId", "HP000000");
+      formData.append("policyDetailDTO.status", 6);
+      const response = await axiosPrivate
+        .post("policy/other", formData)
+        .catch((e) => {
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            title: "Xoá phí thu khác thất bại",
+            showConfirmButton: false,
+            timer: 2000,
+          });
+          return;
+        });
+      if (response.data.success) {
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: "Xoá phí thu khác thành công",
+          showConfirmButton: false,
+          timer: 2000,
+        });
+      } else {
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: "Xoá phí thu khác thất bại",
+          showConfirmButton: false,
+          timer: 2000,
+        });
+      }
       return { success: true };
     }
     return { success: true };
