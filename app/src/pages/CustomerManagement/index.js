@@ -1,9 +1,5 @@
 import { Box } from "@mui/material";
-import {
-  DataGrid,
-  GridActionsCellItem,
-  GridToolbar,
-} from "@mui/x-data-grid";
+import { DataGrid, GridActionsCellItem, GridToolbar } from "@mui/x-data-grid";
 import { useState } from "react";
 import ButtonHover from "../../components/UI/ButtonHover";
 import NewCustomer from "../../components/Customer/NewCustomer";
@@ -92,7 +88,7 @@ function CustomerManagementPage() {
       id: cus.customerId,
       code: cus.customerId,
       nameCus: cus.customerName,
-      customerGroup: cus.customerGroup,
+      customerGroup: cus.customerGroup.customerGroupName,
       IC: cus.identity,
       address: cus.address,
       phoneNumber: cus.phoneNumber,
@@ -204,13 +200,26 @@ async function loadCustomers() {
   return response.data;
 }
 
+async function loadCustomerGroup() {
+  const response = await axiosPrivate
+    .get("customer/customerGroup")
+    .catch((e) => {
+      redirect("/login");
+    });
+  if (response.data.success) {
+    return response.data.result;
+  } else {
+    return redirect("/login");
+  }
+}
+
 export async function loader() {
   const token = localStorage.getItem("token");
   if (!token) {
     return redirect("/login");
   }
   return defer({
-    demo: await loadCustomers(),
+    customerGroups: await loadCustomerGroup(),
     customers: await loadCustomers(),
   });
 }
@@ -218,9 +227,42 @@ export async function loader() {
 export async function action({ request }) {
   const method = request.method;
   const data = await request.formData();
+  if (data.get("isAddGroup")) {
+    const formData = new FormData();
+    formData.append("customerGroupName", data.get("groupCusName"));
+    const response = await axiosPrivate
+      .post("customer/customerGroup", formData)
+      .catch((e) => {
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: "Thêm nhóm khách hàng thất bại",
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      });
+    if (response.data.success) {
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: "Thêm nhóm khách hàng thành công",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    } else {
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        title: "Thêm nhóm khách hàng thất bại",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    }
+    return redirect("/manager/customerManagement");
+  }
   const formData = new FormData();
   formData.append("customerName", data.get("customerName"));
-  formData.append("customerGroup", data.get("customerGroup"));
+  formData.append("customerGroupId", data.get("customerGroupId"));
   formData.append("phoneNumber", data.get("phoneNumber"));
   formData.append("dob", new Date(data.get("dob")).toISOString());
   formData.append("email", data.get("email"));
@@ -285,7 +327,6 @@ export async function action({ request }) {
           timer: 1500,
         });
       });
-    console.log(response);
     return redirect("/manager/customerManagement");
   }
   if (method === "DELETE") {

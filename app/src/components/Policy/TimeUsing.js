@@ -1,7 +1,9 @@
 import { useState } from "react";
 import TimeUsingModal from "./TimeUsingModal";
+import { useLoaderData } from "react-router-dom";
 
 function TimeUsing() {
+  const { timeUsing } = useLoaderData();
   const [openTimeUsingModal, setOpenTimeUsingModal] = useState(false);
   return (
     <div className="ml-4 my-4">
@@ -26,6 +28,7 @@ function TimeUsing() {
         <TimeUsingModal
           open={openTimeUsingModal}
           onClose={() => setOpenTimeUsingModal(false)}
+          timeUsing={timeUsing}
         />
       )}
     </div>

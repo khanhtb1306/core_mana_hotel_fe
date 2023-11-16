@@ -32,14 +32,14 @@ function Modal({ open, onClose, size, button, children }) {
           <div className="flex pt-5">
             <div className="ml-auto">
               <button
-                className="bg-green-500 mr-10 py-2 px-6 text-white rounded"
+                className="bg-green-500 mr-10 py-2 px-6 text-white rounded hover:bg-green-600"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "Đang lưu..." : "Lưu"}
               </button>
               <button
                 type="button"
-                className="bg-gray-400 py-2 px-6 text-white rounded"
+                className="bg-gray-400 py-2 px-6 text-white rounded hover:bg-gray-500"
                 onClick={() => {
                   onClose();
                 }}
