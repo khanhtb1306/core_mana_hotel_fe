@@ -52,15 +52,28 @@ async function loadGoodsUnit() {
   return response.data;
 }
 
+async function loadCustomerGroup() {
+  const response = await axiosPrivate
+    .get("customer/customerGroup")
+    .catch((e) => {
+      redirect("/login");
+    });
+  if (response.data.success) {
+    return response.data.result;
+  } else {
+    return redirect("/login");
+  }
+}
+
 export async function loader({ request, params }) {
   const id = params.reservationId;
 
   return defer({
+    customerGroups: await loadCustomerGroup(),
     goodsUnit: await loadGoodsUnit(),
     categories: await loadCategories(),
     prices: await loadPriceList(),
     customers: await loadCustomers(),
-    reservation: await loadReservationById(id),
     reservation: await loadReservationById(id),
   });
 }

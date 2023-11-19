@@ -195,7 +195,10 @@ function PersonFeeModal(props) {
                     category.roomCategory.roomCategoryId
                 );
                 return (
-                  <tr key={ind} className="border border-gray-300 hover:bg-gray-100">
+                  <tr
+                    key={ind}
+                    className="border border-gray-300 hover:bg-gray-100"
+                  >
                     <td className="py-1 px-2">
                       <div>
                         <h2>{category.roomCategory.roomCategoryId}</h2>
@@ -282,108 +285,117 @@ function PersonFeeModal(props) {
                                 defaultValue={adult.policyDetailId}
                               />
                             )}
-                            Từ người thứ
-                            <input
-                              className="border-0 border-b border-gray-500 w-16 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                              type="number"
-                              name={`numberAdult[${ind}][${index}]`}
-                              value={adult.number}
-                              onChange={(e) => {
-                                const i = index;
-                                const check = cate.listAdult.map(
-                                  (adult, index) => {
-                                    if (index === i) {
-                                      return {
-                                        number: Number(e.target.value),
-                                        price: adult.price,
-                                      };
-                                    } else {
-                                      return adult;
-                                    }
+                            {category.roomCategory.numOfAdults <
+                              category.roomCategory.numMaxOfAdults && (
+                              <>
+                                Từ người thứ
+                                <input
+                                  className="border-0 border-b border-gray-500 w-16 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                                  type="number"
+                                  name={`numberAdult[${ind}][${index}]`}
+                                  value={adult.number}
+                                  onChange={(e) => {
+                                    const i = index;
+                                    const check = cate.listAdult.map(
+                                      (adult, index) => {
+                                        if (index === i) {
+                                          return {
+                                            number: Number(e.target.value),
+                                            price: adult.price,
+                                          };
+                                        } else {
+                                          return adult;
+                                        }
+                                      }
+                                    );
+                                    const updateListPersonFee =
+                                      listPersonFee.map((c) => {
+                                        if (
+                                          c.roomCategoryId ===
+                                          cate.roomCategoryId
+                                        ) {
+                                          return {
+                                            ...cate,
+                                            listAdult: check,
+                                          };
+                                        } else {
+                                          return {
+                                            ...c,
+                                          };
+                                        }
+                                      });
+                                    setListPersonFee(updateListPersonFee);
+                                  }}
+                                  min={
+                                    index > 0
+                                      ? cate.listAdult[index - 1].number + 1
+                                      : 1
                                   }
-                                );
-                                const updateListPersonFee = listPersonFee.map(
-                                  (c) => {
-                                    if (
-                                      c.roomCategoryId === cate.roomCategoryId
-                                    ) {
-                                      return {
-                                        ...cate,
-                                        listAdult: check,
-                                      };
-                                    } else {
-                                      return {
-                                        ...c,
-                                      };
-                                    }
+                                  max={
+                                    index < cate.listAdult.length - 1
+                                      ? cate.listAdult[index + 1].number - 1
+                                      : category.roomCategory.numMaxOfAdults -
+                                        category.roomCategory.numOfAdults
                                   }
-                                );
-                                setListPersonFee(updateListPersonFee);
-                              }}
-                              min={
-                                index > 0
-                                  ? cate.listAdult[index - 1].number + 1
-                                  : 1
-                              }
-                              max={
-                                index < cate.listAdult.length - 1
-                                  ? cate.listAdult[index + 1].number - 1
-                                  : category.roomCategory.numMaxOfAdults
-                              }
-                            />
-                            giá
-                            <input
-                              className="border-0 border-b border-gray-500 w-28 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                              type="number"
-                              name={`priceAdult[${ind}][${index}]`}
-                              value={adult.price}
-                              onChange={(e) => {
-                                const i = index;
-                                const check = cate.listAdult.map(
-                                  (adult, index) => {
-                                    if (index === i) {
-                                      return {
-                                        number: adult.number,
-                                        price: Number(e.target.value),
-                                      };
-                                    } else {
-                                      return adult;
+                                />
+                                giá
+                                <input
+                                  className="border-0 border-b border-gray-500 w-28 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                                  type="number"
+                                  name={`priceAdult[${ind}][${index}]`}
+                                  value={adult.price}
+                                  onChange={(e) => {
+                                    const i = index;
+                                    const check = cate.listAdult.map(
+                                      (adult, index) => {
+                                        if (index === i) {
+                                          return {
+                                            number: adult.number,
+                                            price: Number(e.target.value),
+                                          };
+                                        } else {
+                                          return adult;
+                                        }
+                                      }
+                                    );
+                                    const updateListPersonFee =
+                                      listPersonFee.map((c) => {
+                                        if (
+                                          c.roomCategoryId ===
+                                          cate.roomCategoryId
+                                        ) {
+                                          return {
+                                            ...cate,
+                                            listAdult: check,
+                                          };
+                                        } else {
+                                          return {
+                                            ...c,
+                                          };
+                                        }
+                                      });
+                                    setListPersonFee(updateListPersonFee);
+                                  }}
+                                  min={0}
+                                />
+                                {index > 0 && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleAdultRemove(cate, index)
                                     }
-                                  }
-                                );
-                                const updateListPersonFee = listPersonFee.map(
-                                  (c) => {
-                                    if (
-                                      c.roomCategoryId === cate.roomCategoryId
-                                    ) {
-                                      return {
-                                        ...cate,
-                                        listAdult: check,
-                                      };
-                                    } else {
-                                      return {
-                                        ...c,
-                                      };
-                                    }
-                                  }
-                                );
-                                setListPersonFee(updateListPersonFee);
-                              }}
-                              min={0}
-                            />
-                            {index > 0 && (
-                              <button
-                                type="button"
-                                onClick={() => handleAdultRemove(cate, index)}
-                              >
-                                <i className="fa-solid fa-trash"></i>
-                              </button>
+                                  >
+                                    <i className="fa-solid fa-xmark"></i>
+                                  </button>
+                                )}
+                              </>
                             )}
                           </div>
                         );
                       })}
                       {cate.listAdult[cate.listAdult.length - 1].number <
-                        category.roomCategory.numMaxOfAdults && (
+                        category.roomCategory.numMaxOfAdults -
+                          category.roomCategory.numOfAdults && (
                         <div className="text-center mt-2">
                           <button
                             type="button"
@@ -407,110 +419,117 @@ function PersonFeeModal(props) {
                                 defaultValue={children.policyDetailId}
                               />
                             )}
-                            Từ người thứ
-                            <input
-                              className="border-0 border-b border-gray-500 w-16 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                              type="number"
-                              name={`numberChildren[${ind}][${index}]`}
-                              value={children.number}
-                              onChange={(e) => {
-                                const i = index;
-                                const check = cate.listChildren.map(
-                                  (adult, index) => {
-                                    if (index === i) {
-                                      return {
-                                        number: Number(e.target.value),
-                                        price: adult.price,
-                                      };
-                                    } else {
-                                      return adult;
-                                    }
+                            {category.roomCategory.numOfChildren <
+                              category.roomCategory.numMaxOfChildren && (
+                              <>
+                                Từ người thứ
+                                <input
+                                  className="border-0 border-b border-gray-500 w-16 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                                  type="number"
+                                  name={`numberChildren[${ind}][${index}]`}
+                                  value={children.number}
+                                  onChange={(e) => {
+                                    const i = index;
+                                    const check = cate.listChildren.map(
+                                      (adult, index) => {
+                                        if (index === i) {
+                                          return {
+                                            number: Number(e.target.value),
+                                            price: adult.price,
+                                          };
+                                        } else {
+                                          return adult;
+                                        }
+                                      }
+                                    );
+                                    const updateListPersonFee =
+                                      listPersonFee.map((c) => {
+                                        if (
+                                          c.roomCategoryId ===
+                                          cate.roomCategoryId
+                                        ) {
+                                          return {
+                                            ...cate,
+                                            listChildren: check,
+                                          };
+                                        } else {
+                                          return {
+                                            ...c,
+                                          };
+                                        }
+                                      });
+                                    setListPersonFee(updateListPersonFee);
+                                  }}
+                                  min={
+                                    index > 0
+                                      ? cate.listChildren[index - 1].number + 1
+                                      : 1
                                   }
-                                );
-                                const updateListPersonFee = listPersonFee.map(
-                                  (c) => {
-                                    if (
-                                      c.roomCategoryId === cate.roomCategoryId
-                                    ) {
-                                      return {
-                                        ...cate,
-                                        listChildren: check,
-                                      };
-                                    } else {
-                                      return {
-                                        ...c,
-                                      };
-                                    }
+                                  max={
+                                    index < cate.listChildren.length - 1
+                                      ? cate.listChildren[index + 1].number - 1
+                                      : category.roomCategory.numMaxOfChildren -
+                                        category.roomCategory.numOfChildren
                                   }
-                                );
-                                setListPersonFee(updateListPersonFee);
-                              }}
-                              min={
-                                index > 0
-                                  ? cate.listChildren[index - 1].number + 1
-                                  : 1
-                              }
-                              max={
-                                index < cate.listChildren.length - 1
-                                  ? cate.listChildren[index + 1].number - 1
-                                  : category.roomCategory.numMaxOfChildren
-                              }
-                            />
-                            giá
-                            <input
-                              className="border-0 border-b border-gray-500 w-28 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                              type="number"
-                              name={`priceChildren[${ind}][${index}]`}
-                              value={children.price}
-                              onChange={(e) => {
-                                const i = index;
-                                const check = cate.listChildren.map(
-                                  (adult, index) => {
-                                    if (index === i) {
-                                      return {
-                                        number: adult.number,
-                                        price: Number(e.target.value),
-                                      };
-                                    } else {
-                                      return adult;
-                                    }
-                                  }
-                                );
-                                const updateListPersonFee = listPersonFee.map(
-                                  (c) => {
-                                    if (
-                                      c.roomCategoryId === cate.roomCategoryId
-                                    ) {
-                                      return {
-                                        ...cate,
-                                        listChildren: check,
-                                      };
-                                    } else {
-                                      return {
-                                        ...c,
-                                      };
-                                    }
-                                  }
-                                );
-                                setListPersonFee(updateListPersonFee);
-                              }}
-                              min={0}
-                            />
-                            {index > 0 && (
-                              <button type="button">
-                                <i
-                                  className="fa-solid fa-trash"
-                                  onClick={() =>
-                                    handleChildrenRemove(cate, index)
-                                  }
-                                ></i>
-                              </button>
+                                />
+                                giá
+                                <input
+                                  className="border-0 border-b border-gray-500 w-28 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                                  type="number"
+                                  name={`priceChildren[${ind}][${index}]`}
+                                  value={children.price}
+                                  onChange={(e) => {
+                                    const i = index;
+                                    const check = cate.listChildren.map(
+                                      (adult, index) => {
+                                        if (index === i) {
+                                          return {
+                                            number: adult.number,
+                                            price: Number(e.target.value),
+                                          };
+                                        } else {
+                                          return adult;
+                                        }
+                                      }
+                                    );
+                                    const updateListPersonFee =
+                                      listPersonFee.map((c) => {
+                                        if (
+                                          c.roomCategoryId ===
+                                          cate.roomCategoryId
+                                        ) {
+                                          return {
+                                            ...cate,
+                                            listChildren: check,
+                                          };
+                                        } else {
+                                          return {
+                                            ...c,
+                                          };
+                                        }
+                                      });
+                                    setListPersonFee(updateListPersonFee);
+                                  }}
+                                  min={0}
+                                />
+                                {index > 0 && (
+                                  <button type="button">
+                                    <i
+                                      className="fa-solid fa-xmark"
+                                      onClick={() =>
+                                        handleChildrenRemove(cate, index)
+                                      }
+                                    ></i>
+                                  </button>
+                                )}
+                              </>
                             )}
                           </div>
                         );
                       })}
                       {cate.listChildren[cate.listChildren.length - 1].number <
-                        category.roomCategory.numMaxOfChildren && (
+                        category.roomCategory.numMaxOfChildren -
+                          category.roomCategory.numOfChildren && (
                         <div className="text-center mt-2">
                           <button
                             type="button"

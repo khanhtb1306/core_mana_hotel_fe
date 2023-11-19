@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-
 function ButtonHeader(props) {
   const [showAction, setShowAction] = useState(false);
   const list = props.list.map((item) => (
@@ -22,14 +21,14 @@ function ButtonHeader(props) {
         onMouseMove={() => setShowAction(true)}
         onMouseOut={() => setShowAction(false)}
       >
-        <li className="p-4">
+        <li className="p-2">
           <NavLink to="#" className="text-white p-4">
             <i className={`${props.icon} pr-3`}></i>
             {props.name}
           </NavLink>
         </li>
         {showAction && (
-          <div className="absolute bg-blue-800 ml-auto w-60 py-3 z-10">
+          <div className="absolute bg-blue-800 ml-auto w-70 py-3 z-10">
             {list}
           </div>
         )}

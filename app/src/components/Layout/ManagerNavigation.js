@@ -9,8 +9,8 @@ function ManagerNavigation() {
   const [showAction, setShowAction] = useState(false);
   const location = useLocation();
   return (
-    <nav className="px-5 bg-blue-500">
-      <ul className="flex">
+    <nav className="px-5 bg-blue-500 h-10">
+      <ul className="flex h-10">
         <div className="my-auto mr-5">
           <img src={logo} alt="Logo" className="w-10" />
         </div>
@@ -22,7 +22,7 @@ function ManagerNavigation() {
               : "hover:bg-blue-800"
           }`}
         >
-          <li className="pt-4">
+          <li className="pt-2">
             <NavLink to="/manager/overview" className="text-white p-4">
               <i className="fa-solid fa-eye pr-3"></i>
               Tổng quan
@@ -52,7 +52,7 @@ function ManagerNavigation() {
           ]}
         />
         <ButtonHeader
-          name="Danh mục"
+            name="Danh mục"
           icon="fa-solid fa-box"
           isActive={
             location.pathname === "/manager/productManagement" ||
@@ -74,8 +74,8 @@ function ManagerNavigation() {
           ]}
         />
         <ButtonHeader
-          name="Đối tác"
-          icon="fa-solid fa-user-tie"
+            name="Đối tác"
+            icon="fa-solid fa-user-tie"
           isActive={
             location.pathname === "/manager/customerManagement" ||
             location.pathname === "/manager/supplierManagement"
@@ -102,7 +102,7 @@ function ManagerNavigation() {
               : "hover:bg-blue-800"
           }`}
         >
-          <li className="pt-4">
+          <li className="pt-2">
             <NavLink to="/manager/policy" className="text-white p-4">
               <i className="fa-solid fa-file-shield pr-2"></i>
               Chính sách
