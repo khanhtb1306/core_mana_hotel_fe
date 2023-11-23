@@ -36,6 +36,10 @@ const OverviewPage = () => {
         return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     };
 
+    console.log(reportRoomCapacityCurrentMonth);
+    const labels = reportRoomCapacityCurrentMonth.daysOfMonth ? reportRoomCapacityCurrentMonth.daysOfMonth : [];
+    console.log(labels);
+
     const barChartData = {
         labels: labels,
         datasets: [{
@@ -89,9 +93,7 @@ const OverviewPage = () => {
             borderWidth: 1
         }]
     };
-    console.log(reportRoomCapacityCurrentMonth);
-    const labels = reportRoomCapacityCurrentMonth.daysOfMonth ? reportRoomCapacityCurrentMonth.daysOfMonth : [];
-    console.log(labels);
+
 
     const dataset = {
         label: 'Mana Hotel',
