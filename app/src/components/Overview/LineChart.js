@@ -19,7 +19,24 @@ const LineChart = ({ labels, dataset }) => {
                 type: 'line',
                 data: {
                     labels: labels,
-                    datasets: [dataset],
+                    datasets: [dataset], // Use the generated dataset
+                },
+                options: {
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false, // Hide x-axis grid lines
+                            },
+                        },
+                        y: {
+                            grid: {
+                                display: true, // Hide y-axis grid lines
+                            },
+                            ticks: {
+                                callback: value => `${value}%`,
+                            },
+                        },
+                    },
                 },
             });
         }
@@ -32,7 +49,7 @@ const LineChart = ({ labels, dataset }) => {
         };
     }, [labels, dataset]);
 
-    return <canvas ref={chartRef} />;
+    return <canvas ref={chartRef}/>;
 };
 
 export default LineChart;

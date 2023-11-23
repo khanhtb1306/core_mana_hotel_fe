@@ -19,9 +19,19 @@ const BarChart = ({ data }) => {
                 type: 'bar',
                 data: data,
                 options: {
+                    indexAxis: 'x', // Set indexAxis to 'y' for horizontal bar chart
                     scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: {
+                                display: false, // Hide x-axis grid lines
+                            },
+                        },
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            grid: {
+                                display: true, // Hide x-axis grid lines
+                            },
                         }
                     }
                 }

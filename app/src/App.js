@@ -58,8 +58,9 @@ import PolicyManagementPage, {
   loader as loadPolicy,
   action as actionPolicy,
 } from "./pages/PolicyManagement/index";
-import OverviewManagement from "./pages/OverviewManagementPage";
-import OverviewManagementPage from "./pages/OverviewManagementPage";
+import OverviewManagementPage,{
+  loader as loadOverview,
+} from "./pages/OverviewManagementPage";
 
 const routesForManager = [
   {
@@ -69,6 +70,7 @@ const routesForManager = [
   {
     path: "overview",
     element: <OverviewManagementPage/>,
+    loader: loadOverview
   },
   {
     path: "categoryRoomManagement",

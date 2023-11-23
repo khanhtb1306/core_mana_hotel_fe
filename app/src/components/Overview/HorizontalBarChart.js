@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import Chart from 'chart.js/auto';
 
+
+
 const HorizontalBarChart = ({ data }) => {
     const chartRef = useRef(null);
     const chartInstance = useRef(null);
@@ -14,17 +16,27 @@ const HorizontalBarChart = ({ data }) => {
                 chartInstance.current.destroy();
             }
 
-            // Create a new chart instance
+            // Create a new horizontal bar chart instance
             chartInstance.current = new Chart(ctx, {
-                type: 'horizontalBar',
+                type: 'bar',
                 data: data,
                 options: {
+                    indexAxis: 'y', // Set indexAxis to 'y' for horizontal bar chart
                     scales: {
                         x: {
                             beginAtZero: true,
+                            grid: {
+                                display: true, // Hide x-axis grid lines
+                            },
                         },
-                    },
-                },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: false, // Hide x-axis grid lines
+                            },
+                        }
+                    }
+                }
             });
         }
 

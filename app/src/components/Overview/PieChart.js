@@ -30,20 +30,16 @@ const PieChart = ({ percentage }) => {
                     ],
                 },
                 options: {
-                    cutout: '70%', // Reduce the thickness of the chart to create a hole in the center
+                    cutout: '80%', // Reduce the thickness of the chart to create a hole in the center
                     plugins: {
-                        tooltip: false,
-                        legend: false,
-                    },
-                    elements: {
-                        center: {
-                            text: `${percentage}%`, // Display the percentage value
-                            color: '#ff0000', // Color of the percentage text
-                            fontStyle: 'Arial', // Font family of the percentage text
-                            sidePadding: 20, // Distance from the center hole to the percentage text
-                            fontSize: '12px' // Thay đổi kích thước của nhãn phần trăm thành 12px
-
+                        tooltip: {
+                            callbacks: {
+                                label: (tooltipItem) => {
+                                    return `${tooltipItem.label}: ${tooltipItem.parsed}%`;
+                                },
+                            },
                         },
+                        legend: false,
                     },
                 },
             });
@@ -59,4 +55,5 @@ const PieChart = ({ percentage }) => {
 
     return <canvas ref={chartRef} />;
 };
+
 export default PieChart;
