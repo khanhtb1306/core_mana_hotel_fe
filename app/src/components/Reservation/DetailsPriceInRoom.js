@@ -8,6 +8,13 @@ function DetailsPriceInRoom(props) {
   const toTime = props.toTime;
   const fromTime = props.fromTime;
   const typeTime = props.typeTime;
+  const timeUsing = props.timeUsing;
+  const priceNightStart = timeUsing.startTimeNight.split(":")[0];
+  const priceNightEnd = timeUsing.endTimeNight.split(":")[0];
+  const priceDayStart = timeUsing.startTimeDay.split(":")[0];
+  const priceDayEnd = timeUsing.endTimeDay.split(":")[0];
+  const timeBonusDay = timeUsing.timeBonusDay;
+  const timeBonusHour = timeUsing.timeBonusHour;
 
   const columns = [
     { field: "time", headerName: "Thời gian", width: 400 },
@@ -19,6 +26,9 @@ function DetailsPriceInRoom(props) {
     const hoursList = [];
     let currentHour = fromTime;
     while (currentHour.isBefore(toTime)) {
+      if (toTime.diff(currentHour, "minute") < timeBonusHour) {
+        break;
+      }
       hoursList.push(currentHour);
       currentHour = currentHour.add(1, "hour");
     }
@@ -48,10 +58,17 @@ function DetailsPriceInRoom(props) {
     });
   } else if (typeTime === 2) {
     const daysList = [];
-    let currentHour = fromTime;
-    while (currentHour.date() < toTime.date()) {
-      daysList.push(currentHour);
-      currentHour = currentHour.add(1, "day");
+    let currentDay = fromTime.hour(priceDayStart).minute(0);
+    if (currentDay.diff(fromTime, "hour") >= timeBonusDay) {
+      daysList.push(fromTime);
+    }
+    while (currentDay.isBefore(toTime.hour(priceDayEnd).minute(0))) {
+      daysList.push(currentDay);
+      currentDay = currentDay.add(1, "day");
+    }
+    currentDay = currentDay.hour(priceDayEnd).minute(0);
+    if (toTime.diff(currentDay, "hour") >= timeBonusDay) {
+      daysList.push(currentDay);
     }
     rows = daysList.map((day, index) => {
       let priceInDay = 0;

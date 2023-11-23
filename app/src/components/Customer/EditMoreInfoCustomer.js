@@ -8,7 +8,7 @@ import dayjs from "dayjs";
 function EditCustomerModal(props) {
   const { customerGroups } = useLoaderData();
   const customer = props.customer;
-//   console.log(customer);
+  //   console.log(customer);
   const [openNewGroupCusModal, setOpenNewGroupCusModal] = useState(false);
   const [openEditInfo, setOpenEditInfo] = useState(true);
   const [openHistoryReservation, setOpenHistoryReservation] = useState(false);
@@ -26,6 +26,11 @@ function EditCustomerModal(props) {
             <div className="mb-4">
               <h1 className="text-lg pb-5 font-bold">
                 Thông tin khách hàng {" " + customer.customerName}{" "}
+                <input
+                  type="hidden"
+                  name="editMainCustomer"
+                  defaultValue={true}
+                />
               </h1>
               <div className="flex bg-gray-100 rounded p-1">
                 <button
@@ -207,7 +212,9 @@ function EditCustomerModal(props) {
                           className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                           type="date"
                           name="dob"
-                          defaultValue={dayjs(customer.dob)}
+                          defaultValue={dayjs(customer.dob).format(
+                            "YYYY-MM-DD"
+                          )}
                           required
                         />
                       </td>

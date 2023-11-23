@@ -3,6 +3,7 @@ import Modal from "./Modal";
 import ImageInput from "../UI/ImageInput";
 import { useState } from "react";
 import NewGroupCustomer from "../NewGroupCustomer";
+import dayjs from "dayjs";
 
 function CustomerForm({ name, open, onClose, method, customer }) {
   const { customerGroups } = useLoaderData();
@@ -25,6 +26,11 @@ function CustomerForm({ name, open, onClose, method, customer }) {
             <div className="p-2 w-full">
               <div>
                 <h1 className="text-lg pb-5 font-bold">{name}</h1>
+                <input
+                  type="hidden"
+                  name="newMainCustomer"
+                  defaultValue={true}
+                />
               </div>
               <div className="flex w-full">
                 <div className="ml-auto w-3/12 mr-5">
@@ -163,7 +169,11 @@ function CustomerForm({ name, open, onClose, method, customer }) {
                           className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                           type="date"
                           name="dob"
-                          defaultValue={formattedDate ? formattedDate : ""}
+                          defaultValue={
+                            customer.dob
+                              ? dayjs(customer.dob).format("YYYY-MM-DD")
+                              : ""
+                          }
                           required
                         />
                       </td>

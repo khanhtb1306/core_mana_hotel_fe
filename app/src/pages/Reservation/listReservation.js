@@ -602,7 +602,7 @@ function ListReservationPage() {
           ),
           status !== 3 ? (
             <GridActionsCellItem
-              icon={<button type="button"><Link to={`editReservation/${row.reservationId}`}>Điều chỉnh</Link></button>}
+              icon={<button type="button"><Link to={`/editReservation/${row.reservationId}`}>Điều chỉnh</Link></button>}
               showInMenu
             />
           ) : (

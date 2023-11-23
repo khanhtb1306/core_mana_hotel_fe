@@ -36,59 +36,59 @@ const OverviewPage = () => {
         return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     };
 
-    // const barChartData = {
-    //     labels: labels,
-    //     datasets: [{
-    //         label: 'Mana Hotel',
-    //         data: [65, 59, 80, 81, 56, 55, 40],
-    //         backgroundColor: [
-    //             'rgba(255, 99, 132, 0.2)',
-    //             'rgba(255, 159, 64, 0.2)',
-    //             'rgba(255, 205, 86, 0.2)',
-    //             'rgba(75, 192, 192, 0.2)',
-    //             'rgba(54, 162, 235, 0.2)',
-    //             'rgba(153, 102, 255, 0.2)',
-    //             'rgba(201, 203, 207, 0.2)'
-    //         ],
-    //         borderColor: [
-    //             'rgb(255, 99, 132)',
-    //             'rgb(255, 159, 64)',
-    //             'rgb(255, 205, 86)',
-    //             'rgb(75, 192, 192)',
-    //             'rgb(54, 162, 235)',
-    //             'rgb(153, 102, 255)',
-    //             'rgb(201, 203, 207)'
-    //         ],
-    //         borderWidth: 1
-    //     }]
-    // };
-    //
-    // const horizontalBarChartData = {
-    //     labels: labels,
-    //     datasets: [{
-    //         label: 'Mana Hotel',
-    //         data: [65, 59, 80, 81, 56, 55, 40],
-    //         backgroundColor: [
-    //             'rgba(255, 99, 132, 0.2)',
-    //             'rgba(255, 159, 64, 0.2)',
-    //             'rgba(255, 205, 86, 0.2)',
-    //             'rgba(75, 192, 192, 0.2)',
-    //             'rgba(54, 162, 235, 0.2)',
-    //             'rgba(153, 102, 255, 0.2)',
-    //             'rgba(201, 203, 207, 0.2)'
-    //         ],
-    //         borderColor: [
-    //             'rgb(255, 99, 132)',
-    //             'rgb(255, 159, 64)',
-    //             'rgb(255, 205, 86)',
-    //             'rgb(75, 192, 192)',
-    //             'rgb(54, 162, 235)',
-    //             'rgb(153, 102, 255)',
-    //             'rgb(201, 203, 207)'
-    //         ],
-    //         borderWidth: 1
-    //     }]
-    // };
+    const barChartData = {
+        labels: labels,
+        datasets: [{
+            label: 'Mana Hotel',
+            data: [65, 59, 80, 81, 56, 55, 40],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(255, 159, 64, 0.2)',
+                'rgba(255, 205, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(201, 203, 207, 0.2)'
+            ],
+            borderColor: [
+                'rgb(255, 99, 132)',
+                'rgb(255, 159, 64)',
+                'rgb(255, 205, 86)',
+                'rgb(75, 192, 192)',
+                'rgb(54, 162, 235)',
+                'rgb(153, 102, 255)',
+                'rgb(201, 203, 207)'
+            ],
+            borderWidth: 1
+        }]
+    };
+
+    const horizontalBarChartData = {
+        labels: labels,
+        datasets: [{
+            label: 'Mana Hotel',
+            data: [65, 59, 80, 81, 56, 55, 40],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(255, 159, 64, 0.2)',
+                'rgba(255, 205, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(201, 203, 207, 0.2)'
+            ],
+            borderColor: [
+                'rgb(255, 99, 132)',
+                'rgb(255, 159, 64)',
+                'rgb(255, 205, 86)',
+                'rgb(75, 192, 192)',
+                'rgb(54, 162, 235)',
+                'rgb(153, 102, 255)',
+                'rgb(201, 203, 207)'
+            ],
+            borderWidth: 1
+        }]
+    };
     console.log(reportRoomCapacityCurrentMonth);
     const labels = reportRoomCapacityCurrentMonth.daysOfMonth ? reportRoomCapacityCurrentMonth.daysOfMonth : [];
     console.log(labels);
@@ -109,7 +109,6 @@ const OverviewPage = () => {
     const handleDropdownChange = (event, setSelectedValue) => {
         setSelectedValue(event.target.value);
     };
-
     const getIconForAction = (action) => {
         switch (action) {
             case 'tạo hóa đơn':
@@ -242,14 +241,14 @@ const OverviewPage = () => {
                         </div>
                         <div style={{ width: '1000px', height: 'auto' }}>
                             <div>
-                                {/*<BarChart data={barChartData} />*/}
+                                <BarChart data={barChartData} />
                             </div>
                         </div>
                     </div>
                     <div className="bg-white p-4 mr-4 my-4 rounded">
                         <p className="text-lg">TOP 10 HẠNG PHÒNG 7 NGÀY QUA</p>
                         <div style={{ width: 'auto', height: '500px' }}>
-                            {/*<HorizontalBarChart data={horizontalBarChartData} />*/}
+                            <HorizontalBarChart data={horizontalBarChartData} />
                         </div>
                     </div>
                 </div>

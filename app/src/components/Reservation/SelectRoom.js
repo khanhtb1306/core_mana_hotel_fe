@@ -2,22 +2,27 @@ import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker, DateTimePicker } from "@mui/x-date-pickers";
-import { MenuItem, Select } from "@mui/material";
+import { Checkbox, FormControlLabel, MenuItem, Select } from "@mui/material";
 import { useState } from "react";
 import { useLoaderData } from "react-router-dom";
 import Swal from "sweetalert2";
 import DetailsPriceInRoom from "./DetailsPriceInRoom";
+import VisitorModal from "./VisitorModal";
 // require("dayjs/locale/vi");
 
 function SelectRoom(props) {
-  const { categories } = useLoaderData();
-  const priceNightStart = 22;
-  const priceNightEnd = 11;
-  const priceDayStart = 14;
-  const priceDayEnd = 12;
+  const { categories, timeUsing } = useLoaderData();
+  // console.log(timeUsing);
+  const priceNightStart = timeUsing.startTimeNight.split(":")[0];
+  const priceNightEnd = timeUsing.endTimeNight.split(":")[0];
+  const priceDayStart = timeUsing.startTimeDay.split(":")[0];
+  const priceDayEnd = timeUsing.endTimeDay.split(":")[0];
+  const timeBonusDay = timeUsing.timeBonusDay;
+  const timeBonusHour = timeUsing.timeBonusHour;
   const priceSoonCheckIn = 10000;
   const priceLateCheckOut = 10000;
   const room = props.room;
+  // console.log(room);
   const listRoomIdByRes = props.listRoomByRes.map((r) => r.room.roomId);
   const listRoomsByCate = categories.find(
     (cate) =>
@@ -44,7 +49,7 @@ function SelectRoom(props) {
     from = dayjs(room.checkInActual);
     to = dayjs(room.checkOutEstimate);
   } else {
-    from = dayjs(room.checkInActual); 
+    from = dayjs(room.checkInActual);
     to = dayjs(room.checkOutActual);
   }
   if (room.reservationType === "HOURLY") {
@@ -65,7 +70,7 @@ function SelectRoom(props) {
     type = 3;
     time = getPrice(type, from, to).time;
     if (from.hour() > priceNightStart) {
-      soonCheckIn = from.hour() - priceDayStart;
+      soonCheckIn = from.hour() - priceNightStart;
     }
     if (from.add(1, "day").hour(priceNightEnd).minute(0) < to) {
       lateCheckOut = to.diff(
@@ -81,6 +86,17 @@ function SelectRoom(props) {
   const [toTime, setToTime] = useState(to);
   const [lateCheckout, setLateCheckout] = useState(lateCheckOut);
   const [soonCheckin, setSoonCheckin] = useState(soonCheckIn);
+  const [isPaidSoonCheckin, setIsPaidSoonCheckin] = useState(true);
+  const [isPaidLateCheckout, setIsPaidLateCheckout] = useState(true);
+
+  const handlePaidSoonCheckinChange = () => {
+    setIsPaidSoonCheckin(!isPaidSoonCheckin);
+  };
+
+  const handlePaidLateCheckoutChange = () => {
+    setIsPaidLateCheckout(!isPaidLateCheckout);
+  };
+
   // console.log(props.price);
 
   const handleSelectRoom = (e) => {
@@ -136,8 +152,13 @@ function SelectRoom(props) {
         } else {
           setSoonCheckin(0);
         }
-        if (fromTime.add(1, "day").hour(priceNightEnd).minute(0).isBefore(toTime)) {
-          setLateCheckout(toTime.diff(fromTime.add(1, "day").hour(priceNightEnd).minute(0), "hour"));
+        if (fromTime.add(1, "day").hour(priceNightEnd).minute(0) < toTime) {
+          setLateCheckout(
+            toTime.diff(
+              fromTime.add(1, "day").hour(priceNightEnd).minute(0),
+              "hour"
+            )
+          );
         } else {
           setLateCheckout(0);
         }
@@ -174,6 +195,13 @@ function SelectRoom(props) {
       } else {
         setSoonCheckin(0);
       }
+      if (value.add(1, "day").hour(priceNightEnd).minute(0) < toTime) {
+        setLateCheckout(
+          toTime.diff(value.add(1, "day").hour(priceNightEnd).minute(0), "hour")
+        );
+      } else {
+        setLateCheckout(0);
+      }
       setFromTime(value);
     }
   };
@@ -193,8 +221,13 @@ function SelectRoom(props) {
         setLateCheckout(0);
       }
     } else {
-      if (value.hour() > priceNightEnd) {
-        setLateCheckout(value.hour() - priceNightEnd);
+      if (fromTime.add(1, "day").hour(priceNightEnd).minute(0) < value) {
+        setLateCheckout(
+          value.diff(
+            fromTime.add(1, "day").hour(priceNightEnd).minute(0),
+            "hour"
+          )
+        );
       } else {
         setLateCheckout(0);
       }
@@ -202,33 +235,25 @@ function SelectRoom(props) {
     }
   };
 
-  const handleError = (reason) => {
-    Swal.fire({
-      icon: "error",
-      title: "Invalid Date",
-      text: "Please enter a valid date.",
-    });
-  };
+  // const isFromDateDisabled = (date) => {
+  //   if (typeTime === 1) {
+  //     return false;
+  //   } else if (typeTime === 2) {
+  //     return false;
+  //   } else {
+  //     return false;
+  //   }
+  // };
 
-  const isFromDateDisabled = (date) => {
-    if (typeTime === 1) {
-      return false;
-    } else if (typeTime === 2) {
-      return false;
-    } else {
-      return false;
-    }
-  };
-
-  const isToDateDisabled = (date) => {
-    if (typeTime === 1) {
-      return fromTime.diff(date, "hour") > 24;
-    } else if (typeTime === 2) {
-      return date < fromTime;
-    } else {
-      return date < fromTime;
-    }
-  };
+  // const isToDateDisabled = (date) => {
+  //   if (typeTime === 1) {
+  //     return fromTime.diff(date, "hour") > 24;
+  //   } else if (typeTime === 2) {
+  //     return date < fromTime;
+  //   } else {
+  //     return date < fromTime;
+  //   }
+  // };
 
   function getPrice(typeTime, fromTime, toTime) {
     let price = 0;
@@ -237,6 +262,9 @@ function SelectRoom(props) {
       const hoursList = [];
       let currentHour = fromTime;
       while (currentHour.isBefore(toTime)) {
+        if (toTime.diff(currentHour, "minute") < timeBonusHour) {
+          break;
+        }
         hoursList.push(currentHour);
         currentHour = currentHour.add(1, "hour");
       }
@@ -261,10 +289,17 @@ function SelectRoom(props) {
       });
     } else if (typeTime === 2) {
       const daysList = [];
-      let currentHour = fromTime;
-      while (currentHour.date() < toTime.date()) {
-        daysList.push(currentHour);
-        currentHour = currentHour.add(1, "day");
+      let currentDay = fromTime.hour(priceDayStart).minute(0);
+      if (currentDay.diff(fromTime, "hour") >= timeBonusDay) {
+        daysList.push(fromTime);
+      }
+      while (currentDay.isBefore(toTime.hour(priceDayEnd).minute(0))) {
+        daysList.push(currentDay);
+        currentDay = currentDay.add(1, "day");
+      }
+      currentDay = currentDay.hour(priceDayEnd).minute(0);
+      if (toTime.diff(currentDay, "hour") >= timeBonusDay) {
+        daysList.push(currentDay);
       }
       time = daysList.length;
       daysList.map((day) => {
@@ -315,25 +350,38 @@ function SelectRoom(props) {
       <div>
         <div className="flex mb-2">
           <p className="my-auto mr-2">
-            {room.room.roomCategory.roomCategoryName}
+            {room.room.roomCategory.roomCategoryName}:
           </p>
           <Select
             sx={{ width: 100, height: 40 }}
             value={typeTime}
             onChange={handleSelectRoom}
-            disabled={room.status === "CHECK_OUT"}
+            disabled={room.status !== "BOOKING"}
           >
             <MenuItem value={1}>Giờ</MenuItem>
             <MenuItem value={2}>Ngày</MenuItem>
             <MenuItem value={3}>Đêm</MenuItem>
           </Select>
+          <button
+            type="button"
+            className="ml-auto rounded-lg px-2 border hover:border-green-500"
+            onClick={() => {
+              props.handleVisitModalOpen();
+            }}
+          >
+            <i className="fa-solid fa-user-tie ml-2"></i>
+            <span className="mx-2">1</span>
+            {" | "}
+            <i className="fa-solid fa-child ml-2"></i>
+            <span className="mx-2">1</span>
+          </button>
         </div>
         <div className="flex mb-2">
           <p className="text-gray-500 my-auto mr-2">Phòng:</p>
           <Select
             sx={{ width: 160, height: 40 }}
             defaultValue={room.room.roomId}
-            disabled={room.status === "CHECK_OUT"}
+            disabled={room.status !== "BOOKING"}
           >
             {roomByCate.map((room, index) => {
               return (
@@ -359,23 +407,21 @@ function SelectRoom(props) {
             </div>
           )}
         </div>
-        <div className="flex mb-2">
+        <div className="mb-2">
           <LocalizationProvider
             dateAdapter={AdapterDayjs}
             adapterLocale="vi-VN"
           >
-            {typeTime === 1 && (
-              <>
-                <p className="text-gray-500 my-auto mr-2">
-                  {room.status === "CHECK_OUT" ? "Thời gian:" : "Dự kiến:"}
-                </p>
+            {room.status === "BOOKING" && (
+              <div className="flex">
+                <p className="text-gray-500 my-auto mr-2">Dự kiến:</p>
                 <div className="pr-2">
                   <DateTimePicker
                     ampm={false}
-                    disabled={
-                      room.status === "CHECK_IN" || room.status === "CHECK_OUT"
-                    }
-                    shouldDisableDate={isFromDateDisabled}
+                    {...(typeTime !== 1 && {
+                      shouldDisableTime: (date) => date.minute() % 60 !== 0,
+                    })}
+                    // shouldDisableDate={isFromDateDisabled}
                     sx={{ ".MuiInputBase-input": { padding: 1, width: 150 } }}
                     value={fromTime}
                     onChange={handleChangeFromTime}
@@ -386,8 +432,15 @@ function SelectRoom(props) {
                 <div className="pr-2">
                   <DateTimePicker
                     ampm={false}
-                    disabled={room.status === "CHECK_OUT"}
-                    shouldDisableDate={isToDateDisabled}
+                    {...(typeTime === 1
+                      ? {
+                          shouldDisableTime: (date) =>
+                            fromTime.diff(date, "hour") > -1,
+                        }
+                      : {
+                          shouldDisableTime: (date) => date.minute() % 60 !== 0,
+                        })}
+                    // shouldDisableDate={isToDateDisabled}
                     shouldDisableTime={(date) =>
                       fromTime.diff(date, "hour") > -1
                     }
@@ -397,24 +450,83 @@ function SelectRoom(props) {
                     format="DD/MM/YYYY HH:mm"
                   />
                 </div>
+                <div className="bg-gray-200 w-.5 text-center my-auto py-1 px-2 rounded text-gray-500">
+                  {valueTime +
+                    " " +
+                    (typeTime === 1 ? "Giờ" : typeTime === 2 ? "Ngày" : "Đêm")}
+                  {(lateCheckout > 0 || soonCheckin > 0) &&
+                    " " + (lateCheckout + soonCheckin) + " Giờ"}
+                </div>
+              </div>
+            )}
+            {room.status === "CHECK_IN" && (
+              <>
+                <div className="flex mb-2">
+                  <p className="text-gray-500 my-auto mr-2">Dự kiến:</p>
+                  <div className="pr-2">
+                    <DateTimePicker
+                      ampm={false}
+                      disabled
+                      sx={{ ".MuiInputBase-input": { padding: 1, width: 150 } }}
+                      value={from}
+                      onChange={handleChangeFromTime}
+                      format="DD/MM/YYYY HH:mm"
+                    />
+                  </div>
+                  <p className="text-gray-500 my-auto mr-2">đến</p>
+                  <div className="pr-2">
+                    <DateTimePicker
+                      ampm={false}
+                      sx={{ ".MuiInputBase-input": { padding: 1, width: 150 } }}
+                      value={to}
+                      onChange={handleChangeToTime}
+                      format="DD/MM/YYYY HH:mm"
+                    />
+                  </div>
+                  <div className="bg-gray-200 w-.5 text-center my-auto py-1 px-2 rounded text-gray-500">
+                    {valueTime +
+                      " " +
+                      (typeTime === 1
+                        ? "Giờ"
+                        : typeTime === 2
+                        ? "Ngày"
+                        : "Đêm")}
+                    {(lateCheckout > 0 || soonCheckin > 0) &&
+                      " " + (lateCheckout + soonCheckin) + " Giờ"}
+                  </div>
+                </div>
+                <div className="flex">
+                  <p className="text-gray-500 my-auto mr-2">
+                    Dùng đến hiện tại:{" "}
+                  </p>
+                  <p className="text-green-500 my-auto">
+                    {typeTime === 1
+                      ? `${dayjs().diff(fromTime, "hour")} giờ ${
+                          dayjs().minute() - fromTime.minute()
+                        } phút`
+                      : typeTime === 2
+                      ? `${dayjs().date() - fromTime.date()} ngày ${
+                          dayjs().hour() - fromTime.hour()
+                        } giờ`
+                      : `${
+                          getPrice(typeTime, fromTime, dayjs()).time
+                        } đêm ${dayjs().diff(
+                          fromTime.add(1, "day").hour(priceNightEnd),
+                          "hour"
+                        )} giờ`}
+                  </p>
+                </div>
               </>
             )}
-            {typeTime === 2 && (
-              <>
-                <p className="text-gray-500 my-auto mr-2">
-                  {room.status === "CHECK_OUT" ? "Thời gian:" : "Dự kiến:"}
-                </p>
+            {room.status === "CHECK_OUT" && (
+              <div className="flex">
+                <p className="text-gray-500 my-auto mr-2">Thức tế:</p>
                 <div className="pr-2">
                   <DateTimePicker
                     ampm={false}
-                    disabled={
-                      room.status === "CHECK_IN" || room.status === "CHECK_OUT"
-                    }
-                    shouldDisableDate={isFromDateDisabled}
-                    shouldDisableTime={(date) => date.minute() % 60 !== 0}
+                    disabled
                     sx={{ ".MuiInputBase-input": { padding: 1, width: 150 } }}
-                    value={fromTime}
-                    onChange={handleChangeFromTime}
+                    defaultValue={dayjs(room.checkInActual)}
                     format="DD/MM/YYYY HH:mm"
                   />
                 </div>
@@ -422,68 +534,57 @@ function SelectRoom(props) {
                 <div className="pr-2">
                   <DateTimePicker
                     ampm={false}
-                    disabled={room.status === "CHECK_OUT"}
-                    shouldDisableTime={(date) => date.minute() % 60 !== 0}
-                    shouldDisableDate={isToDateDisabled}
+                    disabled
                     sx={{ ".MuiInputBase-input": { padding: 1, width: 150 } }}
-                    value={toTime}
-                    onChange={handleChangeToTime}
+                    defaultValue={dayjs(room.checkOutActual)}
                     format="DD/MM/YYYY HH:mm"
                   />
                 </div>
-              </>
-            )}
-            {typeTime === 3 && (
-              <>
-                <p className="text-gray-500 my-auto mr-2">
-                  {room.status === "CHECK_OUT" ? "Thời gian:" : "Dự kiến:"}
-                </p>
-                <div className="pr-2">
-                  <DateTimePicker
-                    ampm={false}
-                    disabled={
-                      room.status === "CHECK_IN" || room.status === "CHECK_OUT"
-                    }
-                    shouldDisableDate={isFromDateDisabled}
-                    shouldDisableTime={(date) => date.minute() % 60 !== 0}
-                    sx={{ ".MuiInputBase-input": { padding: 1, width: 150 } }}
-                    value={fromTime}
-                    onChange={handleChangeFromTime}
-                    format="DD/MM/YYYY HH:mm"
-                  />
+                <div className="bg-gray-200 w-.5 text-center my-auto py-1 px-2 rounded text-gray-500">
+                  {valueTime +
+                    " " +
+                    (typeTime === 1 ? "Giờ" : typeTime === 2 ? "Ngày" : "Đêm")}
+                  {(lateCheckout > 0 || soonCheckin > 0) &&
+                    " " + (lateCheckout + soonCheckin) + " Giờ"}
                 </div>
-                <p className="text-gray-500 my-auto mr-2">đến</p>
-                <div className="pr-2">
-                  <DateTimePicker
-                    ampm={false}
-                    disabled={room.status === "CHECK_OUT"}
-                    shouldDisableDate={isToDateDisabled}
-                    shouldDisableTime={(date) => date.minute() % 60 !== 0}
-                    sx={{ ".MuiInputBase-input": { padding: 1, width: 150 } }}
-                    value={toTime}
-                    onChange={handleChangeToTime}
-                    format="DD/MM/YYYY HH:mm"
-                  />
-                </div>
-              </>
+              </div>
             )}
           </LocalizationProvider>
-          <div className="bg-gray-200 w-.5 text-center my-auto py-1 px-2 rounded text-gray-500">
-            {valueTime +
-              " " +
-              (typeTime === 1 ? "Giờ" : typeTime === 2 ? "Ngày" : "Đêm")}
-            {(lateCheckout > 0 || soonCheckin > 0) &&
-              " " + (lateCheckout + soonCheckin) + " Giờ"}
-          </div>
         </div>
       </div>
       <div className="flex border-t pt-2">
+        {soonCheckin > 0 && (
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={isPaidSoonCheckin}
+                onChange={handlePaidSoonCheckinChange}
+              />
+            }
+            label="Phụ thu nhận sớm"
+          />
+        )}
+        {lateCheckout > 0 && (
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={isPaidLateCheckout}
+                onChange={handlePaidLateCheckoutChange}
+              />
+            }
+            label="Phụ thu trả muộn"
+          />
+        )}
+      </div>
+      <div className="flex pt-2">
         <p className="w-8/12">
           {room.room.roomCategory.roomCategoryName} (
           {typeTime === 1 ? "Giờ" : typeTime === 2 ? "Ngày" : "Đêm"})
         </p>
         <p className="w-1/12">{valueTime}</p>
-        <p className="w-2/12 text-right">{getPrice(typeTime, fromTime, toTime).price.toLocaleString()}</p>
+        <p className="w-2/12 text-right">
+          {getPrice(typeTime, fromTime, toTime).price.toLocaleString()}
+        </p>
         <p className="w-1/12">
           <button
             type="button"
@@ -494,15 +595,17 @@ function SelectRoom(props) {
           </button>
         </p>
       </div>
-      {soonCheckin > 0 && (
-        <div className="flex border-t pt-2">
+      {soonCheckin > 0 && isPaidSoonCheckin && (
+        <div className="flex pt-2">
           <p className="w-8/12">Phụ thu nhận sớm (Giờ)</p>
           <p className="w-1/12">{soonCheckin}</p>
-          <p className="w-2/12 text-right">{(soonCheckin * priceSoonCheckIn).toLocaleString()}</p>
+          <p className="w-2/12 text-right">
+            {(soonCheckin * priceSoonCheckIn).toLocaleString()}
+          </p>
           <p className="w-1/12"></p>
         </div>
       )}
-      {lateCheckout > 0 && (
+      {lateCheckout > 0 && isPaidLateCheckout && (
         <div className="flex border-t pt-2">
           <p className="w-8/12">Phụ thu trả muộn (Giờ)</p>
           <p className="w-1/12">{lateCheckout}</p>
@@ -512,7 +615,6 @@ function SelectRoom(props) {
           <p className="w-1/12"></p>
         </div>
       )}
-
       {openPriceModal && (
         <DetailsPriceInRoom
           open={openPriceModal}
@@ -521,6 +623,7 @@ function SelectRoom(props) {
           fromTime={fromTime}
           typeTime={typeTime}
           price={props.price}
+          timeUsing={timeUsing}
         />
       )}
     </div>

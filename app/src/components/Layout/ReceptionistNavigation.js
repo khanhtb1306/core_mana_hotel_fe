@@ -10,7 +10,7 @@ function ReceptionistNavigation() {
   const location = useLocation();
 
   return (
-    <nav className="pl-5 h-12 bg-green-500">
+    <nav className="pl-5 h-12 bg-green-500 print:hidden">
       <ul className="flex">
         <div className="my-auto mr-5">
           <img src={logo} alt="Logo" className="w-10" />

@@ -1,16 +1,16 @@
 import InvoiceFormModal from "./InvoiceFormModal";
 
-function AddInvoice(props) {
+function EditInvoice(props) {
   return (
     <InvoiceFormModal
       open={props.open}
       onClose={props.onClose}
-      name="Thêm hoá đơn"
-      method="POST"
-      invoice={null}
+      name="Chỉnh sửa hoá đơn"
+      method="PUT"
+      invoice={props.invoice}
       reservationDetail={props.reservationDetail}
     />
   );
 }
 
-export default AddInvoice;
+export default EditInvoice;
