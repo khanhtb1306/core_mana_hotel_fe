@@ -201,15 +201,21 @@ async function loadCustomers() {
 }
 
 async function loadCustomerGroup() {
-  const response = await axiosPrivate
-    .get("customer/customerGroup")
-    .catch((e) => {
-      redirect("/login");
-    });
-  if (response.data.success) {
-    return response.data.result;
-  } else {
-    return redirect("/login");
+  try {
+    const response = await axiosPrivate
+      .get("customer/customerGroup")
+      .catch((e) => {
+        redirect("/login");
+      });
+    if (response.data.success) {
+      return response.data.result;
+    } else {
+      window.location.href = "/login";
+      return;
+    }
+  } catch (e) {
+    window.location.href = "/login";
+    return;
   }
 }
 

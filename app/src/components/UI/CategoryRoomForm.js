@@ -8,7 +8,9 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
   const [openInfo, setOpenInfo] = useState(true);
   const [openDetails, setOpenDetails] = useState(false);
   const [formData, setFormData] = useState({
-    roomCategoryName: cateRoom.roomCategoryName ? cateRoom.roomCategoryName : "",
+    roomCategoryName: cateRoom.roomCategoryName
+      ? cateRoom.roomCategoryName
+      : "",
     numOfAdults: cateRoom.numOfAdults ? cateRoom.numOfAdults : 0,
     numOfChildren: cateRoom.numOfChildren ? cateRoom.numOfChildren : 0,
     numMaxOfAdults: cateRoom.numMaxOfAdults ? cateRoom.numMaxOfAdults : 0,
@@ -106,6 +108,11 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                               ? cateRoom.roomCategoryName
                               : ""
                           }
+                          onInvalid={(e) =>
+                            e.target.setCustomValidity(
+                              "Không được để trống tên hạng phòng"
+                            )
+                          }
                           required
                         />
                       </td>
@@ -166,7 +173,9 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                     </tr>
                     <tr>
                       <td className="w-3/12">
-                        <h2>Diện tích (m<sup>2</sup>)</h2>
+                        <h2>
+                          Diện tích (m<sup>2</sup>)
+                        </h2>
                       </td>
                       <td className="w-9/12">
                         <input

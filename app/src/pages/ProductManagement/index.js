@@ -208,21 +208,17 @@ function ProductManagementPage() {
               </div>
             ) : null}
             <div className="mx-2">
-              <ButtonHover
-                action="Thêm mới"
+              <ButtonClick
+                name="Thêm mới hàng hoá"
                 iconAction="fa-solid fa-plus"
-                names={[
-                  {
-                    name: "Hàng hoá",
-                    icon: "fa-solid fa-plus",
-                    action: newProductHandler,
-                  },
-                  {
-                    name: "Dịch vụ",
-                    icon: "fa-solid fa-plus",
-                    action: newServiceHandler,
-                  },
-                ]}
+                action={newProductHandler}
+              />
+            </div>
+            <div className="mx-2">
+              <ButtonClick
+                name="Thêm mới dịch vụ"
+                iconAction="fa-solid fa-plus"
+                action={newServiceHandler}
               />
             </div>
           </div>

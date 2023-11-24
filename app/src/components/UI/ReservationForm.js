@@ -19,7 +19,7 @@ function ReservationForm(props) {
   const { customers, prices, categories } = useLoaderData();
   const actionData = useActionData();
   const reservation = props.reservation;
-  // console.log(reservation);
+  console.log(reservation);
   // console.log(categories);
   const dayInWeek = ["2", "3", "4", "5", "6", "7", "8"];
   const pricesMore = prices.map((price) => {
@@ -214,7 +214,6 @@ function ReservationForm(props) {
             handleCustomerRemove={handleCustomerRemove}
           />
           <button
-            type="button"
             className="ml-4 rounded-lg px-2 border bg-white hover:border-green-500"
           >
             <i className="fa-solid fa-user-tie ml-2"></i>
@@ -346,12 +345,24 @@ function ReservationForm(props) {
         </div>
       </div>
       <Form method="PUT" className="h-[41.5rem] px-5 print:hidden">
-        {roomActive && (
+        {roomActive && listCustomers && (
           <>
             <input
               type="hidden"
               name="reservationId"
               defaultValue={reservation.reservation.reservationId}
+            />
+            <input
+              type="hidden"
+              name="customerId"
+              value={customer.customerId}
+              onChange={() => console.log()}
+            />
+            <input
+              type="hidden"
+              name="priceListId"
+              value={priceBook.PriceList.priceListId}
+              onChange={() => console.log()}
             />
             <div className="w-full py-2 h-5/6 overflow-y-auto">
               {reservation.listReservationDetails.map((room, index) => {
@@ -369,6 +380,7 @@ function ReservationForm(props) {
                         (res) => res.room.roomId !== room.room.roomId
                       )}
                       price={price}
+                      visitors={listCustomers}
                       handleVisitModalOpen={() => setOpenVisitorModal(true)}
                     />
                   </div>

@@ -160,21 +160,17 @@ function RoomManagementPage() {
               </div>
             ) : null}
             <div className="mx-2">
-              <ButtonHover
-                action="Thêm mới"
+              <ButtonClick
+                name="Thêm hạng phòng"
                 iconAction="fa-solid fa-plus"
-                names={[
-                  {
-                    name: "Hạng phòng",
-                    icon: "fa-solid fa-plus",
-                    action: newCateRoomHandler,
-                  },
-                  {
-                    name: "Phòng",
-                    icon: "fa-solid fa-plus",
-                    action: newRoomHandler,
-                  },
-                ]}
+                action={newCateRoomHandler}
+              />
+            </div>
+            <div className="mx-2">
+              <ButtonClick
+                name="Thêm phòng"
+                iconAction="fa-solid fa-plus"
+                action={newRoomHandler}
               />
             </div>
           </div>
@@ -273,28 +269,52 @@ export default RoomManagementPage;
 async function loadRooms() {
   const token = localStorage.getItem("token");
   if (!token) {
-    return redirect("/login");
+    window.location.href = "/login";
+    return;
   }
-  const response = await axiosPrivate.get("room");
-  return response.data;
+  try {
+    const response = await axiosPrivate
+      .get("room")
+      .catch((e) => console.log(e));
+    return response.data;
+  } catch (e) {
+    window.location.href = "/login";
+    return;
+  }
 }
 
 async function loadFloors() {
   const token = localStorage.getItem("token");
   if (!token) {
-    return redirect("/login");
+    window.location.href = "/login";
+    return;
   }
-  const response = await axiosPrivate.get("Floor");
-  return response.data;
+  try {
+    const response = await axiosPrivate
+      .get("Floor")
+      .catch((e) => console.log(e));
+    return response.data;
+  } catch (e) {
+    window.location.href = "/login";
+    return;
+  }
 }
 
 async function loadCategories() {
   const token = localStorage.getItem("token");
   if (!token) {
-    return redirect("/login");
+    window.location.href = "/login";
+    return;
   }
-  const response = await axiosPrivate.get("room-class");
-  return response.data;
+  try {
+    const response = await axiosPrivate
+      .get("room-class")
+      .catch((e) => console.log(e));
+    return response.data;
+  } catch (e) {
+    window.location.href = "/login";
+    return;
+  }
 }
 
 export async function loader() {

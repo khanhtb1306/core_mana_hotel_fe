@@ -117,6 +117,8 @@ const OverviewPage = () => {
                 return 'fa-solid fa-file-alt';
             case 'nhập hàng':
                 return 'fa-solid fa-box';
+            case 'thực hiện kiểm kho':
+                return 'fa-solid fa-box';
             default:
                 return 'fa-solid fa-question';
         }
@@ -146,8 +148,8 @@ const OverviewPage = () => {
                                         <span className="text-blue-500 font-bold">{item.action}</span>
                                         {` với giá trị ${formatValue(item.value)} VND`}
                                     </p>
-                                    <p className={`text-xs italic ${item === recentActivity[2] ? 'text-green-500 font-bold' : 'text-gray-500 italic'}`}>
-                                        {item === recentActivity[2] ? 'một giờ trước' : formatTime(item.createTime)}
+                                    <p className={`text-xs italic ${item.recentActivityId === recentActivity[2].recentActivityId ? 'text-green-500 font-bold' : 'text-gray-500 italic'}`}>
+                                        {item.recentActivityId === recentActivity[2].recentActivityId ? 'một giờ trước' : formatTime(item.createTime)}
                                     </p>
                                 </div>
                             </div>

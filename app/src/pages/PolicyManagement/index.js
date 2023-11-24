@@ -311,6 +311,9 @@ export async function action({ request }) {
 
   //Setup policy surcharge person fee
   if (data.get("isPersonFee")) {
+    // console.log(data.get("adultPolicyId"));
+    // console.log(data.get("childrenPolicyId"));
+    // return redirect("/manager/policy");
     const numberCategories = data.get("numberCategories");
     const formDataAdult = new FormData();
     const formDataChildren = new FormData();

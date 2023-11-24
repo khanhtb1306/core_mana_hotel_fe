@@ -2,6 +2,7 @@ import { Box } from "@mui/material";
 import {
   DataGrid,
   GridActionsCellItem,
+  GridNoRowsOverlay,
   GridToolbar,
 } from "@mui/x-data-grid";
 import { useState } from "react";
@@ -25,7 +26,6 @@ import { Tooltip } from "react-tooltip";
 import SetStatusCategoryRoom from "../../components/CategoryRoom/SetStateCategoryRoom";
 
 function CategoryManagementPage() {
-  const token = useRouteLoaderData("root");
   const { categories, floors } = useLoaderData();
 
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
@@ -147,7 +147,6 @@ function CategoryManagementPage() {
       status: status,
     };
   });
-
   return (
     <>
       <Box className="h-full w-10/12 mx-auto mt-10">
@@ -164,42 +163,47 @@ function CategoryManagementPage() {
               </div>
             ) : null}
             <div className="mx-2">
-              <ButtonHover
-                action="Thêm mới"
+              <ButtonClick
+                name="Thêm hạng phòng"
                 iconAction="fa-solid fa-plus"
-                names={[
-                  {
-                    name: "Hạng phòng",
-                    icon: "fa-solid fa-plus",
-                    action: newCateRoomHandler,
-                  },
-                  {
-                    name: "Phòng",
-                    icon: "fa-solid fa-plus",
-                    action: newRoomHandler,
-                  },
-                ]}
+                action={newCateRoomHandler}
+              />
+            </div>
+            <div className="mx-2">
+              <ButtonClick
+                name="Thêm phòng"
+                iconAction="fa-solid fa-plus"
+                action={newRoomHandler}
               />
             </div>
           </div>
         </div>
         <RoomRootLayout isActive={true} />
-        <DataGrid
-          className="bg-white"
-          columns={columns}
-          rows={rows}
-          initialState={{
-            pagination: { paginationModel: { pageSize: 5 } },
-          }}
-          pageSizeOptions={[5, 10, 25]}
-          checkboxSelection
-          disableRowSelectionOnClick
-          onRowSelectionModelChange={(newRowSelectionModel) => {
-            setRowSelectionModel(newRowSelectionModel);
-          }}
-          rowSelectionModel={rowSelectionModel}
-          slots={{ toolbar: GridToolbar }}
-        />
+        <div className={`${rows.length <= 0 && "h-60"}`}>
+          <DataGrid
+            className="bg-white"
+            columns={columns}
+            rows={rows}
+            initialState={{
+              pagination: { paginationModel: { pageSize: 5 } },
+            }}
+            pageSizeOptions={[5, 10, 25]}
+            checkboxSelection
+            disableRowSelectionOnClick
+            onRowSelectionModelChange={(newRowSelectionModel) => {
+              setRowSelectionModel(newRowSelectionModel);
+            }}
+            rowSelectionModel={rowSelectionModel}
+            slots={{
+              toolbar: GridToolbar,
+              noRowsOverlay: () => (
+                <div className="pt-8 text-center">
+                  Không có hạng phòng nào, hãy tạo hàng phòng!
+                </div>
+              ),
+            }}
+          />
+        </div>
       </Box>
       {openNewRoomModal && (
         <NewRoom
@@ -276,18 +280,24 @@ export default CategoryManagementPage;
 async function loadFloors() {
   const token = localStorage.getItem("token");
   if (!token) {
-    return redirect("/login");
+    window.location.href = "/login";
+    return;
   }
-  const response = await axiosPrivate.get("Floor");
+  const response = await axiosPrivate.get("Floor").catch((e) => {
+    console.log(e);
+  });
   return response.data;
 }
 
 async function loadCategories() {
   const token = localStorage.getItem("token");
   if (!token) {
-    return redirect("/login");
+    window.location.href = "/login";
+    return;
   }
-  const response = await axiosPrivate.get("room-class");
+  const response = await axiosPrivate.get("room-class").catch((e) => {
+    console.log(e);
+  });
   return response.data;
 }
 

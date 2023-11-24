@@ -221,7 +221,8 @@ export default StocktakeManagementPage;
 async function loadStocktakes() {
   const token = localStorage.getItem("token");
   if (!token) {
-    return redirect("/login");
+    window.location.href = "/login";
+    return;
   }
   const response = await axiosPrivate.get("inventory-check");
   return response.data;
@@ -230,7 +231,8 @@ async function loadStocktakes() {
 async function loadProducts() {
   const token = localStorage.getItem("token");
   if (!token) {
-    return redirect("/login");
+    window.location.href = "/login";
+    return;
   }
   const response = await axiosPrivate.get("goods");
   return response.data;
@@ -239,7 +241,8 @@ async function loadProducts() {
 async function loadGoodsUnit() {
   const token = localStorage.getItem("token");
   if (!token) {
-    return redirect("/login");
+    window.location.href = "/login";
+    return;
   }
   const response = await axiosPrivate.get("goods-unit");
   return response.data;

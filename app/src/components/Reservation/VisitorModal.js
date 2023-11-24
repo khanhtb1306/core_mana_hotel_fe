@@ -142,7 +142,11 @@ function VisitorModal(props) {
         </div>
         <div className="flex pt-5">
           <div className="ml-auto">
-            <button className="bg-green-500 mr-2 py-2 px-6 text-white rounded hover:bg-green-600">
+            <button
+              type="button"
+              className="bg-green-500 mr-2 py-2 px-6 text-white rounded hover:bg-green-600"
+              onClick={() => props.onClose()}
+            >
               Xong
             </button>
           </div>

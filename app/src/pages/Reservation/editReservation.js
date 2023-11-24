@@ -96,6 +96,17 @@ export async function action({ request }) {
   const data = await request.formData();
   const reservationId = data.get("reservationId");
 
+  const formReser = new FormData();
+  formReser.append("customerId", data.get("customerId"));
+  formReser.append("priceListId", data.get("priceListId"));
+  formReser.append("customerId", data.get("customerId"));
+  console.log(data.get("customerId"));
+  await axiosPrivate
+    .put("reservation/" + reservationId, formReser)
+    .catch((e) => {
+      console.log(e);
+    });
+
   if (data.get("isAddGroup")) {
     const formData = new FormData();
     formData.append("customerGroupName", data.get("groupCusName"));

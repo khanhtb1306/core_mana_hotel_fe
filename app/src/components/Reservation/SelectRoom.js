@@ -31,9 +31,13 @@ function SelectRoom(props) {
 
   const [openPriceModal, setOpenPriceModal] = useState(false);
 
-  const [roomByCate, setRoomByCate] = useState(
-    listRoomsByCate.ListRoom.filter((r) => !listRoomIdByRes.includes(r.roomId))
+  const roomByCate = listRoomsByCate.ListRoom.filter(
+    (r) => !listRoomIdByRes.includes(r.roomId)
   );
+  const [selectedRoomId, setSelectedRoomId] = useState(room.room.roomId);
+  // const [roomByCate, setRoomByCate] = useState(
+
+  // );
 
   let type = 1;
   let from = dayjs();
@@ -235,26 +239,6 @@ function SelectRoom(props) {
     }
   };
 
-  // const isFromDateDisabled = (date) => {
-  //   if (typeTime === 1) {
-  //     return false;
-  //   } else if (typeTime === 2) {
-  //     return false;
-  //   } else {
-  //     return false;
-  //   }
-  // };
-
-  // const isToDateDisabled = (date) => {
-  //   if (typeTime === 1) {
-  //     return fromTime.diff(date, "hour") > 24;
-  //   } else if (typeTime === 2) {
-  //     return date < fromTime;
-  //   } else {
-  //     return date < fromTime;
-  //   }
-  // };
-
   function getPrice(typeTime, fromTime, toTime) {
     let price = 0;
     let time = 0;
@@ -348,6 +332,41 @@ function SelectRoom(props) {
   return (
     <div className="bg-white shadow-md rounded-lg border p-4">
       <div>
+        {room.status === "BOOKING" && (
+          <input type="hidden" name="isBooking" defaultValue={true} />
+        )}
+        {room.status === "CHECK_IN" && (
+          <input type="hidden" name="isCheckin" defaultValue={true} />
+        )}
+        {room.status === "CHECK_OUT" && (
+          <input type="hidden" name="isCheckout" defaultValue={true} />
+        )}
+        <input
+          type="hidden"
+          name="roomId"
+          value={selectedRoomId}
+          onChange={() => console.log()}
+        />
+        <input
+          type="hidden"
+          name="reservationType"
+          value={
+            typeTime === 1 ? "HOURLY" : typeTime === 2 ? "DAILY" : "OVERNIGHT"
+          }
+          onChange={() => console.log()}
+        />
+        <input
+          type="hidden"
+          name="fromTime"
+          value={fromTime}
+          onChange={() => console.log()}
+        />
+        <input
+          type="hidden"
+          name="toTime"
+          value={toTime}
+          onChange={() => console.log()}
+        />
         <div className="flex mb-2">
           <p className="my-auto mr-2">
             {room.room.roomCategory.roomCategoryName}:
@@ -370,17 +389,32 @@ function SelectRoom(props) {
             }}
           >
             <i className="fa-solid fa-user-tie ml-2"></i>
-            <span className="mx-2">1</span>
+            <span className="mx-2">
+              {
+                props.visitors.filter(
+                  (visitor) =>
+                    dayjs().diff(dayjs(visitor.customer.dob), "year") >= 16
+                ).length
+              }
+            </span>
             {" | "}
             <i className="fa-solid fa-child ml-2"></i>
-            <span className="mx-2">1</span>
+            <span className="mx-2">
+              {
+                props.visitors.filter(
+                  (visitor) =>
+                    dayjs().diff(dayjs(visitor.customer.dob), "year") < 16
+                ).length
+              }
+            </span>
           </button>
         </div>
         <div className="flex mb-2">
           <p className="text-gray-500 my-auto mr-2">Phòng:</p>
           <Select
             sx={{ width: 160, height: 40 }}
-            defaultValue={room.room.roomId}
+            value={selectedRoomId}
+            onChange={(e) => setSelectedRoomId(e.target.value)}
             disabled={room.status !== "BOOKING"}
           >
             {roomByCate.map((room, index) => {

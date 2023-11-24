@@ -127,7 +127,7 @@ function PriceManagementPage() {
             ) : null}
             <div className="mx-2">
               <ButtonClick
-                name="Thêm mới khách hàng"
+                name="Thêm mới bảng giá"
                 iconAction="fa-solid fa-plus"
                 action={newPriceBookHandler}
               />
