@@ -30,14 +30,10 @@ const PieChart = ({ percentage }) => {
                     ],
                 },
                 options: {
-                    cutout: '80%', // Reduce the thickness of the chart to create a hole in the center
+                    cutout: '80%',
                     plugins: {
                         tooltip: {
-                            callbacks: {
-                                label: (tooltipItem) => {
-                                    return `${tooltipItem.label}: ${tooltipItem.parsed}%`;
-                                },
-                            },
+                            enabled: false, // Disable the tooltip
                         },
                         legend: false,
                     },

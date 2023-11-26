@@ -94,11 +94,11 @@ const OverviewPage = () => {
     // };
 
 
-    const labels = reportRoomCapacityCurrentMonth.daysOfMonth ? reportRoomCapacityCurrentMonth.daysOfMonth : [];
+    const labels = reportRoomCapacityCurrentMonth.daysOfMonth;
 
     const dataset = {
         label: 'Mana Hotel',
-        data: reportRoomCapacityCurrentMonth.roomCapacityValues ? reportRoomCapacityCurrentMonth.roomCapacityValues : [],
+        data: reportRoomCapacityCurrentMonth.roomCapacityValues ,
         fill: false,
         borderColor: 'rgb(75, 192, 192)',
         tension: 0.1
@@ -170,14 +170,15 @@ const OverviewPage = () => {
                         <div className="flex">
                             <div className="w-6/12 flex border-r-2 border-solid border-gray-800 mr-4">
                                 <div className="w-1/12 mr-4 relative" style={{width: '60px', height: '60px'}}>
-                                    <PieChart percentage={roomCapacityInfo ? roomCapacityInfo.percentageRoomsInUse : 0} />
+                                    <PieChart percentage={roomCapacityInfo ? roomCapacityInfo.percentageRoomsInUse.toFixed(2) : 0} />
                                     <span style={{
                                         position: 'absolute',
                                         top: '50%',
                                         left: '50%',
                                         transform: 'translate(-50%, -50%)',
                                         zIndex: 2,
-                                    }}>{roomCapacityInfo ? `${roomCapacityInfo.percentageRoomsInUse}%` : '0%'}</span>
+                                        fontSize: roomCapacityInfo ? (roomCapacityInfo.percentageRoomsInUse < 10 ? '100%' : '80%') : '100%',
+                                    }}>{roomCapacityInfo ? `${roomCapacityInfo.percentageRoomsInUse.toFixed(2)}%` : '0%'}</span>
                                 </div>
 
                                 <div className="w-11/12">
@@ -190,14 +191,15 @@ const OverviewPage = () => {
                             </div>
                             <div className="w-6/12 flex mr-4">
                                 <div className="w-1/12 mr-4 relative" style={{width: '60px', height: '60px'}}>
-                                    <PieChart percentage={roomCapacityInfo ? roomCapacityInfo.percentageEmptyRooms : 0} />
+                                    <PieChart percentage={roomCapacityInfo ? roomCapacityInfo.percentageEmptyRooms.toFixed(2) : 0} />
                                     <span style={{
                                         position: 'absolute',
                                         top: '50%',
                                         left: '50%',
                                         transform: 'translate(-50%, -50%)',
                                         zIndex: 2,
-                                    }}>{roomCapacityInfo ? `${roomCapacityInfo.percentageEmptyRooms}%` : '0%'}</span>
+                                        fontSize: roomCapacityInfo ? (roomCapacityInfo.percentageEmptyRooms < 10 ? '100%' : '80%') : '100%',
+                                    }}>{roomCapacityInfo ? `${roomCapacityInfo.percentageEmptyRooms.toFixed(2)}%` : '0%'}</span>
                                 </div>
 
                                 <div className="w-11/12">
