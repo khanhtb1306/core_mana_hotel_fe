@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import LineChart from "../../components/Overview/LineChart";
 import BarChart from "../../components/Overview/BarChart";
 import HorizontalBarChart from "../../components/Overview/HorizontalBarChart";
@@ -36,64 +36,65 @@ const OverviewPage = () => {
         return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     };
 
-    console.log(reportRoomCapacityCurrentMonth);
+    // console.log(reportRoomCapacityCurrentMonth);
+    // console.log(labels);
+
+    // const barChartData = {
+    //     labels: labels,
+    //     datasets: [{
+    //         label: 'Mana Hotel',
+    //         data: [65, 59, 80, 81, 56, 55, 40],
+    //         backgroundColor: [
+    //             'rgba(255, 99, 132, 0.2)',
+    //             'rgba(255, 159, 64, 0.2)',
+    //             'rgba(255, 205, 86, 0.2)',
+    //             'rgba(75, 192, 192, 0.2)',
+    //             'rgba(54, 162, 235, 0.2)',
+    //             'rgba(153, 102, 255, 0.2)',
+    //             'rgba(201, 203, 207, 0.2)'
+    //         ],
+    //         borderColor: [
+    //             'rgb(255, 99, 132)',
+    //             'rgb(255, 159, 64)',
+    //             'rgb(255, 205, 86)',
+    //             'rgb(75, 192, 192)',
+    //             'rgb(54, 162, 235)',
+    //             'rgb(153, 102, 255)',
+    //             'rgb(201, 203, 207)'
+    //         ],
+    //         borderWidth: 1
+    //     }]
+    // };
+    //
+    // const horizontalBarChartData = {
+    //     labels: labels,
+    //     datasets: [{
+    //         label: 'Mana Hotel',
+    //         data: [65, 59, 80, 81, 56, 55, 40],
+    //         backgroundColor: [
+    //             'rgba(255, 99, 132, 0.2)',
+    //             'rgba(255, 159, 64, 0.2)',
+    //             'rgba(255, 205, 86, 0.2)',
+    //             'rgba(75, 192, 192, 0.2)',
+    //             'rgba(54, 162, 235, 0.2)',
+    //             'rgba(153, 102, 255, 0.2)',
+    //             'rgba(201, 203, 207, 0.2)'
+    //         ],
+    //         borderColor: [
+    //             'rgb(255, 99, 132)',
+    //             'rgb(255, 159, 64)',
+    //             'rgb(255, 205, 86)',
+    //             'rgb(75, 192, 192)',
+    //             'rgb(54, 162, 235)',
+    //             'rgb(153, 102, 255)',
+    //             'rgb(201, 203, 207)'
+    //         ],
+    //         borderWidth: 1
+    //     }]
+    // };
+
+
     const labels = reportRoomCapacityCurrentMonth.daysOfMonth ? reportRoomCapacityCurrentMonth.daysOfMonth : [];
-    console.log(labels);
-
-    const barChartData = {
-        labels: labels,
-        datasets: [{
-            label: 'Mana Hotel',
-            data: [65, 59, 80, 81, 56, 55, 40],
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(255, 159, 64, 0.2)',
-                'rgba(255, 205, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(153, 102, 255, 0.2)',
-                'rgba(201, 203, 207, 0.2)'
-            ],
-            borderColor: [
-                'rgb(255, 99, 132)',
-                'rgb(255, 159, 64)',
-                'rgb(255, 205, 86)',
-                'rgb(75, 192, 192)',
-                'rgb(54, 162, 235)',
-                'rgb(153, 102, 255)',
-                'rgb(201, 203, 207)'
-            ],
-            borderWidth: 1
-        }]
-    };
-
-    const horizontalBarChartData = {
-        labels: labels,
-        datasets: [{
-            label: 'Mana Hotel',
-            data: [65, 59, 80, 81, 56, 55, 40],
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(255, 159, 64, 0.2)',
-                'rgba(255, 205, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(153, 102, 255, 0.2)',
-                'rgba(201, 203, 207, 0.2)'
-            ],
-            borderColor: [
-                'rgb(255, 99, 132)',
-                'rgb(255, 159, 64)',
-                'rgb(255, 205, 86)',
-                'rgb(75, 192, 192)',
-                'rgb(54, 162, 235)',
-                'rgb(153, 102, 255)',
-                'rgb(201, 203, 207)'
-            ],
-            borderWidth: 1
-        }]
-    };
-
 
     const dataset = {
         label: 'Mana Hotel',
@@ -146,10 +147,12 @@ const OverviewPage = () => {
                                         vừa
                                         {' '}
                                         <span className="text-blue-500 font-bold">{item.action}</span>
-                                        {` với giá trị ${formatValue(item.value)} VND`}
+                                        {item.value !== 0 && (
+                                            ` với giá trị ${formatValue(item.value)} VND`
+                                        )}
                                     </p>
-                                    <p className={`text-xs italic ${item.recentActivityId === recentActivity[2].recentActivityId ? 'text-green-500 font-bold' : 'text-gray-500 italic'}`}>
-                                        {item.recentActivityId === recentActivity[2].recentActivityId ? 'một giờ trước' : formatTime(item.createTime)}
+                                    <p className={`text-xs italic text-gray-500 italic`}>
+                                        {formatTime(item.createTime)}
                                     </p>
                                 </div>
                             </div>
@@ -234,25 +237,25 @@ const OverviewPage = () => {
                                 <p className="text-lg">DOANH THU THUẦN THÁNG NÀY  1,777,006,000</p>
                             </div>
                             <div className="w-2/12">
-                                <select value={selectedValue1} onChange={(event) => handleDropdownChange(event, setSelectedValue1)}>
-                                    {options.map((option, index) => (
-                                        <option key={index} value={option}>
-                                            {option}
-                                        </option>
-                                    ))}
-                                </select>
+                                {/*<select value={selectedValue1} onChange={(event) => handleDropdownChange(event, setSelectedValue1)}>*/}
+                                {/*    {options.map((option, index) => (*/}
+                                {/*        <option key={index} value={option}>*/}
+                                {/*            {option}*/}
+                                {/*        </option>*/}
+                                {/*    ))}*/}
+                                {/*</select>*/}
                             </div>
                         </div>
                         <div style={{ width: '1000px', height: 'auto' }}>
                             <div>
-                                <BarChart data={barChartData} />
+                                {/*<BarChart data={barChartData} />*/}
                             </div>
                         </div>
                     </div>
                     <div className="bg-white p-4 mr-4 my-4 rounded">
                         <p className="text-lg">TOP 10 HẠNG PHÒNG 7 NGÀY QUA</p>
                         <div style={{ width: 'auto', height: '500px' }}>
-                            <HorizontalBarChart data={horizontalBarChartData} />
+                            {/*<HorizontalBarChart data={horizontalBarChartData} />*/}
                         </div>
                     </div>
                 </div>
@@ -289,28 +292,17 @@ async function loadRecentActivity() {
 
 async function loadReportRoomCapacityCurrentMonth() {
     try {
-        const response = await axiosPrivate.get("overview/report_room_capacity_current_month");
-        console.log("API Response:", response.data);
+        const response = await axiosPrivate.get("overview/report_room_capacity_by_month?month=11");
         if (response.data.success) {
             return response.data.result;
         } else {
             return redirect("/login");
         }
     } catch (error) {
-        console.error("Error loading room capacity:", error);
         return redirect("/error");
     }
 }
 
-
-async function loadReportRoomCapacityLastMonth() {
-    const response = await axiosPrivate.get("overview/report_room_capacity_last_month");
-    if (response.data.success) {
-        return response.data.result;
-    } else {
-        return redirect("/login");
-    }
-}
 
 
 
@@ -319,7 +311,5 @@ export async function loader() {
         recentActivity: await loadRecentActivity(),
         roomCapacityInfo: await loadRoomCapacity(),
         reportRoomCapacityCurrentMonth: await loadReportRoomCapacityCurrentMonth(),
-        reportRoomCapacityLastMonth: await loadReportRoomCapacityLastMonth(),
-
     });
 }

@@ -65,7 +65,8 @@ import OverviewManagementPage,{
 const routesForManager = [
   {
     index: true,
-    element: <>Manager</>,
+    element: <OverviewManagementPage/>,
+    loader: loadOverview
   },
   {
     path: "overview",
