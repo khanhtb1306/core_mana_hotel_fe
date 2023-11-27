@@ -19,6 +19,7 @@ function NewCategoryRoom(props) {
         description: null,
         image: null,
       }}
+      categories={props.categories}
     />
   );
 }

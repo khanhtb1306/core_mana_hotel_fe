@@ -26,7 +26,7 @@ import { Tooltip } from "react-tooltip";
 import SetStatusCategoryRoom from "../../components/CategoryRoom/SetStateCategoryRoom";
 
 function CategoryManagementPage() {
-  const { categories, floors } = useLoaderData();
+  const { rooms, categories, floors } = useLoaderData();
 
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openNewRoomModal, setOpenNewRoomModal] = useState(false);
@@ -211,12 +211,14 @@ function CategoryManagementPage() {
           onClose={() => setOpenNewRoomModal(false)}
           floors={floors}
           categories={categories}
+          rooms={rooms}
         />
       )}
       {openNewCateRoomModal && (
         <NewCategoryRoom
           open={openNewCateRoomModal}
           onClose={() => setOpenNewCateRoomModal(false)}
+          categories={categories}
         />
       )}
       {openDetailsCateRoom && selectedCateRoomId && (
@@ -231,6 +233,7 @@ function CategoryManagementPage() {
           open={openEditCateRoom}
           onClose={() => setOpenEditCateRoom(false)}
           cateRoomId={selectedCateRoomId}
+          categories={categories}
         />
       )}
       {openDeleteCateRoomsModal && rowSelectionModel.length > 0 && (
@@ -301,10 +304,28 @@ async function loadCategories() {
   return response.data;
 }
 
+async function loadRooms() {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "/login";
+    return;
+  }
+  try {
+    const response = await axiosPrivate
+      .get("room")
+      .catch((e) => console.log(e));
+    return response.data;
+  } catch (e) {
+    window.location.href = "/login";
+    return;
+  }
+}
+
 export async function loader() {
   return defer({
     floors: await loadFloors(),
     categories: await loadCategories(),
+    rooms: await loadRooms(),
   });
 }
 
@@ -343,7 +364,6 @@ export async function action({ request }) {
     formData.append("roomName", data.get("roomName"));
     formData.append("roomCategoryId", data.get("roomCategoryId"));
     formData.append("floorId", data.get("floorId"));
-    formData.append("status", data.get("status"));
     formData.append("bookingStatus", 0);
     formData.append("conditionStatus", 0);
     formData.append("note", data.get("note"));
@@ -355,24 +375,26 @@ export async function action({ request }) {
             "Content-Type": "multipart/form-data",
           },
         })
-        .then((response) => {
-          Swal.fire({
-            position: "center",
-            icon: "success",
-            title: response.data,
-            showConfirmButton: false,
-            timer: 1500,
-          });
-        })
         .catch((e) => {
-          Swal.fire({
-            position: "center",
-            icon: "error",
-            title: e.response.data,
-            showConfirmButton: false,
-            timer: 1500,
-          });
+          console.log(e);
         });
+      if (response) {
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: "Thêm phòng thành công",
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      } else {
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: "Thêm phòng thất bại",
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      }
     }
     return redirect("/manager/categoryRoomManagement");
   }
@@ -448,7 +470,7 @@ export async function action({ request }) {
     return redirect("/manager/categoryRoomManagement");
   }
   if (method === "PUT") {
-    console.log(data.get("roomCategoryId"));
+    // console.log(data.get("roomCategoryId"));
     const response = await axiosPrivate
       .put("room-class/" + data.get("roomCategoryId"), formData, {
         headers: {

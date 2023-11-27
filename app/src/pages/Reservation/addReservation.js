@@ -1,71 +1,44 @@
-import { defer, useLoaderData } from "react-router-dom";
+import { defer, redirect, useLoaderData } from "react-router-dom";
 import { axiosPrivate } from "../../utils/axiosConfig";
-import SearchProduct from "../../components/Search/SearchProduct";
-import SearchCustomer from "../../components/Search/SearchCustomer";
-import NewCustomer from "../../components/Customer/NewCustomer";
-import SelectRoom from "../../components/Reservation/SelectRoom";
-import { useState } from "react";
+import ReservationForm from "../../components/UI/ReservationForm";
+import dayjs from "dayjs";
 
 function AddReservationPage() {
-  const { products, customers } = useLoaderData();
-
-  const [ listRooms, setListRooms ] = useState();
-
-  return (
-    <div className="h-[45.5rem] px-5">
-      <div className="w-full py-2 h-1/6">
-        <SearchCustomer customers={customers} />
-        <div className="flex my-auto rounded-lg py-2">
-          <div className="px-2 py-1 mr-2 rounded-lg bg-white">
-            <button
-              type="button"
-              className="px-2 py-1 rounded text-green-500 hover:bg-green-200"
-            >
-              P.402
-              <i className="fa-solid fa-xmark pl-2"></i>
-            </button>
-            <button
-              type="button"
-              className="px-2 py-1 rounded text-orange-500 hover:bg-orange-200"
-            >
-              P.502
-              <i className="fa-solid fa-xmark pl-2"></i>
-            </button>
-          </div>
-          <button
-            type="button"
-            className="px-4 py-2 rounded-lg text-green-500 hover:bg-green-100"
-          >
-            <i className="fa-solid fa-circle-plus pr-2"></i>
-            Phòng
-          </button>
-          <button
-            type="button"
-            className="px-4 py-2 ml-auto rounded-lg text-white bg-blue-500 hover:bg-blue-600"
-          >
-            Trả phòng
-          </button>
-          <button
-            type="button"
-            className="px-4 py-2 ml-2 rounded-lg border-black border"
-          >
-            <i className="fa-solid fa-ellipsis-vertical"></i>
-          </button>
-        </div>
-      </div>
-      <div className="w-full py-2 h-4/6">
-        <SelectRoom />
-      </div>
-      <div className="w-full py-2 h-1/6">3</div>
-    </div>
-  );
+  return <ReservationForm reservation={null} />;
 }
 
 export default AddReservationPage;
 
-async function loadProducts() {
-  const response = await axiosPrivate.get("goods");
-  return response.data;
+async function loadCustomerGroup() {
+  const response = await axiosPrivate
+    .get("customer/customerGroup")
+    .catch((e) => {
+      console.log(e);
+    });
+  if (response.data.success) {
+    return response.data.result;
+  } else {
+    return redirect("/login");
+  }
+}
+
+async function loadTimeUsing() {
+  const response = await axiosPrivate.get("policy/time_use").catch((e) => {
+    console.log(e);
+  });
+  if (response.data.success) {
+    return response.data.result;
+  } else {
+    return redirect("/login");
+  }
+}
+async function loadPriceList() {
+  const response = await axiosPrivate.get("price-list");
+  if (response.data.success) {
+    return response.data.result;
+  } else {
+    return redirect("login");
+  }
 }
 
 async function loadCustomers() {
@@ -73,9 +46,100 @@ async function loadCustomers() {
   return response.data;
 }
 
+async function loadGoodsUnit() {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return redirect("/login");
+  }
+  const response = await axiosPrivate.get("goods-unit");
+  return response.data;
+}
+
+async function loadCategories() {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return redirect("/login");
+  }
+  const response = await axiosPrivate.get("room-class");
+  return response.data;
+}
+
 export async function loader() {
   return defer({
-    products: await loadProducts(),
+    timeUsing: await loadTimeUsing(),
+    customerGroups: await loadCustomerGroup(),
+    goodsUnit: await loadGoodsUnit(),
+    categories: await loadCategories(),
+    prices: await loadPriceList(),
     customers: await loadCustomers(),
   });
+}
+
+export async function action({ request }) {
+  const method = request.method;
+  const data = await request.formData();
+  const isAddRoom = data.get("addRoom");
+  if (isAddRoom) {
+    //Add new reservation
+    const formReser = new FormData();
+    if (data.get("customerId")) {
+      formReser.append("customerId", data.get("customerId"));
+    } else {
+      formReser.append("customerId", "C000000");
+    }
+    if (data.get("priceListId")) {
+      if (data.get("priceListId") === "0") {
+        formReser.append("priceListId", "BG000000");
+      } else {
+        formReser.append("priceListId", data.get("priceListId"));
+      }
+    } else {
+      formReser.append("priceListId", "BG000000");
+    }
+    formReser.append("totalChildren", 0);
+    formReser.append("totalAdults", 0);
+    formReser.append("totalDeposit", 0);
+    formReser.append("totalPrice", 0);
+    const categories = data.get("categories");
+    // let total = 0;
+    // for (let i = 0; i < categories; i++) {
+    //   const numberRoom = data.get("numberRoom" + i);
+    //   for (let j = 0; j < numberRoom; j++) {
+    //     total += data.get("price" + i) * data.get("valueTime");
+    //     console.log(total);
+    //   }
+    // }
+    // formReser.append("totalPrice", total);
+    formReser.append("status", "BOOKING");
+    const response = await axiosPrivate
+      .post("reservation", formReser)
+      .catch((e) => {
+        console.log(e);
+      });
+    if (response.data.success) {
+      for (let i = 0; i < categories; i++) {
+        const listCateRoomId = data.get("listCateRoomId" + i).split("|");
+        const numberRoom = data.get("numberRoom" + i);
+        for (let j = 0; j < numberRoom; j++) {
+          const formData = new FormData();
+          formData.append("reservationId", response.data.result);
+          formData.append("checkInEstimate", data.get("fromTime"));
+          formData.append("checkOutEstimate", data.get("toTime"));
+          formData.append("reservationType", data.get("reservationType"));
+          formData.append("status", "BOOKING");
+          formData.append("price", data.get("price" + i));
+          formData.append("roomId", listCateRoomId[j]);
+          await axiosPrivate
+            .post("reservation-detail", formData)
+            .then((res) => console.log(res))
+            .catch((er) => console.log(er));
+        }
+      }
+    } else {
+      return { success: false };
+    }
+    window.location.href = "/editReservation/" + response.data.result;
+    return;
+      // return { success: true };
+  }
 }

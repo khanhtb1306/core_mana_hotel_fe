@@ -382,7 +382,6 @@ function SelectRoom(props) {
             <MenuItem value={3}>Đêm</MenuItem>
           </Select>
           <button
-            type="button"
             className="ml-auto rounded-lg px-2 border hover:border-green-500"
             onClick={() => {
               props.handleVisitModalOpen();

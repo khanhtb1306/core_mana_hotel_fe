@@ -4,10 +4,14 @@ import ButtonHeader from "../UI/ButtonHeader";
 import { useLocation } from "react-router-dom";
 import logo from "../../assets/images/logohotel.png";
 import user from "../../assets/images/user.jpeg";
+import { jwtDecode } from "jwt-decode";
 
 function ManagerNavigation() {
   const [showAction, setShowAction] = useState(false);
   const location = useLocation();
+  const token = localStorage.getItem("token");
+  const decodedToken = jwtDecode(token);
+  // console.log(decodedToken);
   return (
     <nav className="px-5 bg-blue-500 h-10">
       <ul className="flex h-10">
@@ -52,7 +56,7 @@ function ManagerNavigation() {
           ]}
         />
         <ButtonHeader
-            name="Danh mục"
+          name="Danh mục"
           icon="fa-solid fa-box"
           isActive={
             location.pathname === "/manager/productManagement" ||
@@ -111,8 +115,8 @@ function ManagerNavigation() {
         </li>
       </div>
         <ButtonHeader
-            name="Đối tác"
-            icon="fa-solid fa-user-tie"
+          name="Đối tác"
+          icon="fa-solid fa-user-tie"
           isActive={
             location.pathname === "/manager/customerManagement" ||
             location.pathname === "/manager/supplierManagement"
@@ -134,6 +138,21 @@ function ManagerNavigation() {
         />
         <div
           className={`${
+            location.pathname === "/manager/staffManagement" 
+              ? "bg-blue-800"
+              : "hover:bg-blue-800"
+          }`}
+        >
+          <li className="pt-2">
+            <NavLink to="/manager/staffManagement" className="text-white p-4">
+              <i className="fa-solid fa-user-group pr-3"></i>
+              Nhân viên
+            </NavLink>
+          </li>
+        </div>
+
+        <div
+          className={`${
             location.pathname === "/manager/policy"
               ? "bg-blue-800"
               : "hover:bg-blue-800"
@@ -147,8 +166,8 @@ function ManagerNavigation() {
           </li>
         </div>
         <div className="ml-auto my-auto flex">
-          <p className="w-10 my-auto">Tien</p>
-          <img src={user} className="w-10 mr-5 h-10" />
+          <p className="w-10 my-auto mr-5 text-white">{decodedToken.sub}</p>
+          {/* <img src={user} className="w-10 mr-5 h-10" /> */}
           <div
             className="ml-auto relative"
             onMouseMove={() => setShowAction(true)}
@@ -160,22 +179,28 @@ function ManagerNavigation() {
             {showAction ? (
               <>
                 <div className="absolute right-0 bg-white ml-auto w-40 py-3 z-10">
-                  <div className="py-2 px-4 hover:bg-gray-200">
-                    <Link to="/account">
-                      <i className="fa-solid fa-circle-user pr-4"></i>
-                      Tài khoản
-                    </Link>
-                    <br />
-                  </div>
-                  <div className="py-2 px-4 hover:bg-gray-200 flex">
-                    <Form action="/logout" method="post">
-                      <button>
-                        <i className="fa-solid fa-right-from-bracket pr-4 my-auto"></i>
-                        Logout
-                      </button>
-                    </Form>
-                    <br />
-                  </div>
+                  <NavLink to="/">
+                    <div className="flex hover:bg-gray-200">
+                      <div className="py-2 px-4 mx-auto">
+                        <i className="fa-solid fa-spa mr-4"></i>
+                        Lễ tân
+                      </div>
+                    </div>
+                  </NavLink>
+                  <NavLink to="/manager/inforManagement"  >
+                    <div className="flex hover:bg-gray-200">
+                      <div className="py-2 px-4 mx-auto">
+                        <i className="fa-solid fa-circle-user pr-4"></i>
+                        Tài khoản
+                      </div>
+                    </div>
+                  </NavLink>
+                  <Form action="/logout" method="post">
+                    <button className="w-40 py-2 hover:bg-gray-200">
+                      <i className="fa-solid fa-right-from-bracket pr-4"></i>
+                      Logout
+                    </button>
+                  </Form>
                 </div>
               </>
             ) : null}

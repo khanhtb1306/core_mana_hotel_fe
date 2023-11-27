@@ -32,6 +32,7 @@ import ManagerLayout from "./pages/ManagerLayout";
 import ReceptionistLayout from "./pages/ReceptionistLayout";
 import AddReservationPage, {
   loader as loadNewReservation,
+  action as actionNewReservation,
 } from "./pages/Reservation/addReservation";
 import AddInvoicePage from "./pages/Invoice/addInvoice";
 import ForgetPasswordPage, {
@@ -67,6 +68,16 @@ import ImportManagementPage, {
 } from "./pages/ImportManagement";
 import FundBookManagementPage, {
 }from "./pages/FundBookManagement";
+import StaffManagementPage,{
+  loader as loadStaffs,
+  action as actionStaff,
+} from "./pages/StaffManagement";
+
+import InforManagementPage ,{
+  loader as loadInforManagement,
+  action as actionInforManagement,
+}
+from "./pages/InforManagement";
 
 const routesForManager = [
   {
@@ -133,6 +144,21 @@ const routesForManager = [
     loader: loadPolicy,
     action: actionPolicy,
   },
+  {
+    path:"staffManagement",
+    element: <StaffManagementPage />,
+    loader: loadStaffs,
+    action: actionStaff,
+
+  },
+  {
+    path:"inforManagement",
+    element: <InforManagementPage />,
+    loader: loadInforManagement,
+    action: actionInforManagement,
+
+  },
+
 ];
 
 const routesForReceptionist = [
@@ -161,15 +187,23 @@ const routesForReceptionist = [
     path: "addReservation",
     element: <AddReservationPage />,
     loader: loadNewReservation,
+    action: actionNewReservation,
   },
-  {
-    path: "editReservation",
-    element: <EditReservationPage />,
-    loader: loadNewReservation,
-  },
+  // {
+  //   path: "editReservation",
+  //   element: <EditReservationPage />,
+  //   loader: loadNewReservation,
+  // },
   {
     path: "addInvoice",
     element: <AddInvoicePage />,
+  },
+  {
+    path:"account",
+    element: <InforManagementPage />,
+    loader: loadInforManagement,
+    action: actionInforManagement,
+
   },
 ];
 

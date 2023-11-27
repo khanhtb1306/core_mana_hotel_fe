@@ -1,14 +1,16 @@
 import React, { useState } from "react";
-import { Form, Link } from "react-router-dom";
+import { Form, Link, NavLink } from "react-router-dom";
 import ButtonHeader from "../UI/ButtonHeader";
 import { useLocation } from "react-router-dom";
 import logo from "../../assets/images/logohotel.png";
 import user from "../../assets/images/user.jpeg";
+import { jwtDecode } from "jwt-decode";
 
 function ReceptionistNavigation() {
   const [showAction, setShowAction] = useState(false);
   const location = useLocation();
-
+  const token = localStorage.getItem("token");
+  const decodedToken = jwtDecode(token);
   return (
     <nav className="pl-5 h-12 bg-green-500 print:hidden">
       <ul className="flex">
@@ -63,8 +65,8 @@ function ReceptionistNavigation() {
           </li>
         </div>
         <div className="ml-auto my-auto mr-5 flex">
-          <p className="w-10 my-auto text-white">Tien</p>
-          <img src={user} className="w-10 mr-5 h-10" />
+          <p className="w-10 my-auto mr-5 text-white">Tien</p>
+          {/* <img src={user} className="w-10 mr-5 h-10" /> */}
           <div
             className="ml-auto relative"
             onMouseMove={() => setShowAction(true)}
@@ -76,22 +78,30 @@ function ReceptionistNavigation() {
             {showAction ? (
               <>
                 <div className="absolute right-0 bg-white ml-auto w-40 py-3 z-10">
-                  <div className="py-2 px-4 hover:bg-gray-200">
-                    <Link to="/account">
-                      <i className="fa-solid fa-circle-user pr-4"></i>
-                      Tài khoản
-                    </Link>
-                    <br />
-                  </div>
-                  <div className="py-2 px-4 hover:bg-gray-200 flex">
-                    <Form action="/logout" method="post">
-                      <button>
-                        <i className="fa-solid fa-right-from-bracket pr-4 my-auto"></i>
-                        Logout
-                      </button>
-                    </Form>
-                    <br />
-                  </div>
+                  {decodedToken.role === "ROLE_MANAGER" && (
+                    <NavLink to="/manager">
+                      <div className="flex hover:bg-gray-200">
+                        <div className="py-2 px-4 mx-auto">
+                          <i className="fa-solid fa-user-tie mr-4"></i>
+                          Quản lý
+                        </div>
+                      </div>
+                    </NavLink>
+                  )}
+                  <NavLink to="/account">
+                    <div className="flex hover:bg-gray-200">
+                      <div className="py-2 px-4 mx-auto">
+                        <i className="fa-solid fa-circle-user pr-4"></i>
+                        Tài khoản
+                      </div>
+                    </div>
+                  </NavLink>
+                  <Form action="/logout" method="post">
+                    <button className="w-40 py-2 hover:bg-gray-200">
+                      <i className="fa-solid fa-right-from-bracket pr-4"></i>
+                      Logout
+                    </button>
+                  </Form>
                 </div>
               </>
             ) : null}

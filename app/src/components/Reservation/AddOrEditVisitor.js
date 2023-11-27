@@ -9,7 +9,7 @@ function AddOrEditVisitor(props) {
   const { customerGroups } = useLoaderData();
   const visitor = props.visitor;
   const reservationDetail = props.reservationDetail;
-  console.log(visitor);
+  // console.log(visitor);
   const [dob, setDob] = useState(
     visitor ? dayjs(visitor.dob).format("YYYY-MM-DD") : null
   );
@@ -29,6 +29,28 @@ function AddOrEditVisitor(props) {
             <div>
               <h1 className="text-lg pb-5 font-bold">{props.name}</h1>
               <input type="hidden" name="isVisitor" defaultValue={true} />
+              <input
+                type="hidden"
+                name="isAdult"
+                value={age < 16 ? false : true}
+                onChange={() => console.log()}
+              />
+              {visitor && (
+                <input
+                  type="hidden"
+                  name="isChange"
+                  value={
+                    dayjs().diff(dayjs(visitor.dob), "year") >= 16 && age < 16
+                      ? true
+                      : dayjs().diff(dayjs(visitor.dob), "year") < 16 &&
+                        age >= 16
+                      ? false
+                      : null
+                  }
+                  onChange={() => console.log()}
+                />
+              )}
+
               <input
                 type="hidden"
                 name="reservationDetailId"

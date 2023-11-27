@@ -4,7 +4,15 @@ import { useState } from "react";
 import Modal from "./Modal";
 import { axiosConfig } from "../../utils/axiosConfig";
 
-function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
+function CategoryRoomForm({
+  name,
+  open,
+  onClose,
+  method,
+  cateRoom,
+  categories,
+}) {
+  // console.log(categories);
   const [openInfo, setOpenInfo] = useState(true);
   const [openDetails, setOpenDetails] = useState(false);
   const [formData, setFormData] = useState({
@@ -19,6 +27,9 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
     priceByDay: cateRoom.priceByDay ? cateRoom.priceByDay : 0,
     priceByNight: cateRoom.priceByNight ? cateRoom.priceByNight : 0,
   });
+  const [roomCategoryName, setRoomCategoryName] = useState(
+    cateRoom.roomCategoryName ? cateRoom.roomCategoryName : ""
+  );
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -40,8 +51,14 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
 
   return (
     cateRoom && (
-      <Form method={method} onSubmit={onClose} encType="multipart/form-data">
-        <Modal open={open} onClose={onClose} size="w-8/12 h-.5/6">
+      <Form
+        method={method}
+        onSubmit={() => {
+          onClose();
+        }}
+        encType="multipart/form-data"
+      >
+        <Modal open={open} onClose={onClose} button={true} size="w-8/12 h-.5/6">
           <div className="p-2 w-full">
             <div>
               <h1 className="text-lg pb-5 font-bold">{name}</h1>
@@ -103,18 +120,31 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                           className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                           type="text"
                           name="roomCategoryName"
-                          defaultValue={
-                            cateRoom.roomCategoryName
-                              ? cateRoom.roomCategoryName
-                              : ""
-                          }
-                          onInvalid={(e) =>
-                            e.target.setCustomValidity(
-                              "Không được để trống tên hạng phòng"
-                            )
-                          }
+                          value={roomCategoryName}
+                          onChange={(e) => {
+                            setRoomCategoryName(e.target.value);
+                          }}
+                          onInvalid={(e) => {
+                            if (e.target.value === "") {
+                              e.target.setCustomValidity(
+                                "Không được để trống tên hạng phòng"
+                              );
+                            } else {
+                              e.target.setCustomValidity("");
+                            }
+                          }}
                           required
                         />
+                        {categories.find(
+                          (cate) =>
+                            cate.roomCategory.roomCategoryName ===
+                            roomCategoryName
+                        ) &&
+                          roomCategoryName !== cateRoom.roomCategoryName && (
+                            <div className="text-red-500 text-sm">
+                              Tên hạng phòng không thể bị trùng
+                            </div>
+                          )}
                       </td>
                     </tr>
                     <tr>
@@ -128,7 +158,16 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                           type="number"
                           name="numOfAdults"
                           value={formData.numOfAdults}
-                          min={0}
+                          min={1}
+                          onInvalid={(e) => {
+                            if (e.target.value < 1) {
+                              e.target.setCustomValidity(
+                                "Số lượng người lớn > 0"
+                              );
+                            } else {
+                              e.target.setCustomValidity("");
+                            }
+                          }}
                           onChange={handleChange}
                           required
                         />
@@ -138,7 +177,14 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                           type="number"
                           name="numOfChildren"
                           value={formData.numOfChildren}
-                          min={0}
+                          min={1}
+                          onInvalid={(e) => {
+                            if (e.target.value < 1) {
+                              e.target.setCustomValidity("Số lượng trẻ em > 0");
+                            } else {
+                              e.target.setCustomValidity("");
+                            }
+                          }}
                           onChange={handleChange}
                           required
                         />
@@ -155,6 +201,16 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                           type="number"
                           name="numMaxOfAdults"
                           value={formData.numMaxOfAdults}
+                          onInvalid={(e) => {
+                            if (e.target.value < formData.numOfAdults) {
+                              e.target.setCustomValidity(
+                                "Số lượng người lớn tối đa >= " +
+                                  formData.numOfAdults
+                              );
+                            } else {
+                              e.target.setCustomValidity("");
+                            }
+                          }}
                           min={formData.numOfAdults}
                           onChange={handleChange}
                           required
@@ -165,6 +221,16 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                           type="number"
                           name="numMaxOfChildren"
                           value={formData.numMaxOfChildren}
+                          onInvalid={(e) => {
+                            if (e.target.value < formData.numOfChildren) {
+                              e.target.setCustomValidity(
+                                "Số lượng trẻ em tối đa >= " +
+                                  formData.numOfAdults
+                              );
+                            } else {
+                              e.target.setCustomValidity("");
+                            }
+                          }}
                           min={formData.numOfChildren}
                           onChange={handleChange}
                           required
@@ -262,6 +328,30 @@ function CategoryRoomForm({ name, open, onClose, method, cateRoom }) {
                 name="description"
                 defaultValue={cateRoom ? cateRoom.description : ""}
               ></textarea>
+            </div>
+          </div>
+          <div className="flex pt-5">
+            <div className="ml-auto">
+              <button
+                className="bg-green-500 mr-10 py-2 px-6 text-white rounded hover:bg-green-600"
+                disabled={
+                  categories.find(
+                    (cate) =>
+                      cate.roomCategory.roomCategoryName === roomCategoryName
+                  ) && roomCategoryName !== cateRoom.roomCategoryName
+                }
+              >
+                Lưu
+              </button>
+              <button
+                type="button"
+                className="bg-gray-400 py-2 px-6 text-white rounded hover:bg-gray-500"
+                onClick={() => {
+                  onClose();
+                }}
+              >
+                Bỏ qua
+              </button>
             </div>
           </div>
         </Modal>

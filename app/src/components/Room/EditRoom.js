@@ -7,9 +7,7 @@ function EditRoom(props) {
   useEffect(() => {
     async function fetchRoom() {
       try {
-        const response = await axiosPrivate.get(
-          "room/" + props.roomId
-        );
+        const response = await axiosPrivate.get("room/" + props.roomId);
         setRoom(response.data);
       } catch (error) {
         console.log(error);
@@ -27,6 +25,7 @@ function EditRoom(props) {
         floors={props.floors}
         categories={props.categories}
         room={room}
+        rooms={props.rooms}
       />
     )
   );

@@ -10,6 +10,8 @@ import SurCharge from "../../components/Policy/SurChange";
 import TimeUsing from "../../components/Policy/TimeUsing";
 import OtherFee from "../../components/Policy/OtherFee";
 import Swal from "sweetalert2";
+import ExchangeRoom from "../../components/Policy/ExchangeRoom";
+import Promotion from "../../components/Policy/Promotion";
 
 function PolicyManagementPage() {
   const [surcharge, setSurcharge] = useState(true);
@@ -83,7 +85,7 @@ function PolicyManagementPage() {
             }}
           >
             <i className="fa-solid fa-arrow-right-arrow-left mr-4 my-auto"></i>
-            <p>Đổi, huỷ phòng</p>
+            <p>Cọc, huỷ phòng</p>
             <i className="ml-auto my-auto fa-solid fa-chevron-right"></i>
           </button>
           <button
@@ -108,6 +110,8 @@ function PolicyManagementPage() {
         {surcharge && <SurCharge />}
         {timeUsing && <TimeUsing />}
         {otherFee && <OtherFee />}
+        {exchangeRoom && <ExchangeRoom />}
+        {promotion && <Promotion />}
       </div>
     </div>
   );
@@ -119,7 +123,7 @@ async function loadSoonCheckinSurcharge() {
   const response = await axiosPrivate
     .get("policy/EARLIER_OVERTIME_SURCHARGE")
     .catch((e) => {
-      redirect("/login");
+      console.log(e);
     });
   if (response.data.success) {
     return response.data.result;
@@ -132,7 +136,7 @@ async function loadLateCheckoutSurcharge() {
   const response = await axiosPrivate
     .get("policy/LATER_OVERTIME_SURCHARGE")
     .catch((e) => {
-      return redirect("/login");
+      console.log(e);
     });
   if (response.data.success) {
     return response.data.result;
@@ -145,7 +149,7 @@ async function loadAdultSurcharge() {
   const response = await axiosPrivate
     .get("policy/ADDITIONAL_ADULT_SURCHARGE")
     .catch((e) => {
-      return redirect("/login");
+      console.log(e);
     });
   if (response.data.success) {
     return response.data.result;
@@ -158,7 +162,7 @@ async function loadChildrenSurcharge() {
   const response = await axiosPrivate
     .get("policy/ADDITIONAL_CHILDREN_SURCHARGE")
     .catch((e) => {
-      return redirect("/login");
+      console.log(e);
     });
   if (response.data.success) {
     return response.data.result;
@@ -180,8 +184,58 @@ async function loadOtherRevenue() {
 
 async function loadTimeUsing() {
   const response = await axiosPrivate.get("policy/time_use").catch((e) => {
-    return redirect("/login");
+    console.log(e);
   });
+  if (response.data.success) {
+    return response.data.result;
+  } else {
+    return redirect("/login");
+  }
+}
+
+async function loadDeposit() {
+  const response = await axiosPrivate.get("policy/SETUP_DEPOSIT").catch((e) => {
+    console.log(e);
+  });
+  if (response.data.success) {
+    return response.data.result;
+  } else {
+    return redirect("/login");
+  }
+}
+
+async function loadCancelRoom() {
+  const response = await axiosPrivate
+    .get("policy/CHANGE_CANCEL_ROOM_SURCHARGE")
+    .catch((e) => {
+      console.log(e);
+    });
+  if (response.data.success) {
+    return response.data.result;
+  } else {
+    return redirect("/login");
+  }
+}
+
+async function loadPoints() {
+  const response = await axiosPrivate
+    .get("policy/SETUP_POINT_SYSTEM")
+    .catch((e) => {
+      console.log(e);
+    });
+  if (response.data.success) {
+    return response.data.result;
+  } else {
+    return redirect("/login");
+  }
+}
+
+async function loadPromotion() {
+  const response = await axiosPrivate
+    .get("policy/PROMOTION_POLICY")
+    .catch((e) => {
+      console.log(e);
+    });
   if (response.data.success) {
     return response.data.result;
   } else {
@@ -206,6 +260,10 @@ export async function loader() {
     listChildren: await loadChildrenSurcharge(),
     timeUsing: await loadTimeUsing(),
     listRevenue: await loadOtherRevenue(),
+    listDeposit: await loadDeposit(),
+    cancelRoom: await loadCancelRoom(),
+    points: await loadPoints(),
+    promotion: await loadPromotion(),
     categories: await loadCategories(),
   });
 }
@@ -644,6 +702,193 @@ export async function action({ request }) {
         });
       }
       return { success: true };
+    }
+    return { success: true };
+  }
+
+  if (data.get("isDeposit")) {
+    const formData = new FormData();
+    const policyId = data.get("policyId");
+    const numberCate = data.get("numberCate");
+    for (let i = 0; i < numberCate; i++) {
+      formData.append(`policyDetailDTO[${i}].policyId`, policyId);
+      if (data.get(`policyDetailId${i}`)) {
+        formData.append(
+          `policyDetailDTO[${i}].policyDetailId`,
+          data.get(`policyDetailId${i}`)
+        );
+      }
+      formData.append(
+        `policyDetailDTO[${i}].roomCategoryId`,
+        data.get(`roomCategoryId${i}`)
+      );
+      formData.append(`policyDetailDTO[${i}].customerGroupId`, "NK000000");
+      formData.append(
+        `policyDetailDTO[${i}].policyValue`,
+        data.get(`policyValue${i}`)
+      );
+    }
+    const response = await axiosPrivate.post("policy", formData).catch((e) => {
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        title: "Cập nhật giá tiền cọc thất bại",
+        showConfirmButton: false,
+        timer: 2000,
+      });
+    });
+    if (response.data.success) {
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: "Cập nhật giá tiền cọc thành công",
+        showConfirmButton: false,
+        timer: 2000,
+      });
+    } else {
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        title: "Cập nhật giá tiền cọc thất bại",
+        showConfirmButton: false,
+        timer: 2000,
+      });
+    }
+    return { success: true };
+  }
+
+  if (data.get("isCancelRoom")) {
+    const formData = new FormData();
+    const policyId = data.get("policyId");
+    const numberCancel = data.get("numberCancel");
+    for (let i = 0; i < numberCancel; i++) {
+      formData.append(`policyDetailDTO[${i}].policyId`, policyId);
+      if (data.get(`policyDetailId${i}`)) {
+        formData.append(
+          `policyDetailDTO[${i}].policyDetailId`,
+          data.get(`policyDetailId${i}`)
+        );
+      }
+      formData.append(`policyDetailDTO[${i}].roomCategoryId`, "HP000000");
+      formData.append(`policyDetailDTO[${i}].customerGroupId`, "NK000000");
+      formData.append(
+        `policyDetailDTO[${i}].limitValue`,
+        data.get(`limitValue${i}`)
+      );
+      formData.append(
+        `policyDetailDTO[${i}].policyValue`,
+        data.get(`policyValue${i}`)
+      );
+    }
+    const response = await axiosPrivate.post("policy", formData).catch((e) => {
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        title: "Cập nhật giá huỷ phòng thất bại",
+        showConfirmButton: false,
+        timer: 2000,
+      });
+    });
+    if (response.data.success) {
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: "Cập nhật giá huỷ phòng thành công",
+        showConfirmButton: false,
+        timer: 2000,
+      });
+    } else {
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        title: "Cập nhật giá huỷ phòng thất bại",
+        showConfirmButton: false,
+        timer: 2000,
+      });
+    }
+    return { success: true };
+  }
+
+  if (data.get("isPromotion")) {
+    const formData = new FormData();
+    formData.append(`policyDetailDTO[0].policyId`, data.get("policyId"));
+    if (data.get("policyDetailId")) {
+      formData.append(
+        "policyDetailDTO[0].policyDetailId",
+        data.get("policyDetailId")
+      );
+    }
+    formData.append("policyDetailDTO[0].roomCategoryId", "HP000000");
+    formData.append("policyDetailDTO[0].customerGroupId", "NK000000");
+    formData.append("policyDetailDTO[0].limitValue", data.get("limitValue"));
+    formData.append("policyDetailDTO[0].policyValue", data.get("policyValue"));
+    const response = await axiosPrivate.post("policy", formData).catch((e) => {
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        title: "Cập nhật khuyến mãi thất bại",
+        showConfirmButton: false,
+        timer: 2000,
+      });
+    });
+    if (response.data.success) {
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: "Cập nhật khuyến mãi thành công",
+        showConfirmButton: false,
+        timer: 2000,
+      });
+    } else {
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        title: "Cập nhật khuyến mãi thất bại",
+        showConfirmButton: false,
+        timer: 2000,
+      });
+    }
+    return { success: true };
+  }
+
+  if (data.get("isPoint")) {
+    const formData = new FormData();
+    formData.append(`policyDetailDTO[0].policyId`, data.get("policyId"));
+    if (data.get("policyDetailId")) {
+      formData.append(
+        "policyDetailDTO[0].policyDetailId",
+        data.get("policyDetailId")
+      );
+    }
+    formData.append("policyDetailDTO[0].roomCategoryId", "HP000000");
+    formData.append("policyDetailDTO[0].customerGroupId", "NK000000");
+    formData.append("policyDetailDTO[0].limitValue", data.get("limitValue"));
+    formData.append("policyDetailDTO[0].policyValue", data.get("policyValue"));
+    const response = await axiosPrivate.post("policy", formData).catch((e) => {
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        title: "Cập nhật tích điểm thất bại",
+        showConfirmButton: false,
+        timer: 2000,
+      });
+    });
+    if (response.data.success) {
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: "Cập nhật tích điểm thành công",
+        showConfirmButton: false,
+        timer: 2000,
+      });
+    } else {
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        title: "Cập nhật tích điểm thất bại",
+        showConfirmButton: false,
+        timer: 2000,
+      });
     }
     return { success: true };
   }

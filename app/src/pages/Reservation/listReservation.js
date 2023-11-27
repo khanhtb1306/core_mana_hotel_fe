@@ -513,8 +513,8 @@ function ListReservationPage() {
 
   const columns = [
     { field: "number", headerName: "STT", width: 80 },
-    { field: "reservationId", headerName: "Mã đặt phòng", width: 180 },
-    { field: "customer", headerName: "Khách đặt", width: 220 },
+    { field: "reservationId", headerName: "Mã đặt phòng", width: 170 },
+    { field: "customer", headerName: "Khách đặt", width: 210 },
     { field: "date", headerName: "Lưu trú", width: 250 },
     {
       field: "status",
@@ -655,7 +655,7 @@ function ListReservationPage() {
   });
 
   return (
-    <div className="h-full px-4 mx-auto">
+    <div className="h-full px-4 mx-auto mt-2">
       <div className="flex">
         <div>
           <FormControlLabel

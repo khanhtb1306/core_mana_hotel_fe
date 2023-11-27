@@ -26,6 +26,7 @@ function EditCategoryRoom(props) {
         open={props.open}
         onClose={props.onClose}
         cateRoom={category.roomCategory}
+        categories={props.categories}
       />
     )
   );

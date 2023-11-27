@@ -95,18 +95,33 @@ export async function action({ request }) {
   const method = request.method;
   const data = await request.formData();
   const reservationId = data.get("reservationId");
-
-  const formReser = new FormData();
-  formReser.append("customerId", data.get("customerId"));
-  formReser.append("priceListId", data.get("priceListId"));
-  formReser.append("customerId", data.get("customerId"));
-  console.log(data.get("customerId"));
-  await axiosPrivate
-    .put("reservation/" + reservationId, formReser)
-    .catch((e) => {
-      console.log(e);
-    });
-
+  if (data.get("isReservation")) {
+    const formReser = new FormData();
+    if (data.get("customerId")) {
+      formReser.append("customerId", data.get("customerId"));
+    } else {
+      formReser.append("customerId", "C000000");
+    }
+    if (data.get("priceListId")) {
+      if (data.get("priceListId") === "0") {
+        formReser.append("priceListId", "BG000000");
+      }
+      formReser.append("priceListId", data.get("priceListId"));
+    } else {
+      formReser.append("priceListId", "BG000000");
+    }
+    // const response = await axiosPrivate
+    //   .put("reservation/" + reservationId, formReser)
+    //   .catch((e) => {
+    //     console.log(e);
+    //   });
+    const numberRoom = data.get("numberRoom");
+    console.log(numberRoom);
+    for (let i = 0; i < numberRoom; i++) {}
+    console.log(
+      "Dùng vòng for và gọi apu put từng reservation details (Type time, room, fromTime, toTime)"
+    );
+  }
   if (data.get("isAddGroup")) {
     const formData = new FormData();
     formData.append("customerGroupName", data.get("groupCusName"));
@@ -248,12 +263,19 @@ export async function action({ request }) {
       if (response) {
         const formData1 = new FormData();
         formData1.append(
-          "reservationDetailId",
+          "reservationDetailCustomerDTO.reservationDetailId",
           data.get("reservationDetailId")
         );
-        formData1.append("customerId", response.data.customerId);
+        formData1.append(
+          "reservationDetailCustomerDTO.customerId",
+          response.data.customerId
+        );
+        formData1.append("adult", data.get("isAdult"));
         await axiosPrivate
           .post("reservation-detail/reservation-detail-customer", formData1)
+          .then((e) => {
+            console.log(e);
+          })
           .catch((e) => {
             console.log(e);
           });
@@ -273,7 +295,6 @@ export async function action({ request }) {
       formData.append("taxCode", data.get("taxCode"));
       formData.append("gender", data.get("gender"));
       formData.append("image", data.get("image"));
-      // console.log(data.get("customerId"));
       // return { success: true };
       const response = await axiosPrivate
         .put("customer/" + data.get("customerId"), formData, {
@@ -284,16 +305,44 @@ export async function action({ request }) {
         .catch((e) => {
           console.log(e);
         });
+      if (response && data.get("isChange") !== null) {
+        const formData1 = new FormData();
+        formData1.append(
+          "reservationDetailCustomerDTO.reservationDetailId",
+          data.get("reservationDetailId")
+        );
+        formData1.append(
+          "reservationDetailCustomerDTO.customerId",
+          data.get("customerId")
+        );
+        formData1.append("adult", data.get("isAdult"));
+        formData1.append("check", data.get("isChange"));
+        await axiosPrivate
+          .put("reservation-detail/reservation-detail-customer", formData1)
+          .then((e) => {
+            console.log(e);
+          })
+          .catch((e) => {
+            console.log(e);
+          });
+      }
     }
+    //Remove visitor in reservation details
     if (method === "DELETE") {
       await axiosPrivate
         .delete(
           "reservation-detail/reservation-detail-customer/" +
-            data.get("reservationDetailCustomerId")
+            data.get("reservationDetailCustomerId") +
+            "?isAdult=" +
+            data.get("isAdult")
         )
         .catch((e) => {
           console.log(e);
         });
+      const dataArray = data.get("customerId").split(",");
+      await axiosPrivate.delete("customer/" + dataArray).catch((e) => {
+        console.log(e);
+      });
     }
     return { success: true };
   }
@@ -526,6 +575,5 @@ export async function action({ request }) {
     }
     return { success: true };
   }
-
-  return redirect("/editReservation/" + reservationId);
+  return { success: true };
 }

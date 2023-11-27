@@ -6,7 +6,16 @@ import { axiosConfig } from "../../utils/axiosConfig";
 import NewCategoryRoom from "../CategoryRoom/NewCategoryRoom";
 import NewArea from "../NewArea";
 
-function RoomForm({ name, open, onClose, method, floors, categories, room }) {
+function RoomForm({
+  name,
+  open,
+  onClose,
+  method,
+  floors,
+  categories,
+  room,
+  rooms,
+}) {
   const [openNewCateRoomModal, setOpenNewCateRoomModal] = useState(false);
   const [openNewAreaModal, setOpenNewAreaModal] = useState(false);
   const defaultCate = categories[0].roomCategory;
@@ -16,6 +25,8 @@ function RoomForm({ name, open, onClose, method, floors, categories, room }) {
     priceByDay: defaultCate.priceByDay,
     priceByNight: defaultCate.priceByNight,
   });
+
+  const [roomName, setRoomName] = useState(room.roomName);
 
   const optionFloors = floors.map((floor) => {
     return (
@@ -50,12 +61,7 @@ function RoomForm({ name, open, onClose, method, floors, categories, room }) {
   return (
     <>
       <Form method={method} onSubmit={onClose} encType="multipart/form-data">
-        <Modal
-          open={open}
-          onClose={onClose}
-          size="w-8/12 h-.5/6"
-          isButton={false}
-        >
+        <Modal open={open} onClose={onClose} size="w-8/12 h-.5/6" button={true}>
           <div className="p-2 w-full">
             <h1 className="text-lg pb-10 font-bold">{name}</h1>
             <div className="flex w-full">
@@ -86,9 +92,23 @@ function RoomForm({ name, open, onClose, method, floors, categories, room }) {
                         className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                         type="text"
                         name="roomName"
-                        defaultValue={room.roomName}
+                        value={roomName}
+                        onChange={(e) => {
+                          setRoomName(e.target.value);
+                        }}
+                        onInvalid={(e) => {
+                          e.target.setCustomValidity(
+                            "Không được để trống tên phòng"
+                          );
+                        }}
                         required
                       />
+                      {rooms.find((cate) => cate.roomName === roomName) &&
+                        roomName !== room.roomName && (
+                          <div className="text-red-500 text-sm">
+                            Tên phòng không thể bị trùng
+                          </div>
+                        )}
                     </td>
                   </tr>
                   <tr>
@@ -207,6 +227,28 @@ function RoomForm({ name, open, onClose, method, floors, categories, room }) {
               />
             </div>
           </div>
+          <div className="flex pt-5">
+            <div className="ml-auto">
+              <button
+                className="bg-green-500 mr-10 py-2 px-6 text-white rounded hover:bg-green-600"
+                disabled={
+                  rooms.find((cate) => cate.roomName === roomName) &&
+                  roomName !== room.roomName
+                }
+              >
+                Lưu
+              </button>
+              <button
+                type="button"
+                className="bg-gray-400 py-2 px-6 text-white rounded hover:bg-gray-500"
+                onClick={() => {
+                  onClose();
+                }}
+              >
+                Bỏ qua
+              </button>
+            </div>
+          </div>
         </Modal>
       </Form>
       {openNewAreaModal && (
@@ -219,6 +261,7 @@ function RoomForm({ name, open, onClose, method, floors, categories, room }) {
         <NewCategoryRoom
           open={openNewCateRoomModal}
           onClose={() => setOpenNewCateRoomModal(false)}
+          categories={categories}
         />
       )}
     </>

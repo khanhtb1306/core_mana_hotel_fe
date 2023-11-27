@@ -35,13 +35,13 @@ const LineChart = ({ labels, dataset }) => {
                             ticks: {
                                 callback: value => `${value}%`,
                             },
+                            max: 100,
+                            min: 0,
                         },
                     },
                 },
             });
         }
-
-        // Cleanup: Destroy chart when the component unmounts
         return () => {
             if (chartInstance.current) {
                 chartInstance.current.destroy();
@@ -49,7 +49,7 @@ const LineChart = ({ labels, dataset }) => {
         };
     }, [labels, dataset]);
 
-    return <canvas ref={chartRef}/>;
+    return <canvas ref={chartRef} style={{ width: '100%', height: '100px' }} />;
 };
 
 export default LineChart;

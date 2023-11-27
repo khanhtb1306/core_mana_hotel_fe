@@ -6,7 +6,6 @@ import Modal from "../UI/Modal";
 import { useEffect, useState } from "react";
 import { axiosPrivate } from "../../utils/axiosConfig";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
-import { name } from "dayjs/locale/vi";
 import { Form } from "react-router-dom";
 
 function AddRoom(props) {
@@ -367,10 +366,32 @@ function AddRoom(props) {
                 </div>
               </div>
               <input type="hidden" name="addRoom" value={true} />
+              {props.addReservation && (
+                <>
+                  <input
+                    type="hidden"
+                    name="customerId"
+                    value={props.customerId}
+                    onChange={() => console.log()}
+                  />
+                  <input
+                    type="hidden"
+                    name="priceListId"
+                    value={props.priceListId}
+                    onChange={() => console.log()}
+                  />
+                  <input
+                    type="hidden"
+                    name="valueTime"
+                    value={valueTime}
+                    onChange={() => console.log()}
+                  />
+                </>
+              )}
               <input
                 type="hidden"
                 name="reservationId"
-                value={props.reservationId}
+                value={props.reservationId ? props.reservationId : null}
               />
               <input
                 type="hidden"

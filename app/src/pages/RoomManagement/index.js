@@ -200,12 +200,14 @@ function RoomManagementPage() {
           onClose={() => setOpenNewRoomModal(false)}
           floors={floors}
           categories={categories}
+          rooms={rooms}
         />
       )}
       {openNewCateRoomModal && (
         <NewCategoryRoom
           open={openNewCateRoomModal}
           onClose={() => setOpenNewCateRoomModal(false)}
+          categories={categories}
         />
       )}
       {openDetailsRoom && selectedRoomId && (
@@ -222,6 +224,7 @@ function RoomManagementPage() {
           floors={floors}
           categories={categories}
           roomId={selectedRoomId}
+          rooms={rooms}
         />
       )}
       {openDeleteRoomsModal && rowSelectionModel.length > 0 && (
@@ -442,24 +445,26 @@ export async function action({ request }) {
           "Content-Type": "multipart/form-data",
         },
       })
-      .then((response) => {
-        Swal.fire({
-          position: "center",
-          icon: "success",
-          title: response.data,
-          showConfirmButton: false,
-          timer: 1500,
-        });
-      })
       .catch((e) => {
-        Swal.fire({
-          position: "center",
-          icon: "error",
-          title: e.response.data,
-          showConfirmButton: false,
-          timer: 1500,
-        });
+        console.log(e);
       });
+    if (response) {
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: "Thêm phòng thành công",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    } else {
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        title: "Thêm phòng thất bại",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    }
     return redirect("/manager/roomManagement");
   }
   if (method === "PUT") {

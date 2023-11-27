@@ -17,6 +17,7 @@ function NewRoom(props) {
         note: null,
         image: null,
       }}
+      rooms={props.rooms}
     />
   );
 }
