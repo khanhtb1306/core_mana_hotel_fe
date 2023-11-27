@@ -61,6 +61,12 @@ import PolicyManagementPage, {
 import OverviewManagementPage,{
   loader as loadOverview,
 } from "./pages/OverviewManagementPage";
+import TransactionManagementPage, {
+} from "./pages/TransactionManagement";
+import ImportManagementPage, {
+} from "./pages/ImportManagement";
+import FundBookManagementPage, {
+}from "./pages/FundBookManagement";
 
 const routesForManager = [
   {
@@ -96,6 +102,18 @@ const routesForManager = [
     element: <StocktakeManagementPage />,
     loader: loadStocktakes,
     action: actionStocktakes,
+  },
+  {
+    path: "transactionManagement",
+    element: <TransactionManagementPage />,
+  },
+  {
+    path: "importManagement",
+    element: <ImportManagementPage />,
+  },
+  {
+    path: "fundBookManagement",
+    element: <FundBookManagementPage />,
   },
   {
     path: "customerManagement",
