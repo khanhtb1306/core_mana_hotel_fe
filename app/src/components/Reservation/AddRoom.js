@@ -66,7 +66,7 @@ function AddRoom(props) {
     fetchCategory();
   }, []);
 
-  console.log(category);
+  // console.log(category);
 
   const handleHour = async () => {
     setOpenHour(true);

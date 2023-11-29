@@ -15,12 +15,14 @@ import StatusInvoice from "../Reservation/StatusInvoice";
 import CancelInvoice from "../Reservation/CancelInvoice";
 import VisitorModal from "../Reservation/VisitorModal";
 import PaymentModal from "../Reservation/PaymentModal";
+import ReceiveRoomModal from "../Reservation/ReceiveRoomModal";
+import PayRoomModal from "../Reservation/PayRoomModal";
 
 function ReservationForm(props) {
   const { customers, prices, categories } = useLoaderData();
   const actionData = useActionData();
   const reservation = props.reservation;
-  console.log(reservation);
+  // console.log(reservation);
   // console.log(categories);
   const dayInWeek = ["2", "3", "4", "5", "6", "7", "8"];
   const pricesMore = prices.map((price) => {
@@ -157,6 +159,18 @@ function ReservationForm(props) {
   const [roomActive, setRoomActive] = useState(
     reservation ? reservation.listReservationDetails[0] : null
   );
+  useEffect(() => {
+    async function fetchRoomActive() {
+      try {
+        setRoomActive(reservation.listReservationDetails[0]);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchRoomActive();
+  }, [reservation]);
+  const [openReceiveModal, setOpenReceiveModal] = useState(false);
+  const [openPayModal, setOpenPayModal] = useState(false);
   const [priceBook, setPriceBook] = useState(priceById);
   const [price, setPrice] = useState(priceByCateRoom);
   // console.log(roomActive);
@@ -333,7 +347,12 @@ function ReservationForm(props) {
               </button>
               {roomActive.status === "BOOKING" && (
                 <>
-                  <button className="px-4 py-2 ml-auto rounded-lg text-white bg-green-500 hover:bg-green-600">
+                  <button
+                    className="px-4 py-2 ml-auto rounded-lg text-white bg-green-500 hover:bg-green-600"
+                    onClick={() => {
+                      setOpenReceiveModal(true);
+                    }}
+                  >
                     Nhận phòng
                   </button>
                   <button className="px-4 py-2 ml-2 rounded-lg text-white bg-gray-500 hover:bg-gray-600">
@@ -343,7 +362,12 @@ function ReservationForm(props) {
               )}
               {roomActive.status === "CHECK_IN" && (
                 <>
-                  <button className="px-4 py-2 ml-auto rounded-lg text-white bg-blue-500 hover:bg-blue-600">
+                  <button
+                    className="px-4 py-2 ml-auto rounded-lg text-white bg-blue-500 hover:bg-blue-600"
+                    onClick={() => {
+                      setOpenPayModal(true);
+                    }}
+                  >
                      Trả phòng
                   </button>
                   <button className="px-4 py-2 ml-2 rounded-lg text-white bg-gray-500 hover:bg-gray-600">
@@ -351,6 +375,7 @@ function ReservationForm(props) {
                   </button>
                 </>
               )}
+              {roomActive.status === "CHECK_OUT" && <></>}
             </div>
             {roomActive && listCustomers && (
               <>
@@ -394,6 +419,7 @@ function ReservationForm(props) {
                           listRoomByRes={reservation.listReservationDetails.filter(
                             (res) => res.room.roomId !== room.room.roomId
                           )}
+                          index={index}
                           price={price}
                           visitors={listCustomers}
                           handleVisitModalOpen={() => setOpenVisitorModal(true)}
@@ -708,6 +734,20 @@ function ReservationForm(props) {
             />
           )}
         </>
+      )}
+      {openReceiveModal && (
+        <ReceiveRoomModal
+          open={openReceiveModal}
+          onClose={() => setOpenReceiveModal(false)}
+          roomActive={roomActive}
+        />
+      )}
+      {openPayModal && (
+        <PayRoomModal
+          open={openPayModal}
+          onClose={() => setOpenPayModal(false)}
+          roomActive={roomActive}
+        />
       )}
     </>
   );

@@ -131,15 +131,13 @@ export async function action({ request }) {
           formData.append("roomId", listCateRoomId[j]);
           await axiosPrivate
             .post("reservation-detail", formData)
-            .then((res) => console.log(res))
             .catch((er) => console.log(er));
         }
       }
+      return redirect("/editReservation/" + response.data.result);
     } else {
       return { success: false };
     }
-    window.location.href = "/editReservation/" + response.data.result;
-    return;
-      // return { success: true };
+    // return { success: true };
   }
 }

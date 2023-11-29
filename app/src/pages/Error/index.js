@@ -12,7 +12,7 @@ function ErrorPage() {
             to="/login"
             className="rounded bg-green-500 text-white px-4 py-2"
           >
-            Go Login Page
+            Chuyển về trang Login
           </NavLink>
         </div>
       </div>

@@ -56,7 +56,7 @@ function ManagerNavigation() {
           ]}
         />
         <ButtonHeader
-          name="Danh mục"
+            name="Danh mục"
           icon="fa-solid fa-box"
           isActive={
             location.pathname === "/manager/productManagement" ||
@@ -115,8 +115,8 @@ function ManagerNavigation() {
         </li>
       </div>
         <ButtonHeader
-          name="Đối tác"
-          icon="fa-solid fa-user-tie"
+            name="Đối tác"
+            icon="fa-solid fa-user-tie"
           isActive={
             location.pathname === "/manager/customerManagement" ||
             location.pathname === "/manager/supplierManagement"

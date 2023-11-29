@@ -105,22 +105,80 @@ export async function action({ request }) {
     if (data.get("priceListId")) {
       if (data.get("priceListId") === "0") {
         formReser.append("priceListId", "BG000000");
+      } else {
+        formReser.append("priceListId", data.get("priceListId"));
       }
-      formReser.append("priceListId", data.get("priceListId"));
     } else {
       formReser.append("priceListId", "BG000000");
     }
-    // const response = await axiosPrivate
-    //   .put("reservation/" + reservationId, formReser)
-    //   .catch((e) => {
-    //     console.log(e);
-    //   });
+    const response = await axiosPrivate
+      .put("reservation/" + reservationId, formReser)
+      .catch((e) => {
+        console.log(e);
+      });
+    console.log(response);
     const numberRoom = data.get("numberRoom");
-    console.log(numberRoom);
-    for (let i = 0; i < numberRoom; i++) {}
-    console.log(
-      "Dùng vòng for và gọi apu put từng reservation details (Type time, room, fromTime, toTime)"
-    );
+    for (let i = 0; i < numberRoom; i++) {
+      const formDetails = new FormData();
+      formDetails.append("reservationId", reservationId);
+      formDetails.append("roomId", data.get(`roomId${i}`));
+      formDetails.append("reservationType", data.get(`reservationType${i}`));
+      if (data.get(`isBooking${i}`)) {
+        formDetails.append("checkInEstimate", data.get(`fromTime${i}`));
+        formDetails.append("checkOutEstimate", data.get(`toTime${i}`));
+        const response = await axiosPrivate
+          .put(
+            "reservation-detail/" + data.get(`reservationDetailId${i}`),
+            formDetails
+          )
+          .catch((e) => {
+            Swal.fire({
+              position: "center",
+              icon: "error",
+              title: "Chỉnh sửa phòng thất bại",
+              showConfirmButton: false,
+              timer: 1500,
+            });
+          });
+        if (!response.data.success) {
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            title: `Chỉnh sửa phòng ${data.get(`roomName${i}`)} thất bại`,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        }
+      }
+      if (data.get(`isCheckin${i}`)) {
+        formDetails.append("checkInActual", data.get(`fromTime${i}`));
+        formDetails.append("checkOutEstimate", data.get(`toTime${i}`));
+        const response = await axiosPrivate
+          .put(
+            "reservation-detail/" + data.get(`reservationDetailId${i}`),
+            formDetails
+          )
+          .catch((e) => {
+            Swal.fire({
+              position: "center",
+              icon: "error",
+              title: "Chỉnh sửa phòng thất bại",
+              showConfirmButton: false,
+              timer: 1500,
+            });
+          });
+        console.log(response);
+        if (!response.data.success) {
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            title: `Chỉnh sửa phòng ${data.get(`roomName${i}`)} thất bại`,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        }
+      }
+    }
   }
   if (data.get("isAddGroup")) {
     const formData = new FormData();
@@ -572,6 +630,80 @@ export async function action({ request }) {
         .delete("reservation-detail/" + data.get("reservationDetailsId"))
         .then((res) => console.log(res))
         .catch((er) => console.log(er));
+    }
+    return { success: true };
+  }
+
+  //Change status room to checkin
+  if (data.get("isReceiveRoom")) {
+    const formDetails = new FormData();
+    formDetails.append("checkInActual", data.get("fromTime"));
+    formDetails.append("checkOutEstimate", data.get("toTime"));
+    formDetails.append("status", "CHECK_IN");
+    const response = await axiosPrivate
+      .put("reservation-detail/" + data.get("reservationDetailId"), formDetails)
+      .catch((e) => {
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: "Nhận phòng thất bại",
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      });
+    if (response.data.success) {
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: "Nhận phòng thành công",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    } else {
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        title: "Nhận phòng thất bại",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    }
+    return { success: true };
+  }
+
+  //Change status room to checkout
+  if (data.get("isPayRoom")) {
+    const formDetails = new FormData();
+    formDetails.append("checkInActual", data.get("fromTime"));
+    formDetails.append("checkOutActual", data.get("toTime"));
+    formDetails.append("status", "CHECK_OUT");
+    const response = await axiosPrivate
+      .put("reservation-detail/" + data.get("reservationDetailId"), formDetails)
+      .catch((e) => {
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: "Trả phòng thất bại",
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      });
+    if (response.data.success) {
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: "Trả phòng thành công",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    } else {
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        title: "Trả phòng thất bại",
+        showConfirmButton: false,
+        timer: 1500,
+      });
     }
     return { success: true };
   }

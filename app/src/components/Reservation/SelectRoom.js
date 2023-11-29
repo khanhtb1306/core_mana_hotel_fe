@@ -3,7 +3,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker, DateTimePicker } from "@mui/x-date-pickers";
 import { Checkbox, FormControlLabel, MenuItem, Select } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLoaderData } from "react-router-dom";
 import Swal from "sweetalert2";
 import DetailsPriceInRoom from "./DetailsPriceInRoom";
@@ -85,13 +85,24 @@ function SelectRoom(props) {
   }
   const [typeTime, setTypeTime] = useState(type);
   const [valueTime, setValueTime] = useState(time);
-
   const [fromTime, setFromTime] = useState(from);
   const [toTime, setToTime] = useState(to);
   const [lateCheckout, setLateCheckout] = useState(lateCheckOut);
   const [soonCheckin, setSoonCheckin] = useState(soonCheckIn);
   const [isPaidSoonCheckin, setIsPaidSoonCheckin] = useState(true);
   const [isPaidLateCheckout, setIsPaidLateCheckout] = useState(true);
+  useEffect(() => {
+    async function fetchRoomActive() {
+      try {
+        setToTime(to);
+        setFromTime(from);
+        setValueTime(time);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchRoomActive();
+  }, [room]);
 
   const handlePaidSoonCheckinChange = () => {
     setIsPaidSoonCheckin(!isPaidSoonCheckin);
@@ -333,23 +344,47 @@ function SelectRoom(props) {
     <div className="bg-white shadow-md rounded-lg border p-4">
       <div>
         {room.status === "BOOKING" && (
-          <input type="hidden" name="isBooking" defaultValue={true} />
+          <input
+            type="hidden"
+            name={`isBooking${props.index}`}
+            defaultValue={true}
+          />
         )}
         {room.status === "CHECK_IN" && (
-          <input type="hidden" name="isCheckin" defaultValue={true} />
+          <input
+            type="hidden"
+            name={`isCheckin${props.index}`}
+            defaultValue={true}
+          />
         )}
         {room.status === "CHECK_OUT" && (
-          <input type="hidden" name="isCheckout" defaultValue={true} />
+          <input
+            type="hidden"
+            name={`isCheckout${props.index}`}
+            defaultValue={true}
+          />
         )}
         <input
           type="hidden"
-          name="roomId"
+          name={`reservationDetailId${props.index}`}
+          value={room.reservationDetailId}
+          onChange={() => console.log()}
+        />
+        <input
+          type="hidden"
+          name={`roomId${props.index}`}
           value={selectedRoomId}
           onChange={() => console.log()}
         />
         <input
           type="hidden"
-          name="reservationType"
+          name={`roomName${props.index}`}
+          value={room.room.roomName}
+          onChange={() => console.log()}
+        />
+        <input
+          type="hidden"
+          name={`reservationType${props.index}`}
           value={
             typeTime === 1 ? "HOURLY" : typeTime === 2 ? "DAILY" : "OVERNIGHT"
           }
@@ -357,14 +392,14 @@ function SelectRoom(props) {
         />
         <input
           type="hidden"
-          name="fromTime"
-          value={fromTime}
+          name={`fromTime${props.index}`}
+          value={fromTime.format("YYYY-MM-DD HH:mm:ss")}
           onChange={() => console.log()}
         />
         <input
           type="hidden"
-          name="toTime"
-          value={toTime}
+          name={`toTime${props.index}`}
+          value={toTime.format("YYYY-MM-DD HH:mm:ss")}
           onChange={() => console.log()}
         />
         <div className="flex mb-2">
@@ -534,9 +569,10 @@ function SelectRoom(props) {
                   </p>
                   <p className="text-green-500 my-auto">
                     {typeTime === 1
-                      ? `${dayjs().diff(fromTime, "hour")} giờ ${
-                          dayjs().minute() - fromTime.minute()
-                        } phút`
+                      ? `${dayjs().diff(fromTime, "hour")} giờ ${dayjs().diff(
+                          fromTime,
+                          "minute"
+                        ) - dayjs().diff(fromTime, "hour") * 60} phút`
                       : typeTime === 2
                       ? `${dayjs().date() - fromTime.date()} ngày ${
                           dayjs().hour() - fromTime.hour()

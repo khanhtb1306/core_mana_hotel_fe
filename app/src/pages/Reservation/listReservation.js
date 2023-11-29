@@ -353,7 +353,7 @@ function ListReservationPage() {
       handeWeekChange(dayjs());
     } else if (value === 3) {
       setWeek(dayjs().startOf("M"));
-      handeWeekChange(dayjs().startOf("M"));
+      handeMonthChange(dayjs().startOf("M"));
     }
     setType(value);
   };
@@ -521,11 +521,11 @@ function ListReservationPage() {
       headerName: "Trạng thái phòng",
       width: 250,
       renderCell: (params) => (
-        <div className="flex">
+        <div className="grid grid-cols-4 gap-1">
           {params.row.status.map((room, index) => (
             <div
               key={index}
-              className={`bg-${room.color}-200 mr-2 py-1 px-2 rounded text-${room.color}-500`}
+              className={`bg-${room.color}-200 py-1 px-2 rounded text-${room.color}-500`}
             >
               {room.roomName}
             </div>
@@ -864,6 +864,7 @@ function ListReservationPage() {
       <ReservationLayout isActive={true} />
       <DataGrid
         className="bg-white"
+        rowHeight={90}
         columns={columns}
         rows={rows}
         initialState={{
