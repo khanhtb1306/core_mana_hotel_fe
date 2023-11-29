@@ -32,13 +32,17 @@ const BarChart = ({ data }) => {
                             grid: {
                                 display: true, // Hide x-axis grid lines
                             },
+                            ticks: {
+                                callback: value => `${value}tr`,
+                            },
+                             // max: 10000000,
+                            min: 0,
                         }
                     }
                 }
             });
         }
 
-        // Cleanup: Destroy chart when the component unmounts
         return () => {
             if (chartInstance.current) {
                 chartInstance.current.destroy();
@@ -46,7 +50,7 @@ const BarChart = ({ data }) => {
         };
     }, [data]);
 
-    return <canvas ref={chartRef} />;
+    return <canvas ref={chartRef} style={{ width: '100%', height: '100px' }} />;
 };
 
 export default BarChart;

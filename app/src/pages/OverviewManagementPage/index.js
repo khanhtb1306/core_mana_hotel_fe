@@ -38,35 +38,25 @@ const OverviewPage = () => {
     return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
-  // console.log(reportRoomCapacityCurrentMonth);
-  // console.log(labels);
 
-  // const barChartData = {
-  //     labels: labels,
-  //     datasets: [{
-  //         label: 'Mana Hotel',
-  //         data: [65, 59, 80, 81, 56, 55, 40],
-  //         backgroundColor: [
-  //             'rgba(255, 99, 132, 0.2)',
-  //             'rgba(255, 159, 64, 0.2)',
-  //             'rgba(255, 205, 86, 0.2)',
-  //             'rgba(75, 192, 192, 0.2)',
-  //             'rgba(54, 162, 235, 0.2)',
-  //             'rgba(153, 102, 255, 0.2)',
-  //             'rgba(201, 203, 207, 0.2)'
-  //         ],
-  //         borderColor: [
-  //             'rgb(255, 99, 132)',
-  //             'rgb(255, 159, 64)',
-  //             'rgb(255, 205, 86)',
-  //             'rgb(75, 192, 192)',
-  //             'rgb(54, 162, 235)',
-  //             'rgb(153, 102, 255)',
-  //             'rgb(201, 203, 207)'
-  //         ],
-  //         borderWidth: 1
-  //     }]
-  // };
+  const generateRandomColor = () => {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  };
+
+  const generateRandomColors = (count) => {
+    const colors = [];
+    for (let i = 0; i < count; i++) {
+      colors.push(generateRandomColor());
+    }
+    return colors;
+  };
+
+
   //
   // const horizontalBarChartData = {
   //     labels: labels,
@@ -157,8 +147,83 @@ const OverviewPage = () => {
     tension: 0.1,
   } : {};
 
+
+  //barchart
+  const [viewByMonthBarChart, setViewByMonthBarChart] = useState(null);
+  const [selectedValueBarChart2, setSelectedValueBarChart2] = useState('ngay');
+  const handleBarChartTypeChange = (value) => { setSelectedValueBarChart2(value);};
+  const [selectedValueBarChart1, setSelectedValueBarChart1] = useState('1');
+  const [monthBarChart, setMonthBarChart] = useState(dayjs());
+  const [yearBarChart, setYearBarChart] = useState(dayjs());
+  const [reportRoomCapacityBarChart, setReportRoomCapacityBarChart] = useState(null);
+  const barChartOptions = [
+    { value: 1, name: "Tháng" },
+    { value: 2, name: "Năm" },
+  ];
+  useEffect(() => {
+    async function fetchListBarChartInvoices() {
+      try {
+        if (selectedValueBarChart1 === "1") {
+          // Gọi api month
+          if (selectedValueBarChart2 === 'ngay') {
+            const response = await axiosPrivate.get(
+                "/overview/report_revenue_each_day_by_month?date=" + monthBarChart.format('YYYY/MM/DD').toString()
+            );
+            setReportRoomCapacityBarChart(response.data.result);
+            let sum = 0;
+            for (let i = 0; i < response.data.result.data.length; i++) {
+              sum += response.data.result.data[i];
+            }
+            setViewByMonthBarChart('THEO THÁNG ' + sum.toLocaleString() + ' VND');
+          } else if (selectedValueBarChart2 === 'thu') {
+            const response = await axiosPrivate.get("/overview/report_revenue_day_of_week_by_month?date="
+                + monthBarChart.format('YYYY/MM/DD').toString());
+            setReportRoomCapacityBarChart(response.data.result);
+            let sum = 0;
+            for (let i = 0; i < response.data.result.data.length; i++) {
+              sum += response.data.result.data[i];
+            }
+            setViewByMonthBarChart('THEO THÁNG ' + sum.toLocaleString() + ' VND');
+          }
+        } else if (selectedValueBarChart1 === "2") {
+          setViewByMonthBarChart('THEO NĂM')
+          // Gọi api year
+          if (selectedValueBarChart2 === 'ngay') {
+            const response = await axiosPrivate.get(
+                "/overview/report_revenue_month_by_year?year=" + yearBarChart.year()
+            );
+            setReportRoomCapacityBarChart(response.data.result);
+          } else if (selectedValueBarChart2 === 'thu') {
+            const response = await axiosPrivate.get(
+                "/overview/report_revenue_day_of_week_by_year?date="
+                + yearBarChart.format('YYYY/MM/DD').toString());
+            setReportRoomCapacityBarChart(response.data.result);
+          }
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    fetchListBarChartInvoices();
+  }, [monthBarChart, yearBarChart, selectedValueBarChart1, selectedValueBarChart2]);
+
+  const barChartData = reportRoomCapacityBarChart ? {
+    labels: reportRoomCapacityBarChart.label,
+    datasets: [{
+      label: 'Mana Hotel',
+      data: reportRoomCapacityBarChart.data,
+      backgroundColor: generateRandomColors(reportRoomCapacityBarChart.data.length).map(color => `${color}1A`), // Adding alpha for transparency
+      borderColor: generateRandomColors(reportRoomCapacityBarChart.data.length),
+      borderWidth: 1
+    }]
+  }: {};
+
   const handleDropdownChange = (event) => {
     setSelectedValue1(event.target.value);
+  };
+  const handleDropdownChangeBarChart = (event) => {
+    setSelectedValueBarChart1(event.target.value);
   };
   const getIconForAction = (action) => {
     switch (action) {
@@ -409,23 +474,79 @@ const OverviewPage = () => {
           </div>
           <div className="bg-white p-4 mr-4 my-4 rounded">
             <div className="flex">
-              <div className="w-10/12">
+              <div className="w-9/12">
                 <p className="text-lg">
-                  DOANH THU THUẦN THÁNG NÀY 1,777,006,000
+                  DOANH THU THEO {viewByMonthBarChart}
                 </p>
               </div>
-              <div className="w-2/12">
-                {/*<select value={selectedValue1} onChange={(event) => handleDropdownChange(event, setSelectedValue1)}>*/}
-                {/*    {options.map((option, index) => (*/}
-                {/*        <option key={index} value={option}>*/}
-                {/*            {option}*/}
-                {/*        </option>*/}
-                {/*    ))}*/}
-                {/*</select>*/}
+              <div className="w-3/12 flex">
+                <div className="w-8/12">
+                  <LocalizationProvider
+                      dateAdapter={AdapterDayjs}
+                      adapterLocale="vi-VN"
+                  >
+                    {selectedValueBarChart1 === "1" ? (
+                        <DatePicker
+                            sx={{ ".MuiInputBase-input": { padding: 1, width: 100 } }}
+                            value={monthBarChart}
+                            onChange={(e) => {
+                              setMonthBarChart(e);
+                            }}
+                            format="MMM YYYY"
+                            views={["month", "year"]}
+                        />
+                    ) : (
+                        <DatePicker
+                            sx={{ ".MuiInputBase-input": { padding: 1, width: 100 } }}
+                            value={yearBarChart}
+                            onChange={(e) => {
+                              setYearBarChart(e);
+                            }}
+                            format="YYYY"
+                            views={["year"]}
+                        />
+                    )}
+                  </LocalizationProvider>
+                </div>
+                <div className="w-4/12">
+                  <select
+                      value={selectedValueBarChart1}
+                      onChange={(event) => handleDropdownChangeBarChart(event)}
+                  >
+                    {barChartOptions.map((option, index) => (
+                        <option key={index} value={option.value}>
+                          {option.name}
+                        </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
-            <div style={{ width: "1000px", height: "auto" }}>
-              <div>{/*<BarChart data={barChartData} />*/}</div>
+            <div>
+              <div>
+                <ul className="flex chart-type-options">
+                  <li  onClick={() => handleBarChartTypeChange('ngay')}
+                       style={{
+                         cursor: 'pointer',
+                         textDecoration:
+                             selectedValueBarChart2 === 'ngay' ? 'underline solid blue' : 'none',
+                       }}>
+                    Theo ngày
+                  </li>
+                  <span style={{ margin: '0 10px' }}></span>
+                  <li onClick={() => handleBarChartTypeChange('thu')}
+                      style={{
+                        cursor: 'pointer',
+                        textDecoration:
+                            selectedValueBarChart2 === 'thu' ? 'underline solid blue' : 'none',
+                      }}>
+                    Theo thứ
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <BarChart data={barChartData} />
+              </div>
             </div>
           </div>
           <div className="bg-white p-4 mr-4 my-4 rounded">
