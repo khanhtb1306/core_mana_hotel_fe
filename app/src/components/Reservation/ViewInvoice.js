@@ -3,19 +3,20 @@ import Modal from "../UI/Modal";
 
 function ViewInvoice(props) {
   const invoice = props.invoice;
+  console.log(invoice);
   const columns = [
     { field: "name", headerName: "Tên mặt hàng", width: 250 },
     { field: "unit", headerName: "Đơn vị", width: 150 },
     { field: "quantity", headerName: "Số lượng", width: 150 },
     { field: "sum", headerName: "Tổng tiền", width: 250 },
   ];
-  let rows = invoice.OrderDetail.map((goods) => {
+  let rows = invoice.listOrderDetailByOrder.map((goods) => {
     return {
-      id: goods.OrderDetail.id,
-      name: goods.OrderDetail.goods.goodsName,
-      unit: goods.OrderDetail.goodsUnit.goodsUnitName,
-      quantity: goods.OrderDetail.quantity,
-      sum: goods.OrderDetail.price,
+      id: goods.orderDetail.id,
+      name: goods.orderDetail.goods.goodsName,
+      unit: goods.orderDetail.goodsUnit.goodsUnitName,
+      quantity: goods.orderDetail.quantity,
+      sum: goods.orderDetail.price,
     };
   });
   return (

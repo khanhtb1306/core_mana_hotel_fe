@@ -1,12 +1,19 @@
 import { Form } from "react-router-dom";
 import Modal from "../UI/Modal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CreateInvoiceRoomModal from "./CreateInvoiceRoomModal";
+import ViewInvoice from "./ViewInvoice";
+import Swal from "sweetalert2";
 
 function PaymentModal(props) {
   const reservation = props.reservation;
+  const invoices = props.invoices;
   console.log(reservation);
+  // console.log(invoices);
   const [openCreateInvoice, setOpenCreateInvoice] = useState(false);
+  const [openDetailsInvoiceModal, setOpenDetailsInvoiceModal] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  let priceAll = 0;
   return (
     <>
       <Form onSubmit={() => props.onClose()}>
@@ -57,60 +64,140 @@ function PaymentModal(props) {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr className="border border-black">
-                        <td className="px-2 py-1 border-r border-black">
-                          <h2 className="flex">
-                            <div className="mr-4">1.</div>
-                            <div className="font-bold">
-                              Phòng 01 giường đôi và 1 giường đơn cho 3 người
-                            </div>
-                            <button
-                              type="button"
-                              className="ml-2 bg-gray-200 px-2 rounded"
-                            >
-                              P.102
-                            </button>
-                          </h2>
-                          <div className="mt-4">
-                            <div className="flex b">
-                              <div className="w-1/4">Mã hoá đơn</div>
-                              <div className="w-1/4">Trạng thái</div>
-                              <div className="w-1/4">Tiền</div>
-                              <div className="w-1/4"></div>
-                            </div>
-                            <div className="flex mt-1">
-                              <div className="w-1/4">HD000001</div>
-                              <div className="w-1/4 text-green-500">Đã trả</div>
-                              <div className="w-1/4">1,000,000</div>
-                              <div className="w-1/4">
-                                <button type="button">
-                                  <i className="fa-solid fa-eye"></i>
-                                </button>
+                      {reservation.listReservationDetails.map(
+                        (details, index) => {
+                          // console.log(details);
+                          let priceRoom = details.price;
+                          const invoiceByDetails = invoices.find(
+                            (invoice) =>
+                              invoice.ReservationDetailId ===
+                              details.reservationDetailId
+                          );
+                          return (
+                            <tr className="border border-black">
+                              <td className="px-2 py-1 border-r border-black">
+                                <h2 className="flex">
+                                  <div className="mr-4">{index + 1}.</div>
+                                  <div className="font-bold">
+                                    {details.room.roomCategory.roomCategoryName}
+                                  </div>
+                                  <div
+                                    className={`ml-2 px-2 rounded ${
+                                      details.status === "BOOKING" &&
+                                      "bg-orange-200 text-orange-500"
+                                    } ${
+                                      details.status === "CHECK_IN" &&
+                                      "bg-green-200 text-green-500"
+                                    } ${
+                                      details.status === "CHECK_OUT" &&
+                                      "bg-gray-200"
+                                    }`}
+                                  >
+                                    {details.room.roomName}
+                                  </div>
+                                  <div
+                                    className={`ml-2 px-2 rounded ${
+                                      details.status === "BOOKING" &&
+                                      "bg-orange-200 text-orange-500"
+                                    } ${
+                                      details.status === "CHECK_IN" &&
+                                      "bg-green-200 text-green-500"
+                                    } ${
+                                      details.status === "CHECK_OUT" &&
+                                      "bg-gray-200"
+                                    }`}
+                                  >
+                                    {details.status === "BOOKING" &&
+                                      "Đã đặt trước"}
+                                    {details.status === "CHECK_IN" &&
+                                      "Đang sử dụng"}
+                                    {details.status === "CHECK_OUT" && "Đã trả"}
+                                  </div>
+                                  <div className="ml-auto mr-10">
+                                    {details.price.toLocaleString() + " VND"}
+                                  </div>
+                                </h2>
+                                {invoiceByDetails && (
+                                  <div className="mt-4">
+                                    <div className="flex b">
+                                      <div className="w-1/4">Mã hoá đơn</div>
+                                      <div className="w-1/4">Trạng thái</div>
+                                      <div className="w-1/4">Tiền</div>
+                                      <div className="w-1/4"></div>
+                                    </div>
+                                    {invoiceByDetails.listOrderByReservationDetailId.map(
+                                      (invoice) => {
+                                        // console.log(invoice);
+                                        if (
+                                          invoice.order.status === "PAID" ||
+                                          invoice.order.status === "CONFIRMED"
+                                        ) {
+                                          if (
+                                            invoice.order.status === "CONFIRMED"
+                                          ) {
+                                            priceRoom += invoice.order.totalPay;
+                                          }
+                                          return (
+                                            <div className="flex mt-1">
+                                              <div className="w-1/4">
+                                                {invoice.order.orderId}
+                                              </div>
+                                              <div
+                                                className={`w-1/4 ${
+                                                  invoice.order.status ===
+                                                    "PAID" && "text-green-500"
+                                                } ${
+                                                  invoice.order.status ===
+                                                    "CONFIRMED" &&
+                                                  "text-blue-500"
+                                                }`}
+                                              >
+                                                {invoice.order.status ===
+                                                  "PAID" && "Đã trả"}
+                                                {invoice.order.status ===
+                                                  "CONFIRMED" && "Xác nhận"}
+                                              </div>
+                                              <div className="w-1/4">
+                                                {invoice.order.totalPay.toLocaleString()}
+                                              </div>
+                                              <div className="w-1/4">
+                                                <button
+                                                  type="button"
+                                                  onClick={() => {
+                                                    setSelectedInvoice(invoice);
+                                                    setOpenDetailsInvoiceModal(
+                                                      true
+                                                    );
+                                                  }}
+                                                >
+                                                  <i className="fa-solid fa-eye"></i>
+                                                </button>
+                                              </div>
+                                            </div>
+                                          );
+                                        }
+                                      }
+                                    )}
+                                  </div>
+                                )}
+                              </td>
+                              <td className="px-2 py-1 font-bold">
+                                {priceRoom.toLocaleString()}
+                              </td>
+                              <div className="hidden">
+                                {(priceAll += priceRoom)}
                               </div>
-                            </div>
-                            <div className="flex mt-1">
-                              <div className="w-1/4">HD000002</div>
-                              <div className="w-1/4 text-blue-500">
-                                Xác nhận
-                              </div>
-                              <div className="w-1/4">800,000</div>
-                              <div className="w-1/4">
-                                <button type="button">
-                                  <i className="fa-solid fa-eye"></i>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-2 py-1 font-bold">3,800,000</td>
-                      </tr>
+                            </tr>
+                          );
+                        }
+                      )}
                     </tbody>
                   </table>
                 </div>
                 <div className="w-3/12 ml-4">
                   <div className="flex mt-2">
                     <div className="mr-auto">Tổng tiền</div>
-                    <div className="ml-auto">3,800,000</div>
+                    <div className="ml-auto">{priceAll.toLocaleString()}</div>
                   </div>
                   <div className="flex mt-2">
                     <div className="mr-auto">Giảm giá</div>
@@ -154,6 +241,13 @@ function PaymentModal(props) {
         <CreateInvoiceRoomModal
           open={openCreateInvoice}
           onClose={() => setOpenCreateInvoice(false)}
+        />
+      )}
+      {selectedInvoice && openDetailsInvoiceModal && (
+        <ViewInvoice
+          open={openDetailsInvoiceModal}
+          onClose={() => setOpenDetailsInvoiceModal(false)}
+          invoice={selectedInvoice}
         />
       )}
     </>

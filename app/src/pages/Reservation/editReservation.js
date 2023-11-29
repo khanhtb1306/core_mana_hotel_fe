@@ -22,15 +22,13 @@ async function loadPriceList() {
   if (response.data.success) {
     return response.data.result;
   } else {
-    return redirect("login");
+    Swal.close();
+    window.location.href = "/login";
+    return;
   }
 }
 
 async function loadCategories() {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    return redirect("/login");
-  }
   const response = await axiosPrivate.get("room-class");
   return response.data;
 }
@@ -40,58 +38,109 @@ async function loadReservationById(id) {
   if (response.data.success) {
     return response.data.result;
   } else {
-    return redirect("login");
+    Swal.close();
+    window.location.href = "/login";
+    return;
+  }
+}
+
+async function loadInvoicesById(id) {
+  const response = await axiosPrivate.get("order/by_reservation/" + id);
+  if (response.data.success) {
+    return response.data.result;
+  } else {
+    Swal.close();
+    window.location.href = "/login";
+    return;
   }
 }
 
 async function loadGoodsUnit() {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    return redirect("/login");
-  }
   const response = await axiosPrivate.get("goods-unit");
   return response.data;
 }
 
 async function loadCustomerGroup() {
-  const response = await axiosPrivate
-    .get("customer/customerGroup")
-    .catch((e) => {
-      redirect("/login");
-    });
+  const response = await axiosPrivate.get("customer/customerGroup");
   if (response.data.success) {
     return response.data.result;
   } else {
-    return redirect("/login");
+    Swal.close();
+    window.location.href = "/login";
+    return;
   }
 }
 
 async function loadTimeUsing() {
-  const response = await axiosPrivate.get("policy/time_use").catch((e) => {
-    return redirect("/login");
-  });
+  const response = await axiosPrivate.get("policy/time_use");
   if (response.data.success) {
     return response.data.result;
   } else {
-    return redirect("/login");
+    Swal.close();
+    window.location.href = "/login";
+    return;
   }
 }
 
 export async function loader({ request, params }) {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "/login";
+    return;
+  }
   const id = params.reservationId;
-
-  return defer({
-    timeUsing: await loadTimeUsing(),
-    customerGroups: await loadCustomerGroup(),
-    goodsUnit: await loadGoodsUnit(),
-    categories: await loadCategories(),
-    prices: await loadPriceList(),
-    customers: await loadCustomers(),
-    reservation: await loadReservationById(id),
+  Swal.fire({
+    title: "Đang lấy dữ liệu...",
+    html: "Xin hãy chờ đợi trong vài giây.",
+    onBeforeOpen: () => {
+      Swal.showLoading();
+    },
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    allowEnterKey: false,
+    showConfirmButton: false,
   });
+  try {
+    const timeUsing = await loadTimeUsing();
+    const customerGroups = await loadCustomerGroup();
+    const goodsUnit = await loadGoodsUnit();
+    const categories = await loadCategories();
+    const invoices = await loadInvoicesById(id);
+    const prices = await loadPriceList();
+    const customers = await loadCustomers();
+    const reservation = await loadReservationById(id);
+    return defer(
+      {
+        timeUsing,
+        customerGroups,
+        goodsUnit,
+        categories,
+        invoices,
+        prices,
+        customers,
+        reservation,
+      },
+      Swal.close()
+    );
+  } catch (error) {
+    Swal.close();
+    window.location.href = "/error";
+    return;
+  }
 }
 
 export async function action({ request }) {
+  Swal.fire({
+    title: "Đang kiểm tra dữ liệu đã thay đổi...",
+    html: "Xin hãy chờ đợi trong vài giây.",
+    onBeforeOpen: () => {
+      Swal.showLoading();
+    },
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    allowEnterKey: false,
+    showConfirmButton: false,
+  });
   const method = request.method;
   const data = await request.formData();
   const reservationId = data.get("reservationId");
@@ -119,6 +168,7 @@ export async function action({ request }) {
     console.log(response);
     const numberRoom = data.get("numberRoom");
     for (let i = 0; i < numberRoom; i++) {
+      console.log(data.get(`price${i}`));
       const formDetails = new FormData();
       formDetails.append("reservationId", reservationId);
       formDetails.append("roomId", data.get(`roomId${i}`));
@@ -126,6 +176,7 @@ export async function action({ request }) {
       if (data.get(`isBooking${i}`)) {
         formDetails.append("checkInEstimate", data.get(`fromTime${i}`));
         formDetails.append("checkOutEstimate", data.get(`toTime${i}`));
+        formDetails.append("price", Number(data.get(`price${i}`)));
         const response = await axiosPrivate
           .put(
             "reservation-detail/" + data.get(`reservationDetailId${i}`),
@@ -153,6 +204,7 @@ export async function action({ request }) {
       if (data.get(`isCheckin${i}`)) {
         formDetails.append("checkInActual", data.get(`fromTime${i}`));
         formDetails.append("checkOutEstimate", data.get(`toTime${i}`));
+        formDetails.append("price", Number(data.get(`price${i}`)));
         const response = await axiosPrivate
           .put(
             "reservation-detail/" + data.get(`reservationDetailId${i}`),

@@ -82,13 +82,13 @@ from "./pages/InforManagement";
 const routesForManager = [
   {
     index: true,
-    element: <OverviewManagementPage/>,
-    loader: loadOverview
+    element: <OverviewManagementPage />,
+    loader: loadOverview,
   },
   {
     path: "overview",
-    element: <OverviewManagementPage/>,
-    loader: loadOverview
+    element: <OverviewManagementPage />,
+    loader: loadOverview,
   },
   {
     path: "categoryRoomManagement",
@@ -189,11 +189,6 @@ const routesForReceptionist = [
     loader: loadNewReservation,
     action: actionNewReservation,
   },
-  // {
-  //   path: "editReservation",
-  //   element: <EditReservationPage />,
-  //   loader: loadNewReservation,
-  // },
   {
     path: "addInvoice",
     element: <AddInvoicePage />,

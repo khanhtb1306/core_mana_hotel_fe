@@ -366,6 +366,12 @@ function SelectRoom(props) {
         )}
         <input
           type="hidden"
+          name={`price${props.index}`}
+          value={getPrice(typeTime, fromTime, toTime).price}
+          onChange={() => console.log()}
+        />
+        <input
+          type="hidden"
           name={`reservationDetailId${props.index}`}
           value={room.reservationDetailId}
           onChange={() => console.log()}
@@ -569,20 +575,25 @@ function SelectRoom(props) {
                   </p>
                   <p className="text-green-500 my-auto">
                     {typeTime === 1
-                      ? `${dayjs().diff(fromTime, "hour")} giờ ${dayjs().diff(
-                          fromTime,
-                          "minute"
-                        ) - dayjs().diff(fromTime, "hour") * 60} phút`
+                      ? `${dayjs().diff(fromTime, "hour")} giờ ${
+                          dayjs().diff(fromTime, "minute") -
+                          dayjs().diff(fromTime, "hour") * 60
+                        } phút`
                       : typeTime === 2
                       ? `${dayjs().date() - fromTime.date()} ngày ${
                           dayjs().hour() - fromTime.hour()
                         } giờ`
-                      : `${
+                      : dayjs().diff(
+                          fromTime.add(1, "day").hour(priceNightEnd),
+                          "hour"
+                        ) > 0
+                      ? `${
                           getPrice(typeTime, fromTime, dayjs()).time
                         } đêm ${dayjs().diff(
                           fromTime.add(1, "day").hour(priceNightEnd),
                           "hour"
-                        )} giờ`}
+                        )} giờ`
+                      : `${dayjs().diff(fromTime, "hour")} giờ`}
                   </p>
                 </div>
               </>
@@ -621,30 +632,32 @@ function SelectRoom(props) {
           </LocalizationProvider>
         </div>
       </div>
-      <div className="flex border-t pt-2">
-        {soonCheckin > 0 && (
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={isPaidSoonCheckin}
-                onChange={handlePaidSoonCheckinChange}
-              />
-            }
-            label="Phụ thu nhận sớm"
-          />
-        )}
-        {lateCheckout > 0 && (
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={isPaidLateCheckout}
-                onChange={handlePaidLateCheckoutChange}
-              />
-            }
-            label="Phụ thu trả muộn"
-          />
-        )}
-      </div>
+      {room.status !== "CHECK_OUT" && (
+        <div className="flex border-t pt-2">
+          {soonCheckin > 0 && (
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={isPaidSoonCheckin}
+                  onChange={handlePaidSoonCheckinChange}
+                />
+              }
+              label="Phụ thu nhận sớm"
+            />
+          )}
+          {lateCheckout > 0 && (
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={isPaidLateCheckout}
+                  onChange={handlePaidLateCheckoutChange}
+                />
+              }
+              label="Phụ thu trả muộn"
+            />
+          )}
+        </div>
+      )}
       <div className="flex pt-2">
         <p className="w-8/12">
           {room.room.roomCategory.roomCategoryName} (
@@ -664,6 +677,7 @@ function SelectRoom(props) {
           </button>
         </p>
       </div>
+
       {soonCheckin > 0 && isPaidSoonCheckin && (
         <div className="flex pt-2">
           <p className="w-8/12">Phụ thu nhận sớm (Giờ)</p>

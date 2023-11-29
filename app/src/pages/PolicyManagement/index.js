@@ -371,7 +371,6 @@ export async function action({ request }) {
   if (data.get("isPersonFee")) {
     // console.log(data.get("adultPolicyId"));
     // console.log(data.get("childrenPolicyId"));
-    // return redirect("/manager/policy");
     const numberCategories = data.get("numberCategories");
     const formDataAdult = new FormData();
     const formDataChildren = new FormData();
@@ -390,27 +389,29 @@ export async function action({ request }) {
             data.get(`policyDetailIdAdult[${i}][${j}]`)
           );
         }
-        formDataAdult.append(
-          `policyDetailDTO[${countAdult}].policyId`,
-          data.get("adultPolicyId")
-        );
-        formDataAdult.append(
-          `policyDetailDTO[${countAdult}].roomCategoryId`,
-          roomCategoryId
-        );
-        formDataAdult.append(
-          `policyDetailDTO[${countAdult}].customerGroupId`,
-          "NK000000"
-        );
-        formDataAdult.append(
-          `policyDetailDTO[${countAdult}].limitValue`,
-          numberAdult
-        );
-        formDataAdult.append(
-          `policyDetailDTO[${countAdult}].policyValue`,
-          priceAdult
-        );
-        countAdult++;
+        if (numberAdult !== null && priceAdult !== null) {
+          formDataAdult.append(
+            `policyDetailDTO[${countAdult}].policyId`,
+            data.get("adultPolicyId")
+          );
+          formDataAdult.append(
+            `policyDetailDTO[${countAdult}].roomCategoryId`,
+            roomCategoryId
+          );
+          formDataAdult.append(
+            `policyDetailDTO[${countAdult}].customerGroupId`,
+            "NK000000"
+          );
+          formDataAdult.append(
+            `policyDetailDTO[${countAdult}].limitValue`,
+            numberAdult
+          );
+          formDataAdult.append(
+            `policyDetailDTO[${countAdult}].policyValue`,
+            priceAdult
+          );
+          countAdult++;
+        }
       }
       for (let j = 0; j < numberChildren; j++) {
         const numberChildren = data.get(`numberChildren[${i}][${j}]`);
@@ -421,27 +422,29 @@ export async function action({ request }) {
             data.get(`policyDetailIdChildren[${i}][${j}]`)
           );
         }
-        formDataChildren.append(
-          `policyDetailDTO[${countChildren}].policyId`,
-          data.get("childrenPolicyId")
-        );
-        formDataChildren.append(
-          `policyDetailDTO[${countChildren}].roomCategoryId`,
-          roomCategoryId
-        );
-        formDataChildren.append(
-          `policyDetailDTO[${countChildren}].customerGroupId`,
-          "NK000000"
-        );
-        formDataChildren.append(
-          `policyDetailDTO[${countChildren}].limitValue`,
-          numberChildren
-        );
-        formDataChildren.append(
-          `policyDetailDTO[${countChildren}].policyValue`,
-          priceChildren
-        );
-        countChildren++;
+        if (numberChildren !== null && priceChildren !== null) {
+          formDataChildren.append(
+            `policyDetailDTO[${countChildren}].policyId`,
+            data.get("childrenPolicyId")
+          );
+          formDataChildren.append(
+            `policyDetailDTO[${countChildren}].roomCategoryId`,
+            roomCategoryId
+          );
+          formDataChildren.append(
+            `policyDetailDTO[${countChildren}].customerGroupId`,
+            "NK000000"
+          );
+          formDataChildren.append(
+            `policyDetailDTO[${countChildren}].limitValue`,
+            numberChildren
+          );
+          formDataChildren.append(
+            `policyDetailDTO[${countChildren}].policyValue`,
+            priceChildren
+          );
+          countChildren++;
+        }
       }
     }
     const response1 = await axiosPrivate

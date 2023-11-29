@@ -57,7 +57,6 @@ function PersonFeeModal(props) {
         },
       ];
     }
-    // console.log(listChildren);
     return {
       key: i,
       roomCategoryId: category.roomCategory.roomCategoryId,
@@ -183,8 +182,12 @@ function PersonFeeModal(props) {
                 <td className="py-2 px-4 w-2/12">Mức giá</td>
                 <td className="py-2 px-4 w-1/12">Tiêu chuẩn</td>
                 <td className="py-2 px-4 w-1/12">Tối đa</td>
-                <td className="py-2 px-4 w-3/12">Giá thêm người lớn</td>
-                <td className="py-2 px-4 w-3/12">Giá thêm trẻ em</td>
+                <td className="py-2 px-4 w-3/12">
+                  Giá thêm người lớn (% giá phòng / lớn)
+                </td>
+                <td className="py-2 px-4 w-3/12">
+                  Giá tuổi trẻ em (% giá phòng / trẻ)
+                </td>
               </tr>
             </thead>
             <tbody>
@@ -194,11 +197,9 @@ function PersonFeeModal(props) {
                     hourFee.roomCategoryId ===
                     category.roomCategory.roomCategoryId
                 );
+                console.log(cate);
                 return (
-                  <tr
-                    key={ind}
-                    className="border border-gray-300 hover:bg-gray-100"
-                  >
+                  <tr key={ind} className="border border-gray-300">
                     <td className="py-1 px-2">
                       <div>
                         <h2>{category.roomCategory.roomCategoryId}</h2>
@@ -274,7 +275,7 @@ function PersonFeeModal(props) {
                         </tbody>
                       </table>
                     </td>
-                    <td className="py-1 px-2">
+                    <td className="py-1 px-2 text-center">
                       {cate.listAdult.map((adult, index) => {
                         return (
                           <div>
@@ -288,9 +289,9 @@ function PersonFeeModal(props) {
                             {category.roomCategory.numOfAdults <
                               category.roomCategory.numMaxOfAdults && (
                               <>
-                                Từ người thứ
+                                Từ người thứ{" "}
                                 <input
-                                  className="border-0 border-b border-gray-500 w-16 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                                  className="p-1 border-0 border-b border-gray-500 w-10 focus:border-b-2 focus:border-green-500 focus:ring-0"
                                   type="number"
                                   name={`numberAdult[${ind}][${index}]`}
                                   value={adult.number}
@@ -337,10 +338,10 @@ function PersonFeeModal(props) {
                                       : category.roomCategory.numMaxOfAdults -
                                         category.roomCategory.numOfAdults
                                   }
-                                />
-                                giá
+                                />{" "}
+                                giá{" "}
                                 <input
-                                  className="border-0 border-b border-gray-500 w-28 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                                  className="p-1 border-0 border-b border-gray-500 w-14 focus:border-b-2 focus:border-green-500 focus:ring-0"
                                   type="number"
                                   name={`priceAdult[${ind}][${index}]`}
                                   value={adult.price}
@@ -377,6 +378,7 @@ function PersonFeeModal(props) {
                                     setListPersonFee(updateListPersonFee);
                                   }}
                                   min={0}
+                                  max={100}
                                 />
                                 {index > 0 && (
                                   <button
@@ -408,8 +410,12 @@ function PersonFeeModal(props) {
                         </div>
                       )}
                     </td>
-                    <td className="py-1 px-2">
+                    <td className="py-1 px-2 text-center">
                       {cate.listChildren.map((children, index) => {
+                        let from = 0;
+                        if (index !== 0) {
+                          from = cate.listChildren[index - 1].number;
+                        }
                         return (
                           <div>
                             {children.policyDetailId && (
@@ -419,117 +425,111 @@ function PersonFeeModal(props) {
                                 defaultValue={children.policyDetailId}
                               />
                             )}
-                            {category.roomCategory.numOfChildren <
-                              category.roomCategory.numMaxOfChildren && (
-                              <>
-                                Từ người thứ
-                                <input
-                                  className="border-0 border-b border-gray-500 w-16 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                                  type="number"
-                                  name={`numberChildren[${ind}][${index}]`}
-                                  value={children.number}
-                                  onChange={(e) => {
-                                    const i = index;
-                                    const check = cate.listChildren.map(
-                                      (adult, index) => {
-                                        if (index === i) {
-                                          return {
-                                            number: Number(e.target.value),
-                                            price: adult.price,
-                                          };
-                                        } else {
-                                          return adult;
-                                        }
-                                      }
-                                    );
-                                    const updateListPersonFee =
-                                      listPersonFee.map((c) => {
-                                        if (
-                                          c.roomCategoryId ===
-                                          cate.roomCategoryId
-                                        ) {
-                                          return {
-                                            ...cate,
-                                            listChildren: check,
-                                          };
-                                        } else {
-                                          return {
-                                            ...c,
-                                          };
-                                        }
-                                      });
-                                    setListPersonFee(updateListPersonFee);
-                                  }}
-                                  min={
-                                    index > 0
-                                      ? cate.listChildren[index - 1].number + 1
-                                      : 1
+                            Từ {from} đến{" "}
+                            <input
+                              className="p-1 border-0 border-b border-gray-500 w-10 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                              type="number"
+                              name={`numberChildren[${ind}][${index}]`}
+                              value={children.number}
+                              onChange={(e) => {
+                                const i = index;
+                                const check = cate.listChildren.map(
+                                  (adult, index) => {
+                                    if (index === i) {
+                                      return {
+                                        number: Number(e.target.value),
+                                        price: adult.price,
+                                      };
+                                    } else {
+                                      return adult;
+                                    }
                                   }
-                                  max={
-                                    index < cate.listChildren.length - 1
-                                      ? cate.listChildren[index + 1].number - 1
-                                      : category.roomCategory.numMaxOfChildren -
-                                        category.roomCategory.numOfChildren
+                                );
+                                const updateListPersonFee = listPersonFee.map(
+                                  (c) => {
+                                    if (
+                                      c.roomCategoryId === cate.roomCategoryId
+                                    ) {
+                                      return {
+                                        ...cate,
+                                        listChildren: check,
+                                      };
+                                    } else {
+                                      return {
+                                        ...c,
+                                      };
+                                    }
                                   }
-                                />
-                                giá
-                                <input
-                                  className="border-0 border-b border-gray-500 w-28 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                                  type="number"
-                                  name={`priceChildren[${ind}][${index}]`}
-                                  value={children.price}
-                                  onChange={(e) => {
-                                    const i = index;
-                                    const check = cate.listChildren.map(
-                                      (adult, index) => {
-                                        if (index === i) {
-                                          return {
-                                            number: adult.number,
-                                            price: Number(e.target.value),
-                                          };
-                                        } else {
-                                          return adult;
-                                        }
-                                      }
-                                    );
-                                    const updateListPersonFee =
-                                      listPersonFee.map((c) => {
-                                        if (
-                                          c.roomCategoryId ===
-                                          cate.roomCategoryId
-                                        ) {
-                                          return {
-                                            ...cate,
-                                            listChildren: check,
-                                          };
-                                        } else {
-                                          return {
-                                            ...c,
-                                          };
-                                        }
-                                      });
-                                    setListPersonFee(updateListPersonFee);
-                                  }}
-                                  min={0}
-                                />
-                                {index > 0 && (
-                                  <button type="button">
-                                    <i
-                                      className="fa-solid fa-xmark"
-                                      onClick={() =>
-                                        handleChildrenRemove(cate, index)
-                                      }
-                                    ></i>
-                                  </button>
-                                )}
-                              </>
+                                );
+                                setListPersonFee(updateListPersonFee);
+                              }}
+                              min={
+                                index > 0
+                                  ? cate.listChildren[index - 1].number + 1
+                                  : 1
+                              }
+                              max={
+                                index < cate.listChildren.length - 1
+                                  ? cate.listChildren[index + 1].number - 1
+                                  : 16
+                              }
+                            />{" "}
+                            tuổi giá{" "}
+                            <input
+                              className="p-1 border-0 border-b border-gray-500 w-14 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                              type="number"
+                              name={`priceChildren[${ind}][${index}]`}
+                              value={children.price}
+                              onChange={(e) => {
+                                const i = index;
+                                const check = cate.listChildren.map(
+                                  (adult, index) => {
+                                    if (index === i) {
+                                      return {
+                                        number: adult.number,
+                                        price: Number(e.target.value),
+                                      };
+                                    } else {
+                                      return adult;
+                                    }
+                                  }
+                                );
+                                const updateListPersonFee = listPersonFee.map(
+                                  (c) => {
+                                    if (
+                                      c.roomCategoryId === cate.roomCategoryId
+                                    ) {
+                                      return {
+                                        ...cate,
+                                        listChildren: check,
+                                      };
+                                    } else {
+                                      return {
+                                        ...c,
+                                      };
+                                    }
+                                  }
+                                );
+                                setListPersonFee(updateListPersonFee);
+                              }}
+                              min={0}
+                              max={100}
+                            />
+                            {index > 0 && (
+                              <button type="button">
+                                <i
+                                  className="fa-solid fa-xmark"
+                                  onClick={() =>
+                                    handleChildrenRemove(cate, index)
+                                  }
+                                ></i>
+                              </button>
                             )}
                           </div>
                         );
                       })}
                       {cate.listChildren[cate.listChildren.length - 1].number <
-                        category.roomCategory.numMaxOfChildren -
-                          category.roomCategory.numOfChildren && (
+                        16 && (
                         <div className="text-center mt-2">
                           <button
                             type="button"
@@ -537,7 +537,7 @@ function PersonFeeModal(props) {
                             onClick={() => handleChildrenAdd(cate)}
                           >
                             <i className="fa-solid fa-plus mr-2"></i>
-                            Thêm người
+                            Thêm mốc
                           </button>
                         </div>
                       )}

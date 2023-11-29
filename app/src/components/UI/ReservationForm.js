@@ -17,11 +17,13 @@ import VisitorModal from "../Reservation/VisitorModal";
 import PaymentModal from "../Reservation/PaymentModal";
 import ReceiveRoomModal from "../Reservation/ReceiveRoomModal";
 import PayRoomModal from "../Reservation/PayRoomModal";
+import Swal from "sweetalert2";
 
 function ReservationForm(props) {
-  const { customers, prices, categories } = useLoaderData();
+  const { customers, prices, categories, invoices } = useLoaderData();
   const actionData = useActionData();
   const reservation = props.reservation;
+  // console.log(invoices);
   // console.log(reservation);
   // console.log(categories);
   const dayInWeek = ["2", "3", "4", "5", "6", "7", "8"];
@@ -123,18 +125,22 @@ function ReservationForm(props) {
   const [openAddRoomModal, setOpenAddRoomModal] = useState(false);
   const [openAddInvoiceModal, setOpenAddInvoiceModal] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
+  // console.log(selectedInvoice);
   const [printInvoice, setPrintInvoice] = useState(false);
   const [openViewInvoiceModal, setOpenViewInvoiceModal] = useState(false);
   const [openEditInvoiceModal, setOpenEditInvoiceModal] = useState(false);
   const [openStatusInvoiceModal, setOpenStatusInvoiceModal] = useState(false);
   const [openDeleteInvoiceModal, setOpenDeleteInvoiceModal] = useState(false);
   const [removeRoomModal, setRemoveRoomModal] = useState(null);
-  const [listInvoices, setListInvoices] = useState(null);
   const [listCustomers, setListCustomers] = useState(null);
   const [openVisitorModal, setOpenVisitorModal] = useState(false);
   const [openPaymentModal, setOpenPaymentModal] = useState(false);
   const [customer, setCustomer] = useState(
-    reservation ? reservation.reservation.customer : null
+    reservation
+      ? reservation.reservation.customer.customerId === "C000000"
+        ? null
+        : reservation.reservation.customer
+      : null
   );
   // console.log(customer);
   let priceByCateRoom = null;
@@ -162,7 +168,12 @@ function ReservationForm(props) {
   useEffect(() => {
     async function fetchRoomActive() {
       try {
-        setRoomActive(reservation.listReservationDetails[0]);
+        setRoomActive(
+          reservation.listReservationDetails.find(
+            (details) =>
+              details.reservationDetailId === roomActive.reservationDetailId
+          )
+        );
       } catch (error) {
         console.log(error);
       }
@@ -194,10 +205,6 @@ function ReservationForm(props) {
     async function fetchListInvoices() {
       try {
         if (reservation) {
-          const response1 = await axiosPrivate.get(
-            "order/reservation/" + roomActive.reservationDetailId
-          );
-          setListInvoices(response1.data.result);
           const response2 = await axiosPrivate.get(
             "reservation-detail/list-customers/" +
               roomActive.reservationDetailId
@@ -427,7 +434,11 @@ function ReservationForm(props) {
                       </div>
                     );
                   })}
-                  {listInvoices && listInvoices.length > 0 && (
+                  {invoices.find(
+                    (invoice) =>
+                      invoice.ReservationDetailId ===
+                      roomActive.reservationDetailId
+                  ) && (
                     <div className="bg-white p-4 mt-4 flex">
                       <div className="w-3/12">Mã hoá đơn</div>
                       <div className="w-3/12">Trạng thái</div>
@@ -435,74 +446,109 @@ function ReservationForm(props) {
                       <div className="w-3/12">Hoạt động</div>
                     </div>
                   )}
-                  {listInvoices &&
-                    listInvoices.length > 0 &&
-                    listInvoices.map((invoice, index) => {
-                      return (
-                        <div key={index} className="bg-white p-4 mt-1 flex">
-                          <div className="w-3/12">{invoice.order.orderId}</div>
-                          <div
-                            className={`w-3/12 ${
-                              invoice.order.status === "UNCONFIRMED" &&
-                              "text-orange-500"
-                            } ${
-                              invoice.order.status === "CONFIRMED" &&
-                              "text-blue-500"
-                            } ${
-                              invoice.order.status === "PAID" &&
-                              "text-green-500"
-                            } ${
-                              invoice.order.status === "CANCEL_ORDER" &&
-                              "text-gray-500"
-                            }`}
-                          >
-                            {invoice.order.status === "UNCONFIRMED" &&
-                              "Chưa xác nhận"}
-                            {invoice.order.status === "CONFIRMED" && "Xác nhận"}
-                            {invoice.order.status === "PAID" && "Đã trả"}
-                            {invoice.order.status === "CANCEL_ORDER" &&
-                              "Huỷ hoá đơn"}
-                          </div>
-                          <div className="w-3/12">
-                            {invoice.order.totalPay.toLocaleString()}
-                          </div>
-                          <div className="w-3/12">
-                            <button
-                              className="mr-4 px-1 rounded-full hover:bg-gray-200"
-                              onClick={() => {
-                                setSelectedInvoice(invoice);
-                                setOpenViewInvoiceModal(true);
-                              }}
+                  {invoices.find(
+                    (invoice) =>
+                      invoice.ReservationDetailId ===
+                      roomActive.reservationDetailId
+                  ) &&
+                    invoices
+                      .find(
+                        (invoice) =>
+                          invoice.ReservationDetailId ===
+                          roomActive.reservationDetailId
+                      )
+                      .listOrderByReservationDetailId.map((invoice, index) => {
+                        return (
+                          <div key={index} className="bg-white p-4 mt-1 flex">
+                            <div className="w-3/12">
+                              {invoice.order.orderId}
+                            </div>
+                            <div
+                              className={`w-3/12 ${
+                                invoice.order.status === "UNCONFIRMED" &&
+                                "text-orange-500"
+                              } ${
+                                invoice.order.status === "CONFIRMED" &&
+                                "text-blue-500"
+                              } ${
+                                invoice.order.status === "PAID" &&
+                                "text-green-500"
+                              } ${
+                                invoice.order.status === "CANCEL_ORDER" &&
+                                "text-gray-500"
+                              }`}
                             >
-                              <i className="fa-solid fa-eye"></i>
-                            </button>
-                            <button
-                              className="mr-4 px-1 rounded-full hover:bg-gray-200"
-                              onMouseOver={() => {
-                                setSelectedInvoice(invoice);
-                                setPrintInvoice(true);
-                              }}
-                              onMouseOut={() => {
-                                setPrintInvoice(false);
-                              }}
-                              onClick={() => {
-                                window.print();
-                              }}
-                            >
-                              <i className="fa-solid fa-print"></i>
-                            </button>
-                            {invoice.order.status === "UNCONFIRMED" && (
-                              <>
-                                <button
-                                  type="button"
-                                  className="mr-4 px-1 rounded-full hover:bg-gray-200"
-                                  onClick={() => {
-                                    setSelectedInvoice(invoice);
-                                    setOpenEditInvoiceModal(true);
-                                  }}
-                                >
-                                  <i className="fa-solid fa-pen"></i>
-                                </button>
+                              {invoice.order.status === "UNCONFIRMED" &&
+                                "Chưa xác nhận"}
+                              {invoice.order.status === "CONFIRMED" &&
+                                "Xác nhận"}
+                              {invoice.order.status === "PAID" && "Đã trả"}
+                              {invoice.order.status === "CANCEL_ORDER" &&
+                                "Huỷ hoá đơn"}
+                            </div>
+                            <div className="w-3/12">
+                              {invoice.order.totalPay.toLocaleString()}
+                            </div>
+                            <div className="w-3/12">
+                              <button
+                                type="button"
+                                className="mr-4 px-1 rounded-full hover:bg-gray-200"
+                                onClick={() => {
+                                  setSelectedInvoice(invoice);
+                                  setOpenViewInvoiceModal(true);
+                                }}
+                              >
+                                <i className="fa-solid fa-eye"></i>
+                              </button>
+                              <button
+                                type="button"
+                                className="mr-4 px-1 rounded-full hover:bg-gray-200"
+                                onMouseOver={() => {
+                                  setSelectedInvoice(invoice);
+                                  setPrintInvoice(true);
+                                }}
+                                onMouseOut={() => {
+                                  setPrintInvoice(false);
+                                }}
+                                onClick={() => {
+                                  window.print();
+                                }}
+                              >
+                                <i className="fa-solid fa-print"></i>
+                              </button>
+                              {invoice.order.status === "UNCONFIRMED" && (
+                                <>
+                                  <button
+                                    type="button"
+                                    className="mr-4 px-1 rounded-full hover:bg-gray-200"
+                                    onClick={() => {
+                                      setSelectedInvoice(invoice);
+                                      setOpenEditInvoiceModal(true);
+                                    }}
+                                  >
+                                    <i className="fa-solid fa-pen"></i>
+                                  </button>
+                                  <button
+                                    className="mr-4 px-1 rounded-full hover:bg-gray-200"
+                                    onClick={() => {
+                                      setSelectedInvoice(invoice);
+                                      setOpenStatusInvoiceModal(true);
+                                    }}
+                                  >
+                                    <i className="fa-solid fa-check"></i>
+                                  </button>
+                                  <button
+                                    className="mr-4 px-1 rounded-full hover:bg-gray-200"
+                                    onClick={() => {
+                                      setSelectedInvoice(invoice);
+                                      setOpenDeleteInvoiceModal(true);
+                                    }}
+                                  >
+                                    <i className="fa-solid fa-trash"></i>
+                                  </button>
+                                </>
+                              )}
+                              {invoice.order.status === "CONFIRMED" && (
                                 <button
                                   className="mr-4 px-1 rounded-full hover:bg-gray-200"
                                   onClick={() => {
@@ -512,32 +558,11 @@ function ReservationForm(props) {
                                 >
                                   <i className="fa-solid fa-check"></i>
                                 </button>
-                                <button
-                                  className="mr-4 px-1 rounded-full hover:bg-gray-200"
-                                  onClick={() => {
-                                    setSelectedInvoice(invoice);
-                                    setOpenDeleteInvoiceModal(true);
-                                  }}
-                                >
-                                  <i className="fa-solid fa-trash"></i>
-                                </button>
-                              </>
-                            )}
-                            {invoice.order.status === "CONFIRMED" && (
-                              <button
-                                className="mr-4 px-1 rounded-full hover:bg-gray-200"
-                                onClick={() => {
-                                  setSelectedInvoice(invoice);
-                                  setOpenStatusInvoiceModal(true);
-                                }}
-                              >
-                                <i className="fa-solid fa-check"></i>
-                              </button>
-                            )}
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
                   <button
                     className="rounded p-2 mt-2 text-white bg-green-500"
                     onClick={() => setOpenAddInvoiceModal(true)}
@@ -570,7 +595,9 @@ function ReservationForm(props) {
                   <div>
                     <button
                       className="px-4 py-2 bg-green-500 rounded-lg text-white mr-2 hover:bg-green-600"
-                      onClick={() => setOpenPaymentModal(true)}
+                      onClick={() => {
+                        setOpenPaymentModal(true);
+                      }}
                     >
                       Thanh toán
                     </button>
@@ -579,6 +606,7 @@ function ReservationForm(props) {
               </>
             )}
           </Form>
+
           {openAddRoomModal && (
             <AddRoom
               open={openAddRoomModal}
@@ -612,28 +640,34 @@ function ReservationForm(props) {
                   <p>Mã đặt phòng: {reservation.reservation.reservationId}</p>
                   <p>Thu ngân: </p>
                 </div>
-                <table className="text-center min-w-full border border-gray-300 divide-y divide-gray-300">
-                  <thead>
-                    <tr>
-                      <td>Nội dung</td>
-                      <td>Đơn vị</td>
-                      <td>SL</td>
-                      <td>Thành tiền</td>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedInvoice.OrderDetail.map((goods, index) => {
-                      return (
-                        <tr key={index}>
-                          <td>{goods.OrderDetail.goods.goodsName}</td>
-                          <td>{goods.OrderDetail.goodsUnit.goodsUnitName}</td>
-                          <td>{goods.OrderDetail.quantity}</td>
-                          <td>{goods.OrderDetail.price}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                {selectedInvoice.listOrderDetailByOrder.length > 0 && (
+                  <table className="text-center min-w-full border border-gray-300 divide-y divide-gray-300">
+                    <thead>
+                      <tr>
+                        <td>Nội dung</td>
+                        <td>Đơn vị</td>
+                        <td>SL</td>
+                        <td>Thành tiền</td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedInvoice.listOrderDetailByOrder.map(
+                        (goods, index) => {
+                          return (
+                            <tr key={index}>
+                              <td>{goods.orderDetail.goods.goodsName}</td>
+                              <td>
+                                {goods.orderDetail.goodsUnit.goodsUnitName}
+                              </td>
+                              <td>{goods.orderDetail.quantity}</td>
+                              <td>{goods.orderDetail.price}</td>
+                            </tr>
+                          );
+                        }
+                      )}
+                    </tbody>
+                  </table>
+                )}
                 <div className="flex mt-4">
                   <div className="ml-auto mr-10">Tổng tiền hàng: </div>
                   <div className="w-32 text-right">
@@ -705,6 +739,7 @@ function ReservationForm(props) {
               open={openPaymentModal}
               onClose={() => setOpenPaymentModal(false)}
               reservation={reservation}
+              invoices={invoices}
             />
           )}
         </>

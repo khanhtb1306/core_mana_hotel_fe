@@ -182,8 +182,8 @@ function HourFeeModal(props) {
                 <td className="py-2 px-4 w-2/12">Tên hạng phòng</td>
                 <td className="py-2 px-4 w-1/12">Loại giá</td>
                 <td className="py-2 px-4 w-1/12">Mức giá</td>
-                <td className="py-2 px-4 w-3/12">Giá nhận sớm</td>
-                <td className="py-2 px-4 w-3/12">Giá trả muộn</td>
+                <td className="py-2 px-4 w-3/12">Giá nhận sớm (% giá phòng)</td>
+                <td className="py-2 px-4 w-3/12">Giá trả muộn (% giá phòng)</td>
               </tr>
             </thead>
             <tbody>
@@ -194,7 +194,7 @@ function HourFeeModal(props) {
                     category.roomCategory.roomCategoryId
                 );
                 return (
-                  <tr key={ind} className="border border-gray-300 hover:bg-gray-100">
+                  <tr key={ind} className="border border-gray-300">
                     <td className="py-2 px-4">
                       <div>
                         <h2>{category.roomCategory.roomCategoryId}</h2>
@@ -245,9 +245,9 @@ function HourFeeModal(props) {
                                 defaultValue={checkin.policyDetailId}
                               />
                             )}
-                            Từ giờ thứ
+                            Trước{" "}
                             <input
-                              className="border-0 border-b border-gray-500 w-16 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                              className="border-0 p-1 border-b border-gray-500 w-10 focus:border-b-2 focus:border-green-500 focus:ring-0"
                               type="number"
                               name={`hourCheckin[${ind}][${index}]`}
                               value={checkin.hour}
@@ -293,10 +293,10 @@ function HourFeeModal(props) {
                                   ? cate.listCheckin[index + 1].hour - 1
                                   : 5
                               }
-                            />
-                            giá
+                            />{" "}
+                            giờ giá{" "}
                             <input
-                              className="border-0 border-b border-gray-500 w-28 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                              className="p-1 border-0 border-b border-gray-500 w-14 focus:border-b-2 focus:border-green-500 focus:ring-0"
                               type="number"
                               name={`priceCheckin[${ind}][${index}]`}
                               value={checkin.price}
@@ -333,7 +333,8 @@ function HourFeeModal(props) {
                                 setListHourFee(updateListHourFee);
                               }}
                               min={0}
-                            />
+                              max={100}
+                            />{" "}
                             {index > 0 && (
                               <button
                                 type="button"
@@ -341,7 +342,7 @@ function HourFeeModal(props) {
                                   handleSoonCheckinRemove(cate, index)
                                 }
                               >
-                                <i className="fa-solid fa-trash"></i>
+                                <i className="fa-solid fa-xmark"></i>
                               </button>
                             )}
                           </div>
@@ -372,9 +373,9 @@ function HourFeeModal(props) {
                                 defaultValue={checkout.policyDetailId}
                               />
                             )}
-                            Từ giờ thứ
+                            Trước{" "}
                             <input
-                              className="border-0 border-b border-gray-500 w-16 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                              className="p-1 border-0 border-b border-gray-500 w-10 focus:border-b-2 focus:border-green-500 focus:ring-0"
                               type="number"
                               name={`hourCheckout[${ind}][${index}]`}
                               value={checkout.hour}
@@ -420,10 +421,10 @@ function HourFeeModal(props) {
                                   ? cate.listCheckout[index + 1].hour - 1
                                   : 5
                               }
-                            />
-                            giá
+                            />{" "}
+                            giờ giá{" "}
                             <input
-                              className="border-0 border-b border-gray-500 w-28 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                              className="p-1 border-0 border-b border-gray-500 w-14 focus:border-b-2 focus:border-green-500 focus:ring-0"
                               type="number"
                               name={`priceCheckout[${ind}][${index}]`}
                               value={checkout.price}
@@ -464,7 +465,7 @@ function HourFeeModal(props) {
                             {index > 0 && (
                               <button type="button">
                                 <i
-                                  className="fa-solid fa-trash"
+                                  className="fa-solid fa-xmark"
                                   onClick={() =>
                                     handleLateCheckoutRemove(cate, index)
                                   }
