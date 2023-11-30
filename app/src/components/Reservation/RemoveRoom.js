@@ -3,7 +3,6 @@ import Modal from "../UI/Modal";
 
 function RemoveRoom(props) {
   const room = props.room;
-  console.log(room);
   return (
     <Form method="delete" onSubmit={() => props.onClose()}>
       <Modal open={props.open} onClose={props.onClose} size="w-5/12 h-.5/6">

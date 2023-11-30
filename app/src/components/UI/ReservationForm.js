@@ -168,12 +168,11 @@ function ReservationForm(props) {
   useEffect(() => {
     async function fetchRoomActive() {
       try {
-        setRoomActive(
-          reservation.listReservationDetails.find(
-            (details) =>
-              details.reservationDetailId === roomActive.reservationDetailId
-          )
+        const roomAc = reservation.listReservationDetails.find(
+          (details) =>
+            details.reservationDetailId === roomActive.reservationDetailId
         );
+        setRoomActive(roomAc ? roomAc : reservation.listReservationDetails[0]);
       } catch (error) {
         console.log(error);
       }
@@ -731,6 +730,15 @@ function ReservationForm(props) {
             <RemoveRoom
               open={removeRoomModal ? true : false}
               onClose={() => setRemoveRoomModal(null)}
+              // onChange={() =>
+              //   setRoomActive(
+              //     reservation.listReservationDetails.find(
+              //       (details) =>
+              //         details.reservationDetailId !==
+              //         removeRoomModal.reservationDetailId
+              //     )
+              //   )
+              // }
               room={removeRoomModal}
             />
           )}

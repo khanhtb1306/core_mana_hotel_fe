@@ -5,14 +5,15 @@ import { DatePicker, DateTimePicker } from "@mui/x-date-pickers";
 import { Checkbox, FormControlLabel, MenuItem, Select } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useLoaderData } from "react-router-dom";
-import Swal from "sweetalert2";
 import DetailsPriceInRoom from "./DetailsPriceInRoom";
-import VisitorModal from "./VisitorModal";
+import { getTimePrice } from "../../utils/getTimePrice";
 // require("dayjs/locale/vi");
 
 function SelectRoom(props) {
   const { categories, timeUsing } = useLoaderData();
   // console.log(timeUsing);
+  // console.log(dayjs().format("DD-MM-YYYY"));
+  // console.log(dayjs().add(1, "day").format("DD-MM-YYYY"));
   const priceNightStart = timeUsing.startTimeNight.split(":")[0];
   const priceNightEnd = timeUsing.endTimeNight.split(":")[0];
   const priceDayStart = timeUsing.startTimeDay.split(":")[0];
@@ -58,21 +59,29 @@ function SelectRoom(props) {
   }
   if (room.reservationType === "HOURLY") {
     type = 1;
-    time = getPrice(type, from, to).time;
-    defaultPrice = getPrice(type, from, to).price;
+    time = getTimePrice(type, from, to, timeUsing, props.price).time;
+    defaultPrice = getTimePrice(type, from, to, timeUsing, props.price).price;
   } else if (room.reservationType === "DAILY") {
     type = 2;
-    time = getPrice(type, from, to).time;
-    defaultPrice = getPrice(type, from, to).price;
-    if (from.hour() > priceDayStart) {
-      soonCheckIn = from.hour() - priceDayStart;
+    time = getTimePrice(type, from, to, timeUsing, props.price).time;
+    defaultPrice = getTimePrice(type, from, to, timeUsing, props.price).price;
+    let soonHour = from.hour(priceDayStart).diff(from, "hour");
+    if (from.minute() > timeBonusHour) {
+      soonHour -= 1;
     }
-    if (to.hour() < priceDayEnd) {
-      lateCheckOut = priceDayEnd - to.hour();
+    if (from.hour() <= priceDayStart && soonHour < timeBonusDay) {
+      soonCheckIn = soonHour;
+    }
+    let lateHour = to.diff(to.hour(priceDayEnd), "hour");
+    if (to.minute() >= timeBonusHour) {
+      lateHour += 1;
+    }
+    if (to.hour() > priceDayEnd && lateHour < timeBonusDay) {
+      lateCheckOut = lateHour;
     }
   } else {
     type = 3;
-    time = getPrice(type, from, to).time;
+    time = getTimePrice(type, from, to, timeUsing, props.price).time;
     if (from.hour() > priceNightStart) {
       soonCheckIn = from.hour() - priceNightStart;
     }
@@ -137,15 +146,25 @@ function SelectRoom(props) {
       setLateCheckout(0);
       if (value === 1) {
         setToTime(now.add(1, "hour"));
-        setValueTime(getPrice(value, fromTime, now.add(1, "hour")).time);
+        setValueTime(
+          getTimePrice(
+            value,
+            fromTime,
+            now.add(1, "hour"),
+            timeUsing,
+            props.price
+          ).time
+        );
         setSoonCheckin(0);
       } else if (value === 2) {
         setToTime(now.add(1, "day").hour(priceDayEnd).minute(0));
         setValueTime(
-          getPrice(
+          getTimePrice(
             value,
             fromTime,
-            now.add(1, "day").hour(priceDayEnd).minute(0)
+            now.add(1, "day").hour(priceDayEnd).minute(0),
+            timeUsing,
+            props.price
           ).time
         );
         if (fromTime.hour() < priceDayStart) {
@@ -156,10 +175,11 @@ function SelectRoom(props) {
       } else {
         setToTime(toTime.add(1, "day").hour(priceNightEnd).minute(0));
         setValueTime(
-          getPrice(
+          getTimePrice(
             value,
             fromTime,
-            toTime.add(1, "day").hour(priceNightEnd).minute(0)
+            toTime.add(1, "day").hour(priceNightEnd).minute(0),
+            timeUsing
           ).time
         );
         if (fromTime.hour() < priceNightStart) {
@@ -183,8 +203,15 @@ function SelectRoom(props) {
   };
 
   const handleChangeFromTime = (value) => {
-    const priceTime = getPrice(typeTime, value, toTime);
+    const priceTime = getTimePrice(
+      typeTime,
+      value,
+      toTime,
+      timeUsing,
+      props.price
+    );
     setValueTime(priceTime.time);
+    setFromTime(value);
     if (typeTime === 1) {
       setSoonCheckin(0);
       setLateCheckout(0);
@@ -192,153 +219,102 @@ function SelectRoom(props) {
         setToTime(value.add(1, "hour"));
         setValueTime(1);
       }
-      setFromTime(value);
     } else if (typeTime === 2) {
-      if (value.date() >= toTime.date()) {
-        setToTime(toTime.add(1, "day"));
+      if (value.diff(toTime, "day") >= 0) {
+        setToTime(value.add(1, "day").hour(priceDayEnd).minute(0));
         setValueTime(1);
+        setLateCheckout(0);
       }
-      if (value.hour() < priceDayStart) {
-        setSoonCheckin(priceDayStart - value.hour());
+      let plusHour = value.hour(priceDayStart).diff(value, "hour");
+      if (value.minute() > timeBonusHour) {
+        plusHour -= 1;
+      }
+      if (value.hour() <= priceDayStart && plusHour < timeBonusDay) {
+        setSoonCheckin(plusHour);
       } else {
         setSoonCheckin(0);
       }
-      setFromTime(value);
     } else {
-      if (value.hour() < priceNightStart) {
-        setSoonCheckin(priceNightStart - value.hour());
+      let soonHour = priceNightStart - value.hour();
+      if (value.minute() <= timeBonusHour) {
+        soonHour += 1;
+      }
+      if (value.hour() <= priceNightStart && soonHour > 0) {
+        setSoonCheckin(soonHour);
       } else {
         setSoonCheckin(0);
+      }
+      let lateHour = toTime.diff(
+        value.add(1, "day").hour(priceNightEnd).minute(0),
+        "hour"
+      );
+      if (toTime.minute() >= timeBonusHour) {
+        lateHour += 1;
       }
       if (value.add(1, "day").hour(priceNightEnd).minute(0) < toTime) {
-        setLateCheckout(
-          toTime.diff(value.add(1, "day").hour(priceNightEnd).minute(0), "hour")
-        );
+        setLateCheckout(lateHour);
       } else {
         setLateCheckout(0);
       }
-      setFromTime(value);
+      if (value.diff(toTime, "hour") > 0) {
+        setToTime(value.add(1, "day").hour(priceNightEnd).minute(0));
+        setLateCheckout(0);
+      }
     }
   };
 
   const handleChangeToTime = (value) => {
-    const priceTime = getPrice(typeTime, fromTime, value);
+    const priceTime = getTimePrice(
+      typeTime,
+      fromTime,
+      value,
+      timeUsing,
+      props.price
+    );
     setValueTime(priceTime.time);
+    setToTime(value);
     if (typeTime === 1) {
       setSoonCheckin(0);
       setLateCheckout(0);
-      setToTime(value);
+      if (fromTime.add(1, "hour").diff(value, "hour") > 0) {
+        setValueTime(1);
+        setToTime(fromTime.add(1, "hour"));
+      }
     } else if (typeTime === 2) {
-      setToTime(value);
-      if (value.hour() > priceDayEnd) {
-        setLateCheckout(value.hour() - priceDayEnd);
+      let plusHour = value.diff(value.hour(priceDayEnd), "hour");
+      if (value.minute() >= timeBonusHour) {
+        plusHour += 1;
+      }
+      if (value.hour() > priceDayEnd && plusHour < timeBonusDay) {
+        setLateCheckout(plusHour);
       } else {
         setLateCheckout(0);
+      }
+      if (fromTime.add(1, "day").hour(priceDayEnd).diff(value, "day") > 0) {
+        setSoonCheckin(0);
+        setLateCheckout(0);
+        setValueTime(1);
+        setToTime(fromTime.add(1, "day").hour(priceDayEnd));
       }
     } else {
+      let lateHour = value.diff(
+        fromTime.add(1, "day").hour(priceNightEnd).minute(0),
+        "hour"
+      );
+      if (value.minute() >= timeBonusHour) {
+        lateHour += 1;
+      }
       if (fromTime.add(1, "day").hour(priceNightEnd).minute(0) < value) {
-        setLateCheckout(
-          value.diff(
-            fromTime.add(1, "day").hour(priceNightEnd).minute(0),
-            "hour"
-          )
-        );
+        setLateCheckout(lateHour);
       } else {
         setLateCheckout(0);
       }
-      setToTime(value);
+      if (fromTime.diff(value, "hour") > 0) {
+        setToTime(fromTime.add(1, "day").hour(priceNightEnd).minute(0));
+        setLateCheckout(0);
+      }
     }
   };
-
-  function getPrice(typeTime, fromTime, toTime) {
-    let price = 0;
-    let time = 0;
-    if (typeTime === 1) {
-      const hoursList = [];
-      let currentHour = fromTime;
-      while (currentHour.isBefore(toTime)) {
-        if (toTime.diff(currentHour, "minute") < timeBonusHour) {
-          break;
-        }
-        hoursList.push(currentHour);
-        currentHour = currentHour.add(1, "hour");
-      }
-      time = hoursList.length;
-      hoursList.map((hour) => {
-        props.price.map((priceDetails) => {
-          if (
-            priceDetails.PriceListDetail.timeApply &&
-            dayjs(priceDetails.PriceListDetail.timeApply).isSame(hour)
-          ) {
-            price += priceDetails.PriceListDetail.priceByHour;
-            return;
-          } else {
-            if (
-              priceDetails.DayOfWeekList.includes(hour.day() + 1 + "") ||
-              priceDetails.DayOfWeekList.includes(hour.day() + 8 + "")
-            ) {
-              price += priceDetails.PriceListDetail.priceByHour;
-            }
-          }
-        });
-      });
-    } else if (typeTime === 2) {
-      const daysList = [];
-      let currentDay = fromTime.hour(priceDayStart).minute(0);
-      if (currentDay.diff(fromTime, "hour") >= timeBonusDay) {
-        daysList.push(fromTime);
-      }
-      while (currentDay.isBefore(toTime.hour(priceDayEnd).minute(0))) {
-        daysList.push(currentDay);
-        currentDay = currentDay.add(1, "day");
-      }
-      currentDay = currentDay.hour(priceDayEnd).minute(0);
-      if (toTime.diff(currentDay, "hour") >= timeBonusDay) {
-        daysList.push(currentDay);
-      }
-      time = daysList.length;
-      daysList.map((day) => {
-        props.price.map((priceDetails) => {
-          if (
-            priceDetails.PriceListDetail.timeApply &&
-            dayjs(priceDetails.PriceListDetail.timeApply).isSame(day)
-          ) {
-            price += priceDetails.PriceListDetail.priceByDay;
-            return;
-          } else {
-            if (
-              priceDetails.DayOfWeekList.includes(day.day() + 1 + "") ||
-              priceDetails.DayOfWeekList.includes(day.day() + 8 + "")
-            ) {
-              price += priceDetails.PriceListDetail.priceByDay;
-            }
-          }
-        });
-      });
-    } else {
-      time = 1;
-      props.price.map((priceDetails) => {
-        if (
-          priceDetails.PriceListDetail.timeApply &&
-          dayjs(priceDetails.PriceListDetail.timeApply).isSame(fromTime)
-        ) {
-          price = priceDetails.PriceListDetail.priceByNight;
-          return;
-        } else {
-          if (
-            priceDetails.DayOfWeekList.includes(fromTime.day() + 1 + "") ||
-            priceDetails.DayOfWeekList.includes(fromTime.day() + 8 + "")
-          ) {
-            price = priceDetails.PriceListDetail.priceByNight;
-          }
-        }
-      });
-    }
-    return {
-      price: price,
-      time: time,
-    };
-  }
 
   return (
     <div className="bg-white shadow-md rounded-lg border p-4">
@@ -367,7 +343,10 @@ function SelectRoom(props) {
         <input
           type="hidden"
           name={`price${props.index}`}
-          value={getPrice(typeTime, fromTime, toTime).price}
+          value={
+            getTimePrice(typeTime, fromTime, toTime, timeUsing, props.price)
+              .price
+          }
           onChange={() => console.log()}
         />
         <input
@@ -482,6 +461,7 @@ function SelectRoom(props) {
           )}
         </div>
         <div className="mb-2">
+          {toTime.format("DD-MM-YYYY HH:mm")}
           <LocalizationProvider
             dateAdapter={AdapterDayjs}
             adapterLocale="vi-VN"
@@ -492,10 +472,6 @@ function SelectRoom(props) {
                 <div className="pr-2">
                   <DateTimePicker
                     ampm={false}
-                    {...(typeTime !== 1 && {
-                      shouldDisableTime: (date) => date.minute() % 60 !== 0,
-                    })}
-                    // shouldDisableDate={isFromDateDisabled}
                     sx={{ ".MuiInputBase-input": { padding: 1, width: 150 } }}
                     value={fromTime}
                     onChange={handleChangeFromTime}
@@ -508,16 +484,11 @@ function SelectRoom(props) {
                     ampm={false}
                     {...(typeTime === 1
                       ? {
-                          shouldDisableTime: (date) =>
-                            fromTime.diff(date, "hour") > -1,
+                          minDateTime: fromTime.add(1, "hour"),
                         }
                       : {
-                          shouldDisableTime: (date) => date.minute() % 60 !== 0,
+                          minDate: fromTime.add(1, "day"),
                         })}
-                    // shouldDisableDate={isToDateDisabled}
-                    shouldDisableTime={(date) =>
-                      fromTime.diff(date, "hour") > -1
-                    }
                     sx={{ ".MuiInputBase-input": { padding: 1, width: 150 } }}
                     value={toTime}
                     onChange={handleChangeToTime}
@@ -580,15 +551,28 @@ function SelectRoom(props) {
                           dayjs().diff(fromTime, "hour") * 60
                         } phút`
                       : typeTime === 2
-                      ? `${dayjs().date() - fromTime.date()} ngày ${
-                          dayjs().hour() - fromTime.hour()
-                        } giờ`
+                      ? `${dayjs().diff(
+                          fromTime.hour(priceDayStart),
+                          "day"
+                        )} ngày ${dayjs().diff(
+                          fromTime.add(
+                            dayjs().diff(fromTime.hour(priceDayStart), "day"),
+                            "day"
+                          ),
+                          "hour"
+                        )} giờ`
                       : dayjs().diff(
                           fromTime.add(1, "day").hour(priceNightEnd),
                           "hour"
                         ) > 0
                       ? `${
-                          getPrice(typeTime, fromTime, dayjs()).time
+                          getTimePrice(
+                            typeTime,
+                            fromTime,
+                            dayjs(),
+                            timeUsing,
+                            props.price
+                          ).time
                         } đêm ${dayjs().diff(
                           fromTime.add(1, "day").hour(priceNightEnd),
                           "hour"
@@ -665,7 +649,13 @@ function SelectRoom(props) {
         </p>
         <p className="w-1/12">{valueTime}</p>
         <p className="w-2/12 text-right">
-          {getPrice(typeTime, fromTime, toTime).price.toLocaleString()}
+          {getTimePrice(
+            typeTime,
+            fromTime,
+            toTime,
+            timeUsing,
+            props.price
+          ).price.toLocaleString()}
         </p>
         <p className="w-1/12">
           <button
