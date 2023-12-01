@@ -168,6 +168,80 @@ function ReservationForm(props) {
   useEffect(() => {
     async function fetchRoomActive() {
       try {
+        if (actionData) {
+          //Notify error info of rooms in reservation
+          if (
+            actionData.listRoom &&
+            actionData.listRoom.find((room) => !room.success)
+          ) {
+            setOpenAddInvoiceModal(false);
+            setOpenAddRoomModal(false);
+            setOpenDeleteInvoiceModal(false);
+            setOpenEditInvoiceModal(false);
+            setOpenPayModal(false);
+            setOpenPaymentModal(false);
+            setOpenReceiveModal(false);
+            setOpenStatusInvoiceModal(false);
+            setOpenViewInvoiceModal(false);
+            setOpenVisitorModal(false);
+            Swal.fire({
+              position: "bottom",
+              html: `<div class="text-sm">${actionData.listRoom
+                .filter((room) => !room.success)
+                .map((room) => {
+                  const nameRoom = reservation.listReservationDetails.find(
+                    (details) => details.reservationDetailId === room.result
+                  );
+                  return `<button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Phòng ${nameRoom.room.roomName} đang trùng lịch đặt phòng.</button>`;
+                })}</div>`,
+              showConfirmButton: false,
+              background: "transparent",
+              backdrop: "none",
+              timer: 2500,
+            });
+          }
+          if (actionData.checkinRoom) {
+            const nameRoom = reservation.listReservationDetails.find(
+              (details) =>
+                details.reservationDetailId === actionData.checkinRoom.result
+            );
+            const bgColor = actionData.checkinRoom.success
+              ? "bg-green-800"
+              : "bg-red-800";
+            const message = actionData.checkinRoom.success
+              ? "cập nhật thành công!"
+              : "đang trùng lịch đặt phòng.";
+            Swal.fire({
+              position: "bottom",
+              html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg ${bgColor} text-white">Phòng ${nameRoom.room.roomName} ${message}</button>`,
+              showConfirmButton: false,
+              background: "transparent",
+              backdrop: "none",
+              timer: 2500,
+            });
+          }
+          if (actionData.checkoutRoom) {
+            const nameRoom = reservation.listReservationDetails.find(
+              (details) =>
+                details.reservationDetailId === actionData.checkoutRoom.result
+            );
+            const bgColor = actionData.checkoutRoom.success
+              ? "bg-green-800"
+              : "bg-red-800";
+            const message = actionData.checkoutRoom.success
+              ? "cập nhật thành công!"
+              : "đang trùng lịch đặt phòng.";
+            Swal.fire({
+              position: "bottom",
+              html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg ${bgColor} text-white">Phòng ${nameRoom.room.roomName} ${message}</button>`,
+              showConfirmButton: false,
+              background: "transparent",
+              backdrop: "none",
+              timer: 2500,
+            });
+          }
+        }
+
         const roomAc = reservation.listReservationDetails.find(
           (details) =>
             details.reservationDetailId === roomActive.reservationDetailId
@@ -201,21 +275,22 @@ function ReservationForm(props) {
     setPriceBook(priceById);
   };
   useEffect(() => {
-    async function fetchListInvoices() {
+    async function fetchListCustomers() {
       try {
         if (reservation) {
-          const response2 = await axiosPrivate.get(
+          const listCustomers = await axiosPrivate.get(
             "reservation-detail/list-customers/" +
               roomActive.reservationDetailId
           );
-          setListCustomers(response2.data.result);
+          setListCustomers(listCustomers.data.result);
         }
       } catch (error) {
         console.log(error);
       }
     }
-    fetchListInvoices();
+    fetchListCustomers();
   }, [actionData, roomActive]);
+
   const handleRoomChange = (room) => {
     setRoomActive(room);
   };

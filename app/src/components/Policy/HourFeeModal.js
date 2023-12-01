@@ -373,7 +373,7 @@ function HourFeeModal(props) {
                                 defaultValue={checkout.policyDetailId}
                               />
                             )}
-                            Trước{" "}
+                            Sau{" "}
                             <input
                               className="p-1 border-0 border-b border-gray-500 w-10 focus:border-b-2 focus:border-green-500 focus:ring-0"
                               type="number"
@@ -461,6 +461,7 @@ function HourFeeModal(props) {
                                 setListHourFee(updateListHourFee);
                               }}
                               min={0}
+                              max={100}
                             />
                             {index > 0 && (
                               <button type="button">

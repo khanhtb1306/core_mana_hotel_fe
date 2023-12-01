@@ -3,14 +3,37 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import Modal from "../UI/Modal";
 import { DateTimePicker } from "@mui/x-date-pickers";
-import { useState } from "react";
-import { Form } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Form, useLoaderData } from "react-router-dom";
+import Swal from "sweetalert2";
+import {
+  getTimePrice,
+  getSoonCheckin,
+  getlateCheckout,
+} from "../../utils/getTimePrice";
 
 function ReceiveRoomModal(props) {
+  const { timeUsing } = useLoaderData();
   const roomActive = props.roomActive;
-//   console.log(props.roomActive);
   const [fromTime, setFromTime] = useState(dayjs(roomActive.checkInEstimate));
   const [toTime, setToTime] = useState(dayjs(roomActive.checkOutEstimate));
+  useEffect(() => {
+    setFromTime(dayjs(roomActive.checkInEstimate));
+    setToTime(dayjs(roomActive.checkOutEstimate));
+  }, [roomActive]);
+  let time = 0;
+  let surchargeTime = 0;
+  if (roomActive.reservationType === "HOURLY") {
+    time = toTime.diff(fromTime, "hour");
+  } else if (roomActive.reservationType === "DAILY") {
+    time = getTimePrice(2, fromTime, toTime, timeUsing, []).time;
+    surchargeTime += getSoonCheckin(2, fromTime, timeUsing);
+    surchargeTime += getlateCheckout(2, fromTime, toTime, timeUsing);
+  } else {
+    time = getTimePrice(3, fromTime, toTime, timeUsing, []).time;
+    surchargeTime += getSoonCheckin(3, fromTime, timeUsing);
+    surchargeTime += getlateCheckout(3, fromTime, toTime, timeUsing);
+  }
   return (
     <Form method="PUT" onSubmit={props.onClose}>
       <Modal
@@ -46,9 +69,9 @@ function ReceiveRoomModal(props) {
           <table className="text-center min-w-full border border-gray-300 divide-y divide-gray-300">
             <thead>
               <tr className="bg-green-100">
-                <td className="py-2 w-3/12">Hạng phòng</td>
+                <td className="py-2 w-2/12">Hạng phòng</td>
                 <td className="py-2 w-1/12">Phòng</td>
-                <td className="py-2 w-4/12">
+                <td className="py-2 w-3/12">
                   Nhận
                   <button
                     type="button"
@@ -67,7 +90,7 @@ function ReceiveRoomModal(props) {
                     Giờ đặt
                   </button>
                 </td>
-                <td className="py-2 w-1/12"></td>
+                <td className="py-2 w-2/12"></td>
                 <td className="py-2 w-3/12">Trả</td>
               </tr>
             </thead>
@@ -77,16 +100,13 @@ function ReceiveRoomModal(props) {
                 adapterLocale="vi-VN"
               >
                 <tr>
-                  <td className="py-2 w-3/12">
+                  <td className="py-2 w-2/12">
                     {roomActive.room.roomCategory.roomCategoryName}
                   </td>
                   <td className="py-2 w-1/12">{roomActive.room.roomName}</td>
-                  <td className="py-2 w-4/12">
+                  <td className="py-2 w-3/12">
                     <DateTimePicker
                       ampm={false}
-                      {...(roomActive.reservationType !== "HOURLY" && {
-                        shouldDisableTime: (date) => date.minute() % 60 !== 0,
-                      })}
                       sx={{ ".MuiInputBase-input": { padding: 1, width: 150 } }}
                       value={fromTime}
                       onChange={(e) => {
@@ -95,13 +115,19 @@ function ReceiveRoomModal(props) {
                           setToTime(e.add(1, "hour"));
                         }
                       }}
+                      disabled={true}
                       maxDateTime={dayjs()}
                       format="DD/MM/YYYY HH:mm"
                     />
                   </td>
-                  <td className="py-2 w-1/12">
-                    {roomActive.reservationType === "HOURLY" &&
-                      toTime.diff(fromTime, "hour") + " Giờ"}
+                  <td className="py-2 w-2/12 text-green-600">
+                    {time}
+                    {roomActive.reservationType === "HOURLY"
+                      ? " Giờ"
+                      : roomActive.reservationType === "DAILY"
+                      ? " Ngày"
+                      : " Đêm"}
+                    {surchargeTime > 0 && " " + surchargeTime + " Giờ"}
                   </td>
                   <td className="py-2 w-3/12">
                     <DateTimePicker
@@ -131,7 +157,20 @@ function ReceiveRoomModal(props) {
         </div>
         <div className="flex pt-5">
           <div className="ml-auto">
-            <button className="bg-green-500 mr-5 py-2 px-6 text-white rounded hover:bg-green-600">
+            <button
+              type={`${fromTime.diff(dayjs()) > 0 ? "button" : ""}`}
+              className="bg-green-500 py-2 px-6 text-white rounded hover:bg-green-600"
+              onClick={() => {
+                Swal.fire({
+                  position: "bottom",
+                  html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Không thể nhận phòng ở thời điểm tương lai!</button>`,
+                  showConfirmButton: false,
+                  background: "transparent",
+                  backdrop: "none",
+                  timer: 2500,
+                });
+              }}
+            >
               Xong
             </button>
           </div>

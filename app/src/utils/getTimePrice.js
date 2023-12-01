@@ -103,3 +103,68 @@ export function getTimePrice(typeTime, fromTime, toTime, timeUsing, listPrice) {
     time: time,
   };
 }
+
+export function getSoonCheckin(typeTime, fromTime, timeUsing) {
+  const priceNightStart = timeUsing.startTimeNight.split(":")[0];
+  const priceNightEnd = timeUsing.endTimeNight.split(":")[0];
+  const priceDayStart = timeUsing.startTimeDay.split(":")[0];
+  const priceDayEnd = timeUsing.endTimeDay.split(":")[0];
+  const timeBonusDay = timeUsing.timeBonusDay;
+  const timeBonusHour = timeUsing.timeBonusHour;
+  if (typeTime === 2) {
+    let plusHour = fromTime.hour(priceDayStart).diff(fromTime, "hour");
+    if (fromTime.minute() > timeBonusHour) {
+      plusHour -= 1;
+    }
+    if (fromTime.hour() <= priceDayStart && plusHour < timeBonusDay) {
+      return plusHour;
+    } else {
+      return 0;
+    }
+  }
+  if (typeTime === 3) {
+    let plusHour = priceNightStart - fromTime.hour() - 1;
+    if (fromTime.minute() <= timeBonusHour) {
+      plusHour += 1;
+    }
+    if (fromTime.hour() <= priceNightStart && plusHour > 0) {
+      return plusHour;
+    } else {
+      return 0;
+    }
+  }
+}
+
+export function getlateCheckout(typeTime, fromTime, toTime, timeUsing) {
+  const priceNightStart = timeUsing.startTimeNight.split(":")[0];
+  const priceNightEnd = timeUsing.endTimeNight.split(":")[0];
+  const priceDayStart = timeUsing.startTimeDay.split(":")[0];
+  const priceDayEnd = timeUsing.endTimeDay.split(":")[0];
+  const timeBonusDay = timeUsing.timeBonusDay;
+  const timeBonusHour = timeUsing.timeBonusHour;
+  if (typeTime === 2) {
+    let plusHour = toTime.diff(toTime.hour(priceDayEnd), "hour");
+    if (toTime.minute() >= timeBonusHour) {
+      plusHour += 1;
+    }
+    if (toTime.hour() >= priceDayEnd && plusHour < timeBonusDay) {
+      return plusHour;
+    } else {
+      return 0;
+    }
+  }
+  if (typeTime === 3) {
+    let lateHour = toTime.diff(
+      fromTime.add(1, "day").hour(priceNightEnd).minute(0),
+      "hour"
+    );
+    if (toTime.minute() >= timeBonusHour) {
+      lateHour += 1;
+    }
+    if (fromTime.add(1, "day").hour(priceNightEnd).minute(0) < toTime) {
+      return lateHour;
+    } else {
+      return 0;
+    }
+  }
+}

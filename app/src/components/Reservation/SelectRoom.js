@@ -6,22 +6,20 @@ import { Checkbox, FormControlLabel, MenuItem, Select } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useLoaderData } from "react-router-dom";
 import DetailsPriceInRoom from "./DetailsPriceInRoom";
-import { getTimePrice } from "../../utils/getTimePrice";
+import { getTimePrice, getSoonCheckin, setLateCheckout, getlateCheckout } from "../../utils/getTimePrice";
+import { axiosPrivate } from "../../utils/axiosConfig";
 // require("dayjs/locale/vi");
 
 function SelectRoom(props) {
   const { categories, timeUsing } = useLoaderData();
+  // console.log(props.price);
   // console.log(timeUsing);
-  // console.log(dayjs().format("DD-MM-YYYY"));
-  // console.log(dayjs().add(1, "day").format("DD-MM-YYYY"));
   const priceNightStart = timeUsing.startTimeNight.split(":")[0];
   const priceNightEnd = timeUsing.endTimeNight.split(":")[0];
   const priceDayStart = timeUsing.startTimeDay.split(":")[0];
   const priceDayEnd = timeUsing.endTimeDay.split(":")[0];
   const timeBonusDay = timeUsing.timeBonusDay;
   const timeBonusHour = timeUsing.timeBonusHour;
-  const priceSoonCheckIn = 10000;
-  const priceLateCheckOut = 10000;
   const room = props.room;
   // console.log(room);
   const listRoomIdByRes = props.listRoomByRes.map((r) => r.room.roomId);
@@ -65,32 +63,13 @@ function SelectRoom(props) {
     type = 2;
     time = getTimePrice(type, from, to, timeUsing, props.price).time;
     defaultPrice = getTimePrice(type, from, to, timeUsing, props.price).price;
-    let soonHour = from.hour(priceDayStart).diff(from, "hour");
-    if (from.minute() > timeBonusHour) {
-      soonHour -= 1;
-    }
-    if (from.hour() <= priceDayStart && soonHour < timeBonusDay) {
-      soonCheckIn = soonHour;
-    }
-    let lateHour = to.diff(to.hour(priceDayEnd), "hour");
-    if (to.minute() >= timeBonusHour) {
-      lateHour += 1;
-    }
-    if (to.hour() > priceDayEnd && lateHour < timeBonusDay) {
-      lateCheckOut = lateHour;
-    }
+    soonCheckIn = getSoonCheckin(type, from, timeUsing);
+    lateCheckOut = getlateCheckout(type, from, to, timeUsing);
   } else {
     type = 3;
     time = getTimePrice(type, from, to, timeUsing, props.price).time;
-    if (from.hour() > priceNightStart) {
-      soonCheckIn = from.hour() - priceNightStart;
-    }
-    if (from.add(1, "day").hour(priceNightEnd).minute(0) < to) {
-      lateCheckOut = to.diff(
-        from.add(1, "day").hour(priceNightEnd).minute(0),
-        "hour"
-      );
-    }
+    soonCheckIn = getSoonCheckin(type, from, timeUsing);
+    lateCheckOut = getlateCheckout(type, from, to, timeUsing);
   }
   const [typeTime, setTypeTime] = useState(type);
   const [valueTime, setValueTime] = useState(time);
@@ -98,14 +77,30 @@ function SelectRoom(props) {
   const [toTime, setToTime] = useState(to);
   const [lateCheckout, setLateCheckout] = useState(lateCheckOut);
   const [soonCheckin, setSoonCheckin] = useState(soonCheckIn);
-  const [isPaidSoonCheckin, setIsPaidSoonCheckin] = useState(true);
-  const [isPaidLateCheckout, setIsPaidLateCheckout] = useState(true);
+  const [isPaidSoonCheckin, setIsPaidSoonCheckin] = useState(null);
+  const [isPaidLateCheckout, setIsPaidLateCheckout] = useState(null);
+  const [priceSoon, setPriceSoon] = useState(0);
+  const [priceLate, setPriceLate] = useState(0);
   useEffect(() => {
     async function fetchRoomActive() {
       try {
+        const isSoonCheckin = await axiosPrivate.get(
+          `reservation/get_control_policy_by_reservation_detail?reservationDetailId=${room.reservationDetailId}&policyName=EARLIER_OVERTIME_SURCHARGE`
+        );
+        const isLateCheckout = await axiosPrivate.get(
+          `reservation/get_control_policy_by_reservation_detail?reservationDetailId=${room.reservationDetailId}&policyName=LATER_OVERTIME_SURCHARGE`
+        );
+        if (isSoonCheckin.data.success && isSoonCheckin.data.result) {
+          setIsPaidSoonCheckin(isSoonCheckin.data.result.status);
+        }
+        if (isLateCheckout.data.success && isLateCheckout.data.result) {
+          setIsPaidLateCheckout(isLateCheckout.data.result.status);
+        }
         setToTime(to);
         setFromTime(from);
         setValueTime(time);
+        setSoonCheckin(soonCheckIn);
+        setLateCheckout(lateCheckOut);
       } catch (error) {
         console.log(error);
       }
@@ -225,37 +220,10 @@ function SelectRoom(props) {
         setValueTime(1);
         setLateCheckout(0);
       }
-      let plusHour = value.hour(priceDayStart).diff(value, "hour");
-      if (value.minute() > timeBonusHour) {
-        plusHour -= 1;
-      }
-      if (value.hour() <= priceDayStart && plusHour < timeBonusDay) {
-        setSoonCheckin(plusHour);
-      } else {
-        setSoonCheckin(0);
-      }
+      setSoonCheckin(getSoonCheckin(typeTime, value, timeUsing));
     } else {
-      let soonHour = priceNightStart - value.hour();
-      if (value.minute() <= timeBonusHour) {
-        soonHour += 1;
-      }
-      if (value.hour() <= priceNightStart && soonHour > 0) {
-        setSoonCheckin(soonHour);
-      } else {
-        setSoonCheckin(0);
-      }
-      let lateHour = toTime.diff(
-        value.add(1, "day").hour(priceNightEnd).minute(0),
-        "hour"
-      );
-      if (toTime.minute() >= timeBonusHour) {
-        lateHour += 1;
-      }
-      if (value.add(1, "day").hour(priceNightEnd).minute(0) < toTime) {
-        setLateCheckout(lateHour);
-      } else {
-        setLateCheckout(0);
-      }
+      setSoonCheckin(getSoonCheckin(typeTime, value, timeUsing));
+      setLateCheckout(getlateCheckout(typeTime, value, toTime, timeUsing));
       if (value.diff(toTime, "hour") > 0) {
         setToTime(value.add(1, "day").hour(priceNightEnd).minute(0));
         setLateCheckout(0);
@@ -281,40 +249,81 @@ function SelectRoom(props) {
         setToTime(fromTime.add(1, "hour"));
       }
     } else if (typeTime === 2) {
-      let plusHour = value.diff(value.hour(priceDayEnd), "hour");
-      if (value.minute() >= timeBonusHour) {
-        plusHour += 1;
-      }
-      if (value.hour() > priceDayEnd && plusHour < timeBonusDay) {
-        setLateCheckout(plusHour);
-      } else {
-        setLateCheckout(0);
-      }
+      setLateCheckout(getlateCheckout(typeTime, fromTime, value, timeUsing));
       if (fromTime.add(1, "day").hour(priceDayEnd).diff(value, "day") > 0) {
-        setSoonCheckin(0);
+        let plusHour = fromTime.hour(priceDayStart).diff(fromTime, "hour");
+        if (fromTime.minute() > timeBonusHour) {
+          plusHour -= 1;
+        }
+        if (fromTime.hour() <= priceDayStart && plusHour < timeBonusDay) {
+          setSoonCheckin(plusHour);
+        } else {
+          setSoonCheckin(0);
+        }
+        if (plusHour < timeBonusDay) {
+          setValueTime(1);
+        } else {
+          setValueTime(2);
+        }
         setLateCheckout(0);
-        setValueTime(1);
         setToTime(fromTime.add(1, "day").hour(priceDayEnd));
       }
     } else {
-      let lateHour = value.diff(
-        fromTime.add(1, "day").hour(priceNightEnd).minute(0),
-        "hour"
-      );
-      if (value.minute() >= timeBonusHour) {
-        lateHour += 1;
-      }
-      if (fromTime.add(1, "day").hour(priceNightEnd).minute(0) < value) {
-        setLateCheckout(lateHour);
-      } else {
-        setLateCheckout(0);
-      }
+      setLateCheckout(getlateCheckout(typeTime, fromTime, value, timeUsing));
       if (fromTime.diff(value, "hour") > 0) {
         setToTime(fromTime.add(1, "day").hour(priceNightEnd).minute(0));
         setLateCheckout(0);
       }
     }
   };
+
+  useEffect(() => {
+    async function fetchSoonSurchange() {
+      try {
+        if (soonCheckin > 0 && isPaidSoonCheckin !== null) {
+          const roomPrice =
+            typeTime === 1
+              ? room.room.roomCategory.priceByHour
+              : typeTime === 2
+              ? room.room.roomCategory.priceByDay
+              : room.room.roomCategory.priceByNight;
+          const response = await axiosPrivate.get(
+            `reservation/calculate-early-surcharge?reservationDetailId=${room.reservationDetailId}&roomCategoryId=${room.room.roomCategory.roomCategoryId}&lateTime=${soonCheckin}&roomPrice=${roomPrice}&status=${isPaidSoonCheckin}`
+          );
+          if (response.data.success) {
+            setPriceSoon(response.data.result);
+          }
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchSoonSurchange();
+  }, [soonCheckin, isPaidSoonCheckin]);
+
+  useEffect(() => {
+    async function fetchLateSurchange() {
+      try {
+        if (lateCheckout > 0 && isPaidLateCheckout !== null) {
+          const roomPrice =
+            typeTime === 1
+              ? room.room.roomCategory.priceByHour
+              : typeTime === 2
+              ? room.room.roomCategory.priceByDay
+              : room.room.roomCategory.priceByNight;
+          const response = await axiosPrivate.get(
+            `reservation/calculate-late-surcharge?reservationDetailId=${room.reservationDetailId}&roomCategoryId=${room.room.roomCategory.roomCategoryId}&lateTime=${lateCheckout}&roomPrice=${roomPrice}&status=${isPaidLateCheckout}`
+          );
+          if (response.data.success) {
+            setPriceLate(response.data.result);
+          }
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchLateSurchange();
+  }, [lateCheckout, isPaidLateCheckout]);
 
   return (
     <div className="bg-white shadow-md rounded-lg border p-4">
@@ -461,7 +470,6 @@ function SelectRoom(props) {
           )}
         </div>
         <div className="mb-2">
-          {toTime.format("DD-MM-YYYY HH:mm")}
           <LocalizationProvider
             dateAdapter={AdapterDayjs}
             adapterLocale="vi-VN"
@@ -513,7 +521,7 @@ function SelectRoom(props) {
                       ampm={false}
                       disabled
                       sx={{ ".MuiInputBase-input": { padding: 1, width: 150 } }}
-                      value={from}
+                      value={fromTime}
                       onChange={handleChangeFromTime}
                       format="DD/MM/YYYY HH:mm"
                     />
@@ -522,8 +530,15 @@ function SelectRoom(props) {
                   <div className="pr-2">
                     <DateTimePicker
                       ampm={false}
+                      {...(typeTime === 1
+                        ? {
+                            minDateTime: fromTime.add(1, "hour"),
+                          }
+                        : {
+                            minDate: fromTime.add(1, "day"),
+                          })}
                       sx={{ ".MuiInputBase-input": { padding: 1, width: 150 } }}
-                      value={to}
+                      value={toTime}
                       onChange={handleChangeToTime}
                       format="DD/MM/YYYY HH:mm"
                     />
@@ -672,9 +687,7 @@ function SelectRoom(props) {
         <div className="flex pt-2">
           <p className="w-8/12">Phụ thu nhận sớm (Giờ)</p>
           <p className="w-1/12">{soonCheckin}</p>
-          <p className="w-2/12 text-right">
-            {(soonCheckin * priceSoonCheckIn).toLocaleString()}
-          </p>
+          <p className="w-2/12 text-right">{priceSoon.toLocaleString()}</p>
           <p className="w-1/12"></p>
         </div>
       )}
@@ -682,9 +695,7 @@ function SelectRoom(props) {
         <div className="flex border-t pt-2">
           <p className="w-8/12">Phụ thu trả muộn (Giờ)</p>
           <p className="w-1/12">{lateCheckout}</p>
-          <p className="w-2/12 text-right">
-            {(lateCheckout * priceLateCheckOut).toLocaleString()}
-          </p>
+          <p className="w-2/12 text-right">{priceLate.toLocaleString()}</p>
           <p className="w-1/12"></p>
         </div>
       )}
