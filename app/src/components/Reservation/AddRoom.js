@@ -51,8 +51,6 @@ function AddRoom(props) {
     fetchCategory();
   }, [typeTime, fromTime, toTime]);
 
-  console.log(category);
-
   let time = 0;
   let price = 0;
   let surchargeTime = 0;

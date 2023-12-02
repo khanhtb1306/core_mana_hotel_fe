@@ -3,7 +3,6 @@ import Modal from "../UI/Modal";
 
 function StatusInvoice(props) {
   const invoice = props.invoice;
-  console.log(invoice);
   return (
     <Form method="PUT" onSubmit={props.onClose}>
       <Modal open={props.open} onClose={props.onClose} size="w-7/12 h-.5/6">

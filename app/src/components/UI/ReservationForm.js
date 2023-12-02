@@ -148,14 +148,13 @@ function ReservationForm(props) {
   let priceByCateRoom = null;
   let priceById = null;
   if (reservation) {
+    priceById = allPrices.find(
+      (price) =>
+        price.PriceList.priceListId ===
+        reservation.reservation.priceList.priceListId
+    );
     if (!priceById) {
       priceById = allPrices[0];
-    } else {
-      priceById = allPrices.find(
-        (price) =>
-          price.PriceList.priceListId ===
-          reservation.reservation.priceList.priceListId
-      );
     }
     priceByCateRoom = priceById.ListPriceListDetail.find(
       (details) =>
@@ -203,6 +202,7 @@ function ReservationForm(props) {
               timer: 2500,
             });
           }
+          //Notify add list room succeess
           if (actionData.listAddingRoom) {
             Swal.fire({
               position: "bottom",
@@ -217,6 +217,7 @@ function ReservationForm(props) {
               timer: 2500,
             });
           }
+          //Notify receive invoice
           if (actionData.checkinRoom) {
             const nameRoom = reservation.listReservationDetails.find(
               (details) =>
@@ -237,6 +238,7 @@ function ReservationForm(props) {
               timer: 2500,
             });
           }
+          //Notify pay room
           if (actionData.checkoutRoom) {
             const nameRoom = reservation.listReservationDetails.find(
               (details) =>
@@ -257,6 +259,116 @@ function ReservationForm(props) {
               timer: 2500,
             });
           }
+          //Notify add invoice
+          if (actionData.isAddInvoice) {
+            if (actionData.isAddInvoice.data.success) {
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-green-800 text-white">Thêm hoá đơn thành công</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            } else {
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Thêm hoá đơn thất bại</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            }
+          }
+          //Notify edit invoice
+          if (actionData.isEditInvoice) {
+            if (actionData.isEditInvoice.data.success) {
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-green-800 text-white">Cập nhật hoá đơn thành công</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            } else {
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Cập nhật hoá đơn thất bại</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            }
+          }
+          //Notify status invoice
+          if (actionData.isStatusInvoice) {
+            if (actionData.isStatusInvoice.data.success) {
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-green-800 text-white">${actionData.status} hoá đơn thành công</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            } else {
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">${actionData.status} hoá đơn thất bại</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            }
+          }
+          //Notify cancel invoice
+          if (actionData.isCancelInvoice) {
+            if (actionData.isCancelInvoice.data.success) {
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-green-800 text-white">Huỷ hoá đơn thành công</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            } else {
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Huỷ hoá đơn thất bại</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            }
+          }
+          //Notify remove room
+          if (actionData.removeRoom) {
+            if (actionData.removeRoom.data.success) {
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-green-800 text-white">Xoá phòng thành công</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            } else {
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Xoá phòng thất bại</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            }
+          }
         }
 
         const roomAc = reservation.listReservationDetails.find(
@@ -272,20 +384,18 @@ function ReservationForm(props) {
   }, [reservation]);
   // console.log(roomActive);
   const [priceBook, setPriceBook] = useState(priceById);
-  const [price, setPrice] = useState(priceByCateRoom);
+  let price = priceByCateRoom;
 
   const handlePriceBookChange = (event) => {
     const priceById = allPrices.find(
       (price) => price.PriceList.priceListId === event.target.value
     );
     if (roomActive) {
-      setPrice(
-        priceById.ListPriceListDetail.find(
-          (details) =>
-            details.RoomClass.roomCategoryId ===
-            roomActive.room.roomCategory.roomCategoryId
-        ).PriceListDetailWithDayOfWeek
-      );
+      price = priceById.ListPriceListDetail.find(
+        (details) =>
+          details.RoomClass.roomCategoryId ===
+          roomActive.room.roomCategory.roomCategoryId
+      ).PriceListDetailWithDayOfWeek;
     }
     setPriceBook(priceById);
   };
@@ -308,13 +418,11 @@ function ReservationForm(props) {
   }, [actionData, roomActive]);
 
   const handleRoomChange = (room) => {
-    setPrice(
-      priceById.ListPriceListDetail.find(
-        (details) =>
-          details.RoomClass.roomCategoryId ===
-          room.room.roomCategory.roomCategoryId
-      ).PriceListDetailWithDayOfWeek
-    );
+    price = priceBook.ListPriceListDetail.find(
+      (details) =>
+        details.RoomClass.roomCategoryId ===
+        room.room.roomCategory.roomCategoryId
+    ).PriceListDetailWithDayOfWeek;
 
     setRoomActive(room);
   };
@@ -328,7 +436,6 @@ function ReservationForm(props) {
   };
 
   // console.log(listCustomers);
-
   return (
     <>
       <div className="px-4 w-full py-2 h-1/6 print:hidden">
@@ -531,7 +638,13 @@ function ReservationForm(props) {
                             (res) => res.room.roomId !== room.room.roomId
                           )}
                           index={index}
-                          price={price}
+                          price={
+                            priceBook.ListPriceListDetail.find(
+                              (details) =>
+                                details.RoomClass.roomCategoryId ===
+                                room.room.roomCategory.roomCategoryId
+                            ).PriceListDetailWithDayOfWeek
+                          }
                           visitors={listCustomers}
                           handleVisitModalOpen={() => setOpenVisitorModal(true)}
                         />
@@ -667,12 +780,14 @@ function ReservationForm(props) {
                           </div>
                         );
                       })}
-                  <button
-                    className="rounded p-2 mt-2 text-white bg-green-500"
-                    onClick={() => setOpenAddInvoiceModal(true)}
-                  >
-                    <i className="fa-solid fa-plus mr-2"></i>Tạo hoá đơn
-                  </button>
+                  {roomActive.status !== "CHECK_OUT" && (
+                    <button
+                      className="rounded p-2 mt-2 text-white bg-green-500"
+                      onClick={() => setOpenAddInvoiceModal(true)}
+                    >
+                      <i className="fa-solid fa-plus mr-2"></i>Tạo hoá đơn
+                    </button>
+                  )}
                 </div>
                 <div className="w-full py-2 h-.5/6 flex">
                   <div>
@@ -888,7 +1003,13 @@ function ReservationForm(props) {
           open={openReceiveModal}
           onClose={() => setOpenReceiveModal(false)}
           roomActive={roomActive}
-          price={price}
+          price={
+            priceBook.ListPriceListDetail.find(
+              (details) =>
+                details.RoomClass.roomCategoryId ===
+                roomActive.room.roomCategory.roomCategoryId
+            ).PriceListDetailWithDayOfWeek
+          }
         />
       )}
       {openPayModal && (
@@ -896,7 +1017,13 @@ function ReservationForm(props) {
           open={openPayModal}
           onClose={() => setOpenPayModal(false)}
           roomActive={roomActive}
-          price={price}
+          price={
+            priceBook.ListPriceListDetail.find(
+              (details) =>
+                details.RoomClass.roomCategoryId ===
+                roomActive.room.roomCategory.roomCategoryId
+            ).PriceListDetailWithDayOfWeek
+          }
         />
       )}
     </>

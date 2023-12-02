@@ -48,20 +48,6 @@ function ReceiveRoomModal(props) {
     surchargeTime += getSoonCheckin(3, fromTime, timeUsing);
     surchargeTime += getlateCheckout(3, fromTime, toTime, timeUsing);
   }
-  console.log(price);
-  let check = false;
-  if (roomActive.reservationType === "HOURLY") {
-    if (fromTime.diff(toTime, "hour") > -1) {
-      check = true;
-    }
-  } else {
-    if (
-      fromTime.diff(toTime.hour(0)) > 0 &&
-      fromTime.diff(toTime, "day") > -1
-    ) {
-      check = true;
-    }
-  }
 
   const handleErrorToTime = (error) => {
     if (roomActive.reservationType === "HOURLY") {
@@ -200,23 +186,13 @@ function ReceiveRoomModal(props) {
         <div className="flex pt-5">
           <div className="ml-auto">
             <button
-              type={`${fromTime.diff(dayjs()) > 0 || check ? "button" : ""}`}
+              type={`${fromTime.diff(dayjs()) > 0 ? "button" : ""}`}
               className="bg-green-500 py-2 px-6 text-white rounded hover:bg-green-600"
               onClick={() => {
                 if (fromTime.diff(dayjs()) > 0) {
                   Swal.fire({
                     position: "bottom",
                     html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Không thể nhận phòng ở thời điểm tương lai!</button>`,
-                    showConfirmButton: false,
-                    background: "transparent",
-                    backdrop: "none",
-                    timer: 2500,
-                  });
-                }
-                if (check) {
-                  Swal.fire({
-                    position: "bottom",
-                    html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Không thể nhận phòng khi thời gian trả phòng nhỏ hơn nhận phòng!</button>`,
                     showConfirmButton: false,
                     background: "transparent",
                     backdrop: "none",

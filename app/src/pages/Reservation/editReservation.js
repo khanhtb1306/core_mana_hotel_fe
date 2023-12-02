@@ -198,7 +198,6 @@ export async function action({ request }) {
         listRoom = [...listRoom, response.data];
       }
     }
-    console.log(listRoom);
     if (listRoom.find((room) => !room.success)) {
       return { success: true, listRoom: listRoom };
     }
@@ -418,10 +417,8 @@ export async function action({ request }) {
     }
     return { success: true };
   }
-  console.log("a");
   //Add Room in reservation
   if (data.get("addRoom")) {
-    console.log("b");
     const categories = data.get("categories");
     let listAddingRoom = [];
     for (let i = 0; i < categories; i++) {
@@ -477,31 +474,9 @@ export async function action({ request }) {
         );
       }
       const response = await axiosPrivate.post("order", formData).catch((e) => {
-        Swal.fire({
-          position: "center",
-          icon: "error",
-          title: "Thêm hoá đơn thất bại",
-          showConfirmButton: false,
-          timer: 1500,
-        });
+        console.log(e);
       });
-      if (response.data.success) {
-        Swal.fire({
-          position: "center",
-          icon: "success",
-          title: "Thêm hoá đơn thành công",
-          showConfirmButton: false,
-          timer: 1500,
-        });
-      } else {
-        Swal.fire({
-          position: "center",
-          icon: "error",
-          title: "Thêm hoá đơn thất bại",
-          showConfirmButton: false,
-          timer: 1500,
-        });
-      }
+      return { success: true, isAddInvoice: response };
     }
     //Edit Invoice
     if (method === "PUT") {
@@ -539,31 +514,9 @@ export async function action({ request }) {
       const response = await axiosPrivate
         .put("order/" + data.get("orderId"), formData)
         .catch((e) => {
-          Swal.fire({
-            position: "center",
-            icon: "error",
-            title: "Chỉnh sửa hoá đơn thất bại",
-            showConfirmButton: false,
-            timer: 1500,
-          });
+          console.log(e);
         });
-      if (response.data.success) {
-        Swal.fire({
-          position: "center",
-          icon: "success",
-          title: "Chỉnh sửa hoá đơn thành công",
-          showConfirmButton: false,
-          timer: 1500,
-        });
-      } else {
-        Swal.fire({
-          position: "center",
-          icon: "error",
-          title: "Chỉnh sửa hoá đơn thất bại",
-          showConfirmButton: false,
-          timer: 1500,
-        });
-      }
+      return { success: true, isEditInvoice: response };
     }
     return { success: true };
   }
@@ -573,32 +526,13 @@ export async function action({ request }) {
     const response = await axiosPrivate
       .put("order/updateStatus/" + data.get("orderId"), formData)
       .catch((e) => {
-        Swal.fire({
-          position: "center",
-          icon: "error",
-          title: "Chỉnh sửa trạng thái hoá đơn thất bại",
-          showConfirmButton: false,
-          timer: 1500,
-        });
+        console.log(e);
       });
-    if (response.data.success) {
-      Swal.fire({
-        position: "center",
-        icon: "success",
-        title: "Chỉnh sửa trạng thái hoá đơn thành công",
-        showConfirmButton: false,
-        timer: 1500,
-      });
-    } else {
-      Swal.fire({
-        position: "center",
-        icon: "error",
-        title: "Chỉnh sửa trạng thái hoá đơn thất bại",
-        showConfirmButton: false,
-        timer: 1500,
-      });
-    }
-    return { success: true };
+    return {
+      success: true,
+      isStatusInvoice: response,
+      status: data.get("status") === "CONFIRMED" ? "Xác nhận" : "Trả",
+    };
   }
   if (data.get("isCancelInvoice")) {
     const formData = new FormData();
@@ -606,41 +540,17 @@ export async function action({ request }) {
     const response = await axiosPrivate
       .put("order/updateStatus/" + data.get("orderId"), formData)
       .catch((e) => {
-        Swal.fire({
-          position: "center",
-          icon: "error",
-          title: "Huỷ hoá đơn thất bại",
-          showConfirmButton: false,
-          timer: 1500,
-        });
+        console.log(e);
       });
-    if (response.data.success) {
-      Swal.fire({
-        position: "center",
-        icon: "success",
-        title: "Huỷ hoá đơn thành công",
-        showConfirmButton: false,
-        timer: 1500,
-      });
-    } else {
-      Swal.fire({
-        position: "center",
-        icon: "error",
-        title: "Huỷ hoá đơn thất bại",
-        showConfirmButton: false,
-        timer: 1500,
-      });
-    }
-    return { success: true };
+    return { success: true, isCancelInvoice: response };
   }
 
   if (data.get("removeRoom")) {
     //Remove room in reservation
-    await axiosPrivate
+    const response = await axiosPrivate
       .delete("reservation-detail/" + data.get("reservationDetailsId"))
-      .then((res) => console.log(res))
       .catch((er) => console.log(er));
-    return { success: true };
+    return { success: true, removeRoom: response };
   }
 
   //Change status room to checkin

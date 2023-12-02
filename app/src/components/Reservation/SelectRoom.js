@@ -16,7 +16,6 @@ import { axiosPrivate } from "../../utils/axiosConfig";
 
 function SelectRoom(props) {
   const { categories, timeUsing } = useLoaderData();
-  console.log(getTimePrice(1, dayjs(), dayjs().add(1, "minute"), timeUsing, []).time)
   // console.log(props.price);
   // console.log(timeUsing);
   const priceNightStart = timeUsing.startTimeNight.split(":")[0];
