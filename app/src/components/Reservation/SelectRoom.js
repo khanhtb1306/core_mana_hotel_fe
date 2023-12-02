@@ -6,12 +6,17 @@ import { Checkbox, FormControlLabel, MenuItem, Select } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useLoaderData } from "react-router-dom";
 import DetailsPriceInRoom from "./DetailsPriceInRoom";
-import { getTimePrice, getSoonCheckin, setLateCheckout, getlateCheckout } from "../../utils/getTimePrice";
+import {
+  getTimePrice,
+  getSoonCheckin,
+  getlateCheckout,
+} from "../../utils/getTimePrice";
 import { axiosPrivate } from "../../utils/axiosConfig";
 // require("dayjs/locale/vi");
 
 function SelectRoom(props) {
   const { categories, timeUsing } = useLoaderData();
+  console.log(getTimePrice(1, dayjs(), dayjs().add(1, "minute"), timeUsing, []).time)
   // console.log(props.price);
   // console.log(timeUsing);
   const priceNightStart = timeUsing.startTimeNight.split(":")[0];
@@ -27,6 +32,7 @@ function SelectRoom(props) {
     (cate) =>
       cate.roomCategory.roomCategoryId === room.room.roomCategory.roomCategoryId
   );
+  // console.log(props.price);
 
   const [openPriceModal, setOpenPriceModal] = useState(false);
 
@@ -244,36 +250,37 @@ function SelectRoom(props) {
     if (typeTime === 1) {
       setSoonCheckin(0);
       setLateCheckout(0);
-      if (fromTime.add(1, "hour").diff(value, "hour") > 0) {
-        setValueTime(1);
-        setToTime(fromTime.add(1, "hour"));
-      }
     } else if (typeTime === 2) {
       setLateCheckout(getlateCheckout(typeTime, fromTime, value, timeUsing));
-      if (fromTime.add(1, "day").hour(priceDayEnd).diff(value, "day") > 0) {
-        let plusHour = fromTime.hour(priceDayStart).diff(fromTime, "hour");
-        if (fromTime.minute() > timeBonusHour) {
-          plusHour -= 1;
-        }
-        if (fromTime.hour() <= priceDayStart && plusHour < timeBonusDay) {
-          setSoonCheckin(plusHour);
-        } else {
-          setSoonCheckin(0);
-        }
-        if (plusHour < timeBonusDay) {
-          setValueTime(1);
-        } else {
-          setValueTime(2);
-        }
-        setLateCheckout(0);
-        setToTime(fromTime.add(1, "day").hour(priceDayEnd));
-      }
     } else {
       setLateCheckout(getlateCheckout(typeTime, fromTime, value, timeUsing));
-      if (fromTime.diff(value, "hour") > 0) {
-        setToTime(fromTime.add(1, "day").hour(priceNightEnd).minute(0));
-        setLateCheckout(0);
+    }
+  };
+
+  const handleErrorToTime = (error) => {
+    if (typeTime === 1) {
+      setValueTime(1);
+      setToTime(fromTime.add(1, "hour"));
+    } else if (typeTime === 2) {
+      let plusHour = fromTime.hour(priceDayStart).diff(fromTime, "hour");
+      if (fromTime.minute() > timeBonusHour) {
+        plusHour -= 1;
       }
+      if (fromTime.hour() <= priceDayStart && plusHour < timeBonusDay) {
+        setSoonCheckin(plusHour);
+      } else {
+        setSoonCheckin(0);
+      }
+      if (plusHour < timeBonusDay) {
+        setValueTime(1);
+      } else {
+        setValueTime(2);
+      }
+      setLateCheckout(0);
+      setToTime(fromTime.add(1, "day").hour(priceDayEnd));
+    } else {
+      setToTime(fromTime.add(1, "day").hour(priceNightEnd).minute(0));
+      setLateCheckout(0);
     }
   };
 
@@ -500,6 +507,7 @@ function SelectRoom(props) {
                     sx={{ ".MuiInputBase-input": { padding: 1, width: 150 } }}
                     value={toTime}
                     onChange={handleChangeToTime}
+                    onError={handleErrorToTime}
                     format="DD/MM/YYYY HH:mm"
                   />
                 </div>
@@ -540,6 +548,7 @@ function SelectRoom(props) {
                       sx={{ ".MuiInputBase-input": { padding: 1, width: 150 } }}
                       value={toTime}
                       onChange={handleChangeToTime}
+                      onError={handleErrorToTime}
                       format="DD/MM/YYYY HH:mm"
                     />
                   </div>

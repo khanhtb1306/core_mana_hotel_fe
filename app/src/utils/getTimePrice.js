@@ -20,6 +20,9 @@ export function getTimePrice(typeTime, fromTime, toTime, timeUsing, listPrice) {
       currentHour = currentHour.add(1, "hour");
     }
     time = hoursList.length;
+    if (time === 0 && toTime.diff(fromTime, "seconds") > 0) {
+      time = 1;
+    }
     hoursList.map((hour) => {
       listPrice.map((priceDetails) => {
         if (
@@ -61,6 +64,9 @@ export function getTimePrice(typeTime, fromTime, toTime, timeUsing, listPrice) {
       daysList.push(currentDay);
     }
     time = daysList.length;
+    if (time === 0 && toTime.diff(fromTime, "seconds") > 0) {
+      time = 1;
+    }
     daysList.map((day) => {
       listPrice.map((priceDetails) => {
         if (

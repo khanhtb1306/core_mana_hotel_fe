@@ -142,17 +142,20 @@ function ReservationForm(props) {
         : reservation.reservation.customer
       : null
   );
+  const [openReceiveModal, setOpenReceiveModal] = useState(false);
+  const [openPayModal, setOpenPayModal] = useState(false);
   // console.log(customer);
   let priceByCateRoom = null;
   let priceById = null;
   if (reservation) {
-    priceById = allPrices.find(
-      (price) =>
-        price.PriceList.priceListId ===
-        reservation.reservation.priceList.priceListId
-    );
     if (!priceById) {
       priceById = allPrices[0];
+    } else {
+      priceById = allPrices.find(
+        (price) =>
+          price.PriceList.priceListId ===
+          reservation.reservation.priceList.priceListId
+      );
     }
     priceByCateRoom = priceById.ListPriceListDetail.find(
       (details) =>
@@ -200,6 +203,20 @@ function ReservationForm(props) {
               timer: 2500,
             });
           }
+          if (actionData.listAddingRoom) {
+            Swal.fire({
+              position: "bottom",
+              html: `<div class="text-sm">${actionData.listAddingRoom.map(
+                (room) => {
+                  return `<button type="button" class="px-4 py-2 mt-2 rounded-lg bg-green-800 text-white">Đặt phòng ... thành công!</button>`;
+                }
+              )}</div>`,
+              showConfirmButton: false,
+              background: "transparent",
+              backdrop: "none",
+              timer: 2500,
+            });
+          }
           if (actionData.checkinRoom) {
             const nameRoom = reservation.listReservationDetails.find(
               (details) =>
@@ -209,7 +226,7 @@ function ReservationForm(props) {
               ? "bg-green-800"
               : "bg-red-800";
             const message = actionData.checkinRoom.success
-              ? "cập nhật thành công!"
+              ? "nhận phòng thành công!"
               : "đang trùng lịch đặt phòng.";
             Swal.fire({
               position: "bottom",
@@ -229,7 +246,7 @@ function ReservationForm(props) {
               ? "bg-green-800"
               : "bg-red-800";
             const message = actionData.checkoutRoom.success
-              ? "cập nhật thành công!"
+              ? "trả phòng thành công!"
               : "đang trùng lịch đặt phòng.";
             Swal.fire({
               position: "bottom",
@@ -253,11 +270,9 @@ function ReservationForm(props) {
     }
     fetchRoomActive();
   }, [reservation]);
-  const [openReceiveModal, setOpenReceiveModal] = useState(false);
-  const [openPayModal, setOpenPayModal] = useState(false);
+  // console.log(roomActive);
   const [priceBook, setPriceBook] = useState(priceById);
   const [price, setPrice] = useState(priceByCateRoom);
-  // console.log(roomActive);
 
   const handlePriceBookChange = (event) => {
     const priceById = allPrices.find(
@@ -274,6 +289,7 @@ function ReservationForm(props) {
     }
     setPriceBook(priceById);
   };
+
   useEffect(() => {
     async function fetchListCustomers() {
       try {
@@ -292,6 +308,14 @@ function ReservationForm(props) {
   }, [actionData, roomActive]);
 
   const handleRoomChange = (room) => {
+    setPrice(
+      priceById.ListPriceListDetail.find(
+        (details) =>
+          details.RoomClass.roomCategoryId ===
+          room.room.roomCategory.roomCategoryId
+      ).PriceListDetailWithDayOfWeek
+    );
+
     setRoomActive(room);
   };
 
@@ -376,7 +400,9 @@ function ReservationForm(props) {
                           ? "bg-orange-500 text-white"
                           : "text-orange-500 hover:bg-orange-200"
                       } rounded`}
-                      onClick={() => handleRoomChange(room)}
+                      onClick={() => {
+                        handleRoomChange(room);
+                      }}
                     >
                       {room.room.roomName}
                       <i
@@ -397,7 +423,9 @@ function ReservationForm(props) {
                           ? "bg-green-500 text-white"
                           : "text-green-500 hover:bg-green-200"
                       } rounded`}
-                      onClick={() => handleRoomChange(room)}
+                      onClick={() => {
+                        handleRoomChange(room);
+                      }}
                     >
                       {room.room.roomName}
                     </button>
@@ -411,7 +439,9 @@ function ReservationForm(props) {
                           ? "bg-gray-500 text-white"
                           : "text-gray-500 hover:bg-gray-200"
                       } rounded`}
-                      onClick={() => handleRoomChange(room)}
+                      onClick={() => {
+                        handleRoomChange(room);
+                      }}
                     >
                       {room.room.roomName}
                     </button>
@@ -858,6 +888,7 @@ function ReservationForm(props) {
           open={openReceiveModal}
           onClose={() => setOpenReceiveModal(false)}
           roomActive={roomActive}
+          price={price}
         />
       )}
       {openPayModal && (
@@ -865,6 +896,7 @@ function ReservationForm(props) {
           open={openPayModal}
           onClose={() => setOpenPayModal(false)}
           roomActive={roomActive}
+          price={price}
         />
       )}
     </>
