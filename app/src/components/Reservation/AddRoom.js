@@ -6,57 +6,42 @@ import Modal from "../UI/Modal";
 import { useEffect, useState } from "react";
 import { axiosPrivate } from "../../utils/axiosConfig";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
-import { Form } from "react-router-dom";
+import { Form, useLoaderData } from "react-router-dom";
+import {
+  getTimePrice,
+  getSoonCheckin,
+  getlateCheckout,
+} from "../../utils/getTimePrice";
 
 function AddRoom(props) {
+  const { timeUsing } = useLoaderData();
+  const priceNightStart = timeUsing.startTimeNight.split(":")[0];
+  const priceNightEnd = timeUsing.endTimeNight.split(":")[0];
+  const priceDayStart = timeUsing.startTimeDay.split(":")[0];
+  const priceDayEnd = timeUsing.endTimeDay.split(":")[0];
+  const timeBonusDay = timeUsing.timeBonusDay;
+  const timeBonusHour = timeUsing.timeBonusHour;
   const [category, setCategory] = useState([]);
   const [openHour, setOpenHour] = useState(false);
   const [openDay, setOpenDay] = useState(true);
   const [openNight, setOpenNight] = useState(false);
 
-  const priceNightStart = 22;
-  const priceNightEnd = 11;
-  const priceDayStart = 14;
-  const priceDayEnd = 12;
-  let from = dayjs();
-  let to = dayjs();
-  let time = 1;
-  let lateCheckOut = 0;
-  let soonCheckIn = 0;
-  if (openHour) {
-    to = to.add(1, "hour");
-    time = 1;
-  } else if (openDay) {
-    from = from.hour(priceDayStart).minute(0);
-    to = to.add(1, "day").hour(priceDayEnd).minute(0);
-    time = 1;
-  } else {
-    from = from.hour(priceNightStart).minute(0);
-    to = to.add(1, "day").hour(priceNightEnd).minute(0);
-    time = 1;
-  }
   const [typeTime, setTypeTime] = useState(2);
-  const [valueTime, setValueTime] = useState(time);
-  const [fromTime, setFromTime] = useState(from);
-  const [toTime, setToTime] = useState(to);
-  const [lateCheckout, setLateCheckout] = useState(lateCheckOut);
-  const [soonCheckin, setSoonCheckin] = useState(soonCheckIn);
+  const [fromTime, setFromTime] = useState(
+    dayjs().hour(priceDayStart).minute(0)
+  );
+  const [toTime, setToTime] = useState(
+    dayjs().add(1, "day").hour(priceDayEnd).minute(0)
+  );
 
   useEffect(() => {
     async function fetchCategory() {
       try {
         const response = await axiosPrivate.get(
           "reservation/list-empty-rooms?startDate=" +
-            dayjs()
-              .hour(priceDayStart)
-              .minute(0)
-              .format("YYYY-MM-DD HH:mm:ss") +
+            fromTime.format("YYYY-MM-DD HH:mm:ss") +
             "&endDate=" +
-            dayjs()
-              .add(1, "day")
-              .hour(priceDayEnd)
-              .minute(0)
-              .format("YYYY-MM-DD HH:mm:ss")
+            toTime.format("YYYY-MM-DD HH:mm:ss")
         );
         setCategory(response.data.result);
       } catch (error) {
@@ -64,169 +49,94 @@ function AddRoom(props) {
       }
     }
     fetchCategory();
-  }, []);
+  }, [typeTime, fromTime, toTime]);
 
-  // console.log(category);
+  console.log(category);
 
-  const handleHour = async () => {
+  let time = 0;
+  let price = 0;
+  let surchargeTime = 0;
+  if (typeTime === 1) {
+    let timePrice = getTimePrice(1, fromTime, toTime, timeUsing, []);
+    time = timePrice.time;
+    price = timePrice.price;
+  } else if (typeTime === 2) {
+    let timePrice = getTimePrice(2, fromTime, toTime, timeUsing, []);
+    time = timePrice.time;
+    price = timePrice.price;
+    surchargeTime =
+      getSoonCheckin(2, fromTime, timeUsing) +
+      getlateCheckout(2, fromTime, toTime, timeUsing);
+  } else {
+    let timePrice = getTimePrice(3, fromTime, toTime, timeUsing, []);
+    time = timePrice.time;
+    price = timePrice.price;
+    surchargeTime =
+      getSoonCheckin(3, fromTime, timeUsing) +
+      getlateCheckout(3, fromTime, toTime, timeUsing);
+  }
+
+  const handleHour = () => {
     setOpenHour(true);
     setOpenDay(false);
     setOpenNight(false);
     setTypeTime(1);
-    setValueTime(1);
-    setSoonCheckin(0);
-    setLateCheckout(0);
     setFromTime(dayjs());
     setToTime(dayjs().add(1, "hour"));
-    const response = await axiosPrivate.get(
-      "reservation/list-empty-rooms?startDate=" +
-        dayjs().format("YYYY-MM-DD HH:mm:ss") +
-        "&endDate=" +
-        dayjs().add(1, "hour").format("YYYY-MM-DD HH:mm:ss")
-    );
-    setCategory(response.data.result);
   };
-
-  const handleDay = async () => {
+  const handleDay = () => {
     setOpenHour(false);
     setOpenDay(true);
     setOpenNight(false);
     setTypeTime(2);
-    setValueTime(1);
-    setSoonCheckin(0);
-    setLateCheckout(0);
     setFromTime(dayjs().hour(priceDayStart).minute(0));
     setToTime(dayjs().add(1, "day").hour(priceDayEnd).minute(0));
-    const response = await axiosPrivate.get(
-      "reservation/list-empty-rooms?startDate=" +
-        dayjs().hour(priceDayStart).minute(0).format("YYYY-MM-DD HH:mm:ss") +
-        "&endDate=" +
-        dayjs()
-          .add(1, "day")
-          .hour(priceDayEnd)
-          .minute(0)
-          .format("YYYY-MM-DD HH:mm:ss")
-    );
-    setCategory(response.data.result);
   };
 
-  const handleNight = async () => {
+  const handleNight = () => {
     setOpenHour(false);
     setOpenDay(false);
     setOpenNight(true);
     setTypeTime(3);
-    setSoonCheckin(0);
-    setLateCheckout(0);
     setFromTime(dayjs().hour(priceNightStart).minute(0));
     setToTime(dayjs().add(1, "day").hour(priceNightEnd).minute(0));
-    setValueTime(1);
-    const response = await axiosPrivate.get(
-      "reservation/list-empty-rooms?startDate=" +
-        dayjs().hour(priceNightStart).minute(0).format("YYYY-MM-DD HH:mm:ss") +
-        "&endDate=" +
-        dayjs()
-          .add(1, "day")
-          .hour(priceNightEnd)
-          .minute(0)
-          .format("YYYY-MM-DD HH:mm:ss")
-    );
-    setCategory(response.data.result);
   };
 
-  const handleChangeFromTime = async (value) => {
-    const response = await axiosPrivate.get(
-      "reservation/list-empty-rooms?startDate=" +
-        value.format("YYYY-MM-DD HH:mm:ss") +
-        "&endDate=" +
-        toTime.format("YYYY-MM-DD HH:mm:ss")
-    );
-    setCategory(response.data.result);
-    const priceTime = getPrice(typeTime, value, toTime);
-    setValueTime(priceTime.time);
+  const handleChangeFromTime = (value) => {
     if (typeTime === 1) {
-      setSoonCheckin(0);
-      setLateCheckout(0);
+      setFromTime(value);
       if (value.diff(toTime, "hour") >= 0) {
         setToTime(value.add(1, "hour"));
-        setValueTime(1);
+        time = 1;
       }
-      setFromTime(value);
     } else if (typeTime === 2) {
-      if (value.date() >= toTime.date()) {
-        setToTime(toTime.add(1, "day"));
-        setValueTime(1);
-      }
-      if (value.hour() < priceDayStart) {
-        setSoonCheckin(priceDayStart - value.hour());
-      } else {
-        setSoonCheckin(0);
-      }
       setFromTime(value);
+      if (value.diff(toTime, "day") >= 0) {
+        setToTime(value.add(1, "day").hour(priceDayEnd).minute(0));
+        time = 1;
+      }
     } else {
-      if (value.hour() < priceNightStart) {
-        setSoonCheckin(priceNightStart - value.hour());
-      } else {
-        setSoonCheckin(0);
-      }
       setFromTime(value);
+      if (value.diff(toTime, "hour") > 0) {
+        setToTime(value.add(1, "day").hour(priceNightEnd).minute(0));
+      }
     }
   };
 
-  const handleChangeToTime = async (value) => {
-    const response = await axiosPrivate.get(
-      "reservation/list-empty-rooms?startDate=" +
-        fromTime.format("YYYY-MM-DD HH:mm:ss") +
-        "&endDate=" +
-        value.format("YYYY-MM-DD HH:mm:ss")
-    );
-    setCategory(response.data.result);
-    const priceTime = getPrice(typeTime, fromTime, value);
-    setValueTime(priceTime.time);
-    if (typeTime === 1) {
-      setToTime(value);
-    } else if (typeTime === 2) {
-      setToTime(value);
-      if (value.hour() > priceDayEnd) {
-        setLateCheckout(value.hour() - priceDayEnd);
-      } else {
-        setLateCheckout(0);
-      }
-    } else {
-      if (value.hour() > priceNightEnd) {
-        setLateCheckout(value.hour() - priceNightEnd);
-      } else {
-        setLateCheckout(0);
-      }
-      setToTime(value);
-    }
+  const handleChangeToTime = (value) => {
+    setToTime(value);
   };
 
-  function getPrice(typeTime, fromTime, toTime) {
-    let price = 0;
-    let time = 0;
+  const handleErrorToTime = (error) => {
+    time = 1;
     if (typeTime === 1) {
-      const hoursList = [];
-      let currentHour = fromTime;
-      while (currentHour.isBefore(toTime)) {
-        hoursList.push(currentHour);
-        currentHour = currentHour.add(1, "hour");
-      }
-      time = hoursList.length;
+      setToTime(fromTime.add(1, "hour"));
     } else if (typeTime === 2) {
-      const daysList = [];
-      let currentHour = fromTime;
-      while (currentHour.date() < toTime.date()) {
-        daysList.push(currentHour);
-        currentHour = currentHour.add(1, "day");
-      }
-      time = daysList.length;
+      setToTime(fromTime.add(1, "day").hour(priceDayEnd));
     } else {
-      time = 1;
+      setToTime(fromTime.add(1, "day").hour(priceNightEnd).minute(0));
     }
-    return {
-      time: time,
-    };
-  }
+  };
 
   const columns = [
     { field: "roomCategoryName", headerName: "Hạng phòng", width: 150 },
@@ -383,7 +293,7 @@ function AddRoom(props) {
                   <input
                     type="hidden"
                     name="valueTime"
-                    value={valueTime}
+                    value={1}
                     onChange={() => console.log()}
                   />
                 </>
@@ -413,121 +323,51 @@ function AddRoom(props) {
                   dateAdapter={AdapterDayjs}
                   adapterLocale="vi-VN"
                 >
-                  {openHour && (
-                    <>
-                      <p className="text-gray-500 my-auto mr-2">Dự kiến:</p>
-                      <div className="pr-2">
-                        <DateTimePicker
-                          ampm={false}
-                          sx={{
-                            ".MuiInputBase-input": {
-                              padding: 1,
-                              width: 120,
-                              fontSize: 14,
-                            },
-                          }}
-                          value={fromTime}
-                          onChange={handleChangeFromTime}
-                          format="DD/MM/YYYY HH:mm"
-                        />
-                      </div>
-                      <p className="text-gray-500 my-auto mr-2">đến</p>
-                      <div className="pr-2">
-                        <DateTimePicker
-                          ampm={false}
-                          sx={{
-                            ".MuiInputBase-input": {
-                              padding: 1,
-                              width: 120,
-                              fontSize: 14,
-                            },
-                          }}
-                          value={toTime}
-                          onChange={handleChangeToTime}
-                          format="DD/MM/YYYY HH:mm"
-                        />
-                      </div>
-                    </>
-                  )}
-                  {openDay && (
-                    <>
-                      <p className="text-gray-500 my-auto mr-2">Dự kiến:</p>
-                      <div className="pr-2">
-                        <DateTimePicker
-                          ampm={false}
-                          sx={{
-                            ".MuiInputBase-input": {
-                              padding: 1,
-                              width: 120,
-                              fontSize: 14,
-                            },
-                          }}
-                          value={fromTime}
-                          onChange={handleChangeFromTime}
-                          format="DD/MM/YYYY HH:mm"
-                        />
-                      </div>
-                      <p className="text-gray-500 my-auto mr-2">đến</p>
-                      <div className="pr-2">
-                        <DateTimePicker
-                          ampm={false}
-                          sx={{
-                            ".MuiInputBase-input": {
-                              padding: 1,
-                              width: 120,
-                              fontSize: 14,
-                            },
-                          }}
-                          value={toTime}
-                          onChange={handleChangeToTime}
-                          format="DD/MM/YYYY HH:mm"
-                        />
-                      </div>
-                    </>
-                  )}
-                  {openNight && (
-                    <>
-                      <p className="text-gray-500 my-auto mr-2">Dự kiến:</p>
-                      <div className="pr-2">
-                        <DateTimePicker
-                          ampm={false}
-                          sx={{
-                            ".MuiInputBase-input": {
-                              padding: 1,
-                              width: 120,
-                              fontSize: 14,
-                            },
-                          }}
-                          value={fromTime}
-                          onChange={handleChangeFromTime}
-                          format="DD/MM/YYYY HH:mm"
-                        />
-                      </div>
-                      <p className="text-gray-500 my-auto mr-2">đến</p>
-                      <div className="pr-2">
-                        <DateTimePicker
-                          ampm={false}
-                          sx={{
-                            ".MuiInputBase-input": {
-                              padding: 1,
-                              width: 120,
-                              fontSize: 14,
-                            },
-                          }}
-                          value={toTime}
-                          onChange={handleChangeToTime}
-                          format="DD/MM/YYYY HH:mm"
-                        />
-                      </div>
-                    </>
-                  )}
+                  <p className="text-gray-500 my-auto mr-2">Dự kiến:</p>
+                  <div className="pr-2">
+                    <DateTimePicker
+                      ampm={false}
+                      sx={{
+                        ".MuiInputBase-input": {
+                          padding: 1,
+                          width: 120,
+                          fontSize: 14,
+                        },
+                      }}
+                      value={fromTime}
+                      onChange={handleChangeFromTime}
+                      format="DD/MM/YYYY HH:mm"
+                    />
+                  </div>
+                  <p className="text-gray-500 my-auto mr-2">đến</p>
+                  <div className="pr-2">
+                    <DateTimePicker
+                      ampm={false}
+                      {...(typeTime === 1
+                        ? {
+                            minDateTime: fromTime.add(1, "hour"),
+                          }
+                        : {
+                            minDate: fromTime.add(1, "day"),
+                          })}
+                      sx={{
+                        ".MuiInputBase-input": {
+                          padding: 1,
+                          width: 120,
+                          fontSize: 14,
+                        },
+                      }}
+                      value={toTime}
+                      onChange={handleChangeToTime}
+                      onError={handleErrorToTime}
+                      format="DD/MM/YYYY HH:mm"
+                    />
+                  </div>
                 </LocalizationProvider>
                 <div className="bg-gray-200 w-.5 text-center my-auto py-1 px-2 rounded text-gray-500">
-                  {valueTime +
-                    " " +
-                    (openHour ? "Giờ" : openDay ? "Ngày" : "Đêm")}
-                  {(lateCheckout > 0 || soonCheckin > 0) &&
-                    " " + (lateCheckout + soonCheckin) + " Giờ"}
+                  {time}
+                  {typeTime === 1 ? " Giờ" : typeTime === 2 ? " Ngày" : " Đêm"}
+                  {surchargeTime > 0 && " " + surchargeTime + " Giờ"}
                 </div>
               </div>
             </div>

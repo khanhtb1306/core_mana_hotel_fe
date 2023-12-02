@@ -3,14 +3,73 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import Modal from "../UI/Modal";
 import { DateTimePicker } from "@mui/x-date-pickers";
-import { useState } from "react";
-import { Form } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Form, useLoaderData } from "react-router-dom";
+import Swal from "sweetalert2";
+import {
+  getTimePrice,
+  getSoonCheckin,
+  getlateCheckout,
+} from "../../utils/getTimePrice";
 
 function PayRoomModal(props) {
+  const { timeUsing } = useLoaderData();
+  const priceNightStart = timeUsing.startTimeNight.split(":")[0];
+  const priceNightEnd = timeUsing.endTimeNight.split(":")[0];
+  const priceDayStart = timeUsing.startTimeDay.split(":")[0];
+  const priceDayEnd = timeUsing.endTimeDay.split(":")[0];
+  const timeBonusDay = timeUsing.timeBonusDay;
+  const timeBonusHour = timeUsing.timeBonusHour;
   const roomActive = props.roomActive;
+  const listPrice = props.price;
   //   console.log(props.roomActive);
-  const [fromTime, setFromTime] = useState(dayjs(roomActive.checkInEstimate));
+  const fromTime = dayjs(roomActive.checkInActual);
   const [toTime, setToTime] = useState(dayjs(roomActive.checkOutEstimate));
+  useEffect(() => {
+    setToTime(dayjs(roomActive.checkOutEstimate));
+  }, [roomActive]);
+  let time = 0;
+  let price = 0;
+  let surchargeTime = 0;
+  if (roomActive.reservationType === "HOURLY") {
+    let timePrice = getTimePrice(1, fromTime, toTime, timeUsing, listPrice);
+    time = timePrice.time;
+    price = timePrice.price;
+  } else if (roomActive.reservationType === "DAILY") {
+    let timePrice = getTimePrice(2, fromTime, toTime, timeUsing, listPrice);
+    time = timePrice.time;
+    price = timePrice.price;
+    surchargeTime += getSoonCheckin(2, fromTime, timeUsing);
+    surchargeTime += getlateCheckout(2, fromTime, toTime, timeUsing);
+  } else {
+    let timePrice = getTimePrice(3, fromTime, toTime, timeUsing, listPrice);
+    time = timePrice.time;
+    price = timePrice.price;
+    surchargeTime += getSoonCheckin(3, fromTime, timeUsing);
+    surchargeTime += getlateCheckout(3, fromTime, toTime, timeUsing);
+  }
+  let check = false;
+  if (roomActive.reservationType === "HOURLY") {
+    if (fromTime.diff(toTime, "hour") > -1) {
+      check = true;
+    }
+  } else {
+    if (
+      fromTime.diff(toTime.hour(0)) > 0 &&
+      fromTime.diff(toTime, "day") > -1
+    ) {
+      check = true;
+    }
+  }
+  const handleErrorToTime = (error) => {
+    if (roomActive.reservationType === "HOURLY") {
+      setToTime(fromTime.add(1, "hour"));
+    } else if (roomActive.reservationType === "DAILY") {
+      setToTime(fromTime.add(1, "day").hour(priceDayEnd));
+    } else {
+      setToTime(fromTime.add(1, "day").hour(priceNightEnd).minute(0));
+    }
+  };
   return (
     <Form method="PUT" onSubmit={props.onClose}>
       <Modal
@@ -42,15 +101,21 @@ function PayRoomModal(props) {
               value={toTime.format("YYYY-MM-DD HH:mm:ss")}
               onChange={() => console.log()}
             />
+            <input
+              type="hidden"
+              name="price"
+              value={price}
+              onChange={() => console.log()}
+            />
           </div>
           <table className="text-center min-w-full border border-gray-300 divide-y divide-gray-300">
             <thead>
               <tr className="bg-green-100">
                 <td className="py-2 w-3/12">Hạng phòng</td>
                 <td className="py-2 w-1/12">Phòng</td>
-                <td className="py-2 w-1/12">Nhận</td>
-                <td className="py-2 w-1/12"></td>
-                <td className="py-2 w-4/12">
+                <td className="py-2 w-3/12">Nhận</td>
+                <td className="py-2 w-2/12">Thời gian</td>
+                <td className="py-2 w-3/12">
                   Trả
                   <button
                     type="button"
@@ -90,11 +155,16 @@ function PayRoomModal(props) {
                       format="DD/MM/YYYY HH:mm"
                     />
                   </td>
-                  <td className="py-2 w-1/12">
-                    {roomActive.reservationType === "HOURLY" &&
-                      toTime.diff(fromTime, "hour") + " Giờ"}
+                  <td className="py-2 w-2/12 text-green-600">
+                    {time}
+                    {roomActive.reservationType === "HOURLY"
+                      ? " Giờ"
+                      : roomActive.reservationType === "DAILY"
+                      ? " Ngày"
+                      : " Đêm"}
+                    {surchargeTime > 0 && " " + surchargeTime + " Giờ"}
                   </td>
-                  <td className="py-2 w-4/12">
+                  <td className="py-2 w-3/12">
                     <DateTimePicker
                       ampm={false}
                       {...(roomActive.reservationType !== "HOURLY"
@@ -111,6 +181,7 @@ function PayRoomModal(props) {
                       onChange={(e) => {
                         setToTime(e);
                       }}
+                      disabled={true}
                       format="DD/MM/YYYY HH:mm"
                     />
                   </td>
@@ -121,7 +192,34 @@ function PayRoomModal(props) {
         </div>
         <div className="flex pt-5">
           <div className="ml-auto">
-            <button className="bg-green-500 mr-5 py-2 px-6 text-white rounded hover:bg-green-600">
+            <button
+              type={`${
+                fromTime.diff(dayjs()) > 0 || check ? "button" : "button"
+              }`}
+              className="bg-green-500 mr-5 py-2 px-6 text-white rounded hover:bg-green-600"
+              onClick={() => {
+                if (fromTime.diff(dayjs()) > 0) {
+                  Swal.fire({
+                    position: "bottom",
+                    html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Không thể nhận phòng ở thời điểm tương lai!</button>`,
+                    showConfirmButton: false,
+                    background: "transparent",
+                    backdrop: "none",
+                    timer: 2500,
+                  });
+                }
+                if (check) {
+                  Swal.fire({
+                    position: "bottom",
+                    html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Không thể nhận phòng khi thời gian trả phòng nhỏ hơn nhận phòng!</button>`,
+                    showConfirmButton: false,
+                    background: "transparent",
+                    backdrop: "none",
+                    timer: 2500,
+                  });
+                }
+              }}
+            >
               Xong
             </button>
           </div>

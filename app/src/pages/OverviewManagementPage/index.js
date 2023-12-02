@@ -9,6 +9,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { axiosPrivate } from "../../utils/axiosConfig";
 import { DatePicker } from "@mui/x-date-pickers";
+import lineChart from "../../components/Overview/LineChart";
 
 const OverviewPage = () => {
   const { recentActivity } = useLoaderData();
@@ -85,6 +86,9 @@ const OverviewPage = () => {
   //     }]
   // };
   const [viewByMonth, setViewByMonth] = useState(null);
+  const [viewMonthOrDay, setViewMonthOrDay] = useState(null);
+  const [viewDayOfWeek, setViewDayOfWeek] = useState(null);
+
 
   const [selectedValue2, setSelectedValue2] = useState('ngay');
   const handleChartTypeChange = (value) => { setSelectedValue2(value);};
@@ -94,24 +98,30 @@ const OverviewPage = () => {
   const [year, setYear] = useState(dayjs());
   const [reportRoomCapacity, setReportRoomCapacity] = useState(null);
   const options = [
-    { value: 1, name: "Tháng" },
-    { value: 2, name: "Năm" },
+    { value: 1, name: "Theo ngày" },
+    { value: 2, name: "Theo tháng" },
+    { value: 3, name: "Theo Năm" }
   ];
 
   useEffect(() => {
     async function fetchListInvoices() {
       try {
         if (selectedValue1 === "1") {
-          setViewByMonth('THEO THÁNG')
           // Gọi api month
           if (selectedValue2 === 'ngay') {
             const response = await axiosPrivate.get(
                 "/overview/report_room_capacity_by_month?date=" + month.format('YYYY/MM/DD').toString()
             );
+            setViewMonthOrDay("Theo Ngày");
+            setViewDayOfWeek("Theo Thứ");
+            setViewByMonth('THEO NGÀY TRONG THÁNG')
             setReportRoomCapacity(response.data.result);
           } else if (selectedValue2 === 'thu') {
             const response = await axiosPrivate.get("/overview/report_room_capacity_with_day_of_week_by_month?date="
                 + month.format('YYYY/MM/DD').toString());
+            setViewMonthOrDay("Theo Ngày");
+            setViewDayOfWeek("Theo Thứ");
+            setViewByMonth('THEO THỨ TRONG THÁNG')
             setReportRoomCapacity(response.data.result);
           }
         } else if (selectedValue1 === "2") {
@@ -121,13 +131,26 @@ const OverviewPage = () => {
             const response = await axiosPrivate.get(
                 "/overview/report_room_capacity_by_year?year=" + year.year()
             );
+            setViewMonthOrDay("Theo Tháng");
+            setViewDayOfWeek("Theo Thứ");
+            setViewByMonth('THEO THÁNG TRONG NĂM')
             setReportRoomCapacity(response.data.result);
           } else if (selectedValue2 === 'thu') {
             const response = await axiosPrivate.get(
                 "/overview/report_room_capacity_with_day_of_week_by_year?date="
                 + year.format('YYYY/MM/DD').toString());
+            setViewMonthOrDay("Theo Tháng");
+            setViewDayOfWeek("Theo Thứ");
+            setViewByMonth('THEO THỨ TRONG NĂM')
             setReportRoomCapacity(response.data.result);
           }
+        }else if(selectedValue1 === "3"){
+          const response = await axiosPrivate.get(
+              "overview/report_room_capacity_by_many_year?year=" + year.year()
+          );
+          setViewMonthOrDay("");
+          setViewDayOfWeek("");
+          setReportRoomCapacity(response.data.result);
         }
       } catch (error) {
         console.log(error);
@@ -138,15 +161,16 @@ const OverviewPage = () => {
   }, [month, year, selectedValue1, selectedValue2]);
 
 
-  const labels = reportRoomCapacity && reportRoomCapacity.label;
-  const dataset = reportRoomCapacity ? {
-    label: "Mana Hotel",
+  const lineChartData = reportRoomCapacity ? {
+    labels: reportRoomCapacity && reportRoomCapacity.label,
+    datasets: [{
+    label: "Công suất",
     data: reportRoomCapacity.data,
     fill: false,
     borderColor: "rgb(75, 192, 192)",
-    tension: 0.1,
+    tension: 0.1
+    }]
   } : {};
-
 
   //barchart
   const [viewByMonthBarChart, setViewByMonthBarChart] = useState(null);
@@ -157,8 +181,9 @@ const OverviewPage = () => {
   const [yearBarChart, setYearBarChart] = useState(dayjs());
   const [reportRoomCapacityBarChart, setReportRoomCapacityBarChart] = useState(null);
   const barChartOptions = [
-    { value: 1, name: "Tháng" },
-    { value: 2, name: "Năm" },
+    { value: 1, name: "Theo ngày" },
+    { value: 2, name: "Theo tháng" },
+    { value: 3, name: "Theo Năm" }
   ];
   useEffect(() => {
     async function fetchListBarChartInvoices() {
@@ -211,7 +236,7 @@ const OverviewPage = () => {
   const barChartData = reportRoomCapacityBarChart ? {
     labels: reportRoomCapacityBarChart.label,
     datasets: [{
-      label: 'Mana Hotel',
+      label: 'Doanh thu',
       data: reportRoomCapacityBarChart.data,
       backgroundColor: generateRandomColors(reportRoomCapacityBarChart.data.length).map(color => `${color}1A`), // Adding alpha for transparency
       borderColor: generateRandomColors(reportRoomCapacityBarChart.data.length),
@@ -399,11 +424,11 @@ const OverviewPage = () => {
           </div>
           <div className="bg-white p-4 mr-4 my-4 rounded">
             <div className="flex">
-              <div className="w-9/12">
+              <div className="w-8/12">
                 <p className="text-lg">CÔNG SUẤT SỬ DỤNG PHÒNG {viewByMonth} </p>
               </div>
-              <div className="w-3/12 flex">
-                <div className="w-8/12">
+              <div className="w-4/12 flex">
+                <div className="w-6/12">
                   <LocalizationProvider
                     dateAdapter={AdapterDayjs}
                     adapterLocale="vi-VN"
@@ -418,7 +443,7 @@ const OverviewPage = () => {
                         format="MMM YYYY"
                         views={["month", "year"]}
                       />
-                    ) : (
+                    ) : selectedValue1 === "2" ?(
                       <DatePicker
                         sx={{ ".MuiInputBase-input": { padding: 1, width: 100 } }}
                         value={year}
@@ -428,10 +453,20 @@ const OverviewPage = () => {
                         format="YYYY"
                         views={["year"]}
                       />
+                    ):(
+                        <DatePicker
+                            sx={{ ".MuiInputBase-input": { padding: 1, width: 100 } }}
+                            value={year}
+                            onChange={(e) => {
+                              setYear(e);
+                            }}
+                            format="YYYY"
+                            views={["year"]}
+                        />
                     )}
                   </LocalizationProvider>
                 </div>
-                  <div className="w-4/12">
+                  <div className="w-6/12">
                     <select
                       value={selectedValue1}
                       onChange={(event) => handleDropdownChange(event)}
@@ -454,7 +489,7 @@ const OverviewPage = () => {
                         textDecoration:
                             selectedValue2 === 'ngay' ? 'underline solid blue' : 'none',
                       }}>
-                    Theo ngày
+                    {viewMonthOrDay}
                   </li>
                   <span style={{ margin: '0 10px' }}></span>
                   <li onClick={() => handleChartTypeChange('thu')}
@@ -463,24 +498,24 @@ const OverviewPage = () => {
                         textDecoration:
                             selectedValue2 === 'thu' ? 'underline solid blue' : 'none',
                       }}>
-                    Theo thứ
+                    {viewDayOfWeek}
                   </li>
                 </ul>
               </div>
               <div>
-                    <LineChart labels={labels} dataset={dataset} />
+                    <LineChart data={lineChartData} />
               </div>
             </div>
           </div>
           <div className="bg-white p-4 mr-4 my-4 rounded">
             <div className="flex">
-              <div className="w-9/12">
+              <div className="w-8/12">
                 <p className="text-lg">
                   DOANH THU THEO {viewByMonthBarChart}
                 </p>
               </div>
-              <div className="w-3/12 flex">
-                <div className="w-8/12">
+              <div className="w-4/12 flex">
+                <div className="w-6/12">
                   <LocalizationProvider
                       dateAdapter={AdapterDayjs}
                       adapterLocale="vi-VN"
@@ -495,7 +530,7 @@ const OverviewPage = () => {
                             format="MMM YYYY"
                             views={["month", "year"]}
                         />
-                    ) : (
+                    ) : selectedValueBarChart1 === '2' ?(
                         <DatePicker
                             sx={{ ".MuiInputBase-input": { padding: 1, width: 100 } }}
                             value={yearBarChart}
@@ -505,10 +540,21 @@ const OverviewPage = () => {
                             format="YYYY"
                             views={["year"]}
                         />
+                    ): (
+                        <DatePicker
+                            sx={{ ".MuiInputBase-input": { padding: 1, width: 100 } }}
+                            value={yearBarChart}
+                            onChange={(e) => {
+                                setYearBarChart(e)
+                            }}
+                            format="YYYY"
+                            views={['year']}
+                            openTo="year"  // This ensures that only the year is shown
+                        />
                     )}
                   </LocalizationProvider>
                 </div>
-                <div className="w-4/12">
+                <div className="w-6/12">
                   <select
                       value={selectedValueBarChart1}
                       onChange={(event) => handleDropdownChangeBarChart(event)}

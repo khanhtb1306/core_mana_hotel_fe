@@ -1,7 +1,6 @@
-import { defer, redirect, useLoaderData } from "react-router-dom";
+import { defer, useLoaderData } from "react-router-dom";
 import { axiosPrivate } from "../../utils/axiosConfig";
 import ReservationForm from "../../components/UI/ReservationForm";
-import { useState } from "react";
 import Swal from "sweetalert2";
 
 function EditReservationPage() {
@@ -90,15 +89,14 @@ export async function loader({ request, params }) {
   }
   const id = params.reservationId;
   Swal.fire({
-    title: "Đang lấy dữ liệu...",
-    html: "Xin hãy chờ đợi trong vài giây.",
-    onBeforeOpen: () => {
+    didOpen: () => {
       Swal.showLoading();
     },
     allowOutsideClick: false,
     allowEscapeKey: false,
     allowEnterKey: false,
     showConfirmButton: false,
+    background: "transparent",
   });
   try {
     const timeUsing = await loadTimeUsing();
@@ -131,19 +129,19 @@ export async function loader({ request, params }) {
 
 export async function action({ request }) {
   Swal.fire({
-    title: "Đang kiểm tra dữ liệu đã thay đổi...",
-    html: "Xin hãy chờ đợi trong vài giây.",
-    onBeforeOpen: () => {
+    didOpen: () => {
       Swal.showLoading();
     },
     allowOutsideClick: false,
     allowEscapeKey: false,
     allowEnterKey: false,
     showConfirmButton: false,
+    background: "transparent",
   });
   const method = request.method;
   const data = await request.formData();
   const reservationId = data.get("reservationId");
+  let listRoom = [];
   if (data.get("isReservation")) {
     const formReser = new FormData();
     if (data.get("customerId")) {
@@ -165,10 +163,8 @@ export async function action({ request }) {
       .catch((e) => {
         console.log(e);
       });
-    console.log(response);
     const numberRoom = data.get("numberRoom");
     for (let i = 0; i < numberRoom; i++) {
-      console.log(data.get(`price${i}`));
       const formDetails = new FormData();
       formDetails.append("reservationId", reservationId);
       formDetails.append("roomId", data.get(`roomId${i}`));
@@ -183,23 +179,9 @@ export async function action({ request }) {
             formDetails
           )
           .catch((e) => {
-            Swal.fire({
-              position: "center",
-              icon: "error",
-              title: "Chỉnh sửa phòng thất bại",
-              showConfirmButton: false,
-              timer: 1500,
-            });
+            console.log(e);
           });
-        if (!response.data.success) {
-          Swal.fire({
-            position: "center",
-            icon: "error",
-            title: `Chỉnh sửa phòng ${data.get(`roomName${i}`)} thất bại`,
-            showConfirmButton: false,
-            timer: 1500,
-          });
-        }
+        listRoom = [...listRoom, response.data];
       }
       if (data.get(`isCheckin${i}`)) {
         formDetails.append("checkInActual", data.get(`fromTime${i}`));
@@ -211,25 +193,14 @@ export async function action({ request }) {
             formDetails
           )
           .catch((e) => {
-            Swal.fire({
-              position: "center",
-              icon: "error",
-              title: "Chỉnh sửa phòng thất bại",
-              showConfirmButton: false,
-              timer: 1500,
-            });
+            console.log(e);
           });
-        console.log(response);
-        if (!response.data.success) {
-          Swal.fire({
-            position: "center",
-            icon: "error",
-            title: `Chỉnh sửa phòng ${data.get(`roomName${i}`)} thất bại`,
-            showConfirmButton: false,
-            timer: 1500,
-          });
-        }
+        listRoom = [...listRoom, response.data];
       }
+    }
+    console.log(listRoom);
+    if (listRoom.find((room) => !room.success)) {
+      return { success: true, listRoom: listRoom };
     }
   }
   if (data.get("isAddGroup")) {
@@ -238,13 +209,7 @@ export async function action({ request }) {
     const response = await axiosPrivate
       .post("customer/customerGroup", formData)
       .catch((e) => {
-        Swal.fire({
-          position: "center",
-          icon: "error",
-          title: "Thêm nhóm khách hàng thất bại",
-          showConfirmButton: false,
-          timer: 1500,
-        });
+        console.log(e);
       });
     if (response.data.success) {
       Swal.fire({
@@ -265,8 +230,7 @@ export async function action({ request }) {
     }
     return { success: true };
   }
-  const isNewMainCustomer = data.get("newMainCustomer");
-  if (isNewMainCustomer) {
+  if (data.get("newMainCustomer")) {
     const formData = new FormData();
     formData.append("customerName", data.get("customerName"));
     formData.append("customerGroupId", data.get("customerGroupId"));
@@ -305,8 +269,7 @@ export async function action({ request }) {
       });
     return { success: true };
   }
-  const isEditMainCustomer = data.get("editMainCustomer");
-  if (isEditMainCustomer) {
+  if (data.get("editMainCustomer")) {
     const formData = new FormData();
     formData.append("customerName", data.get("customerName"));
     formData.append("customerGroupId", data.get("customerGroupId"));
@@ -345,8 +308,7 @@ export async function action({ request }) {
       });
     return { success: true };
   }
-  const isVisitor = data.get("isVisitor");
-  if (isVisitor) {
+  if (data.get("isVisitor")) {
     //Add visitor in reservation details
     if (method === "POST") {
       const formData = new FormData();
@@ -456,36 +418,36 @@ export async function action({ request }) {
     }
     return { success: true };
   }
-
-  const isAddRoom = data.get("addRoom");
-  if (isAddRoom) {
-    //Add Room in reservation
-    if (method === "POST") {
-      const categories = data.get("categories");
-      for (let i = 0; i < categories; i++) {
-        const listCateRoomId = data.get("listCateRoomId" + i).split("|");
-        const numberRoom = data.get("numberRoom" + i);
-        for (let j = 0; j < numberRoom; j++) {
-          const formData = new FormData();
-          formData.append("reservationId", reservationId);
-          formData.append("checkInEstimate", data.get("fromTime"));
-          formData.append("checkOutEstimate", data.get("toTime"));
-          formData.append("reservationType", data.get("reservationType"));
-          formData.append("status", "BOOKING");
-          formData.append("price", data.get("price" + i));
-          formData.append("roomId", listCateRoomId[j]);
-          await axiosPrivate
-            .post("reservation-detail", formData)
-            .then((res) => console.log(res))
-            .catch((er) => console.log(er));
-        }
+  console.log("a");
+  //Add Room in reservation
+  if (data.get("addRoom")) {
+    console.log("b");
+    const categories = data.get("categories");
+    let listAddingRoom = [];
+    for (let i = 0; i < categories; i++) {
+      const listCateRoomId = data.get("listCateRoomId" + i).split("|");
+      const numberRoom = data.get("numberRoom" + i);
+      for (let j = 0; j < numberRoom; j++) {
+        const formData = new FormData();
+        formData.append("reservationId", reservationId);
+        formData.append("checkInEstimate", data.get("fromTime"));
+        formData.append("checkOutEstimate", data.get("toTime"));
+        formData.append("reservationType", data.get("reservationType"));
+        formData.append("status", "BOOKING");
+        formData.append("price", data.get("price" + i));
+        formData.append("roomId", listCateRoomId[j]);
+        await axiosPrivate
+          .post("reservation-detail", formData)
+          .then((res) => {
+            listAddingRoom = [...listAddingRoom, res.data];
+          })
+          .catch((er) => console.log(er));
       }
     }
-    return { success: true };
+    return { success: true, listAddingRoom: listAddingRoom };
   }
   //Action Invoice in reservation details
-  const isInvoice = data.get("isInvoice");
-  if (isInvoice) {
+  if (data.get("isInvoice")) {
     //Create Invoice
     if (method === "POST") {
       const formData = new FormData();
@@ -605,8 +567,7 @@ export async function action({ request }) {
     }
     return { success: true };
   }
-  const isStatusInvoice = data.get("isStatusInvoice");
-  if (isStatusInvoice) {
+  if (data.get("isStatusInvoice")) {
     const formData = new FormData();
     formData.append("status", data.get("status"));
     const response = await axiosPrivate
@@ -639,8 +600,7 @@ export async function action({ request }) {
     }
     return { success: true };
   }
-  const isCancelInvoice = data.get("isCancelInvoice");
-  if (isCancelInvoice) {
+  if (data.get("isCancelInvoice")) {
     const formData = new FormData();
     formData.append("status", data.get("status"));
     const response = await axiosPrivate
@@ -674,15 +634,12 @@ export async function action({ request }) {
     return { success: true };
   }
 
-  const isRemoveRoom = data.get("removeRoom");
-  if (isRemoveRoom) {
+  if (data.get("removeRoom")) {
     //Remove room in reservation
-    if (method === "DELETE") {
-      await axiosPrivate
-        .delete("reservation-detail/" + data.get("reservationDetailsId"))
-        .then((res) => console.log(res))
-        .catch((er) => console.log(er));
-    }
+    await axiosPrivate
+      .delete("reservation-detail/" + data.get("reservationDetailsId"))
+      .then((res) => console.log(res))
+      .catch((er) => console.log(er));
     return { success: true };
   }
 
@@ -691,36 +648,14 @@ export async function action({ request }) {
     const formDetails = new FormData();
     formDetails.append("checkInActual", data.get("fromTime"));
     formDetails.append("checkOutEstimate", data.get("toTime"));
+    formDetails.append("price", data.get("price"));
     formDetails.append("status", "CHECK_IN");
     const response = await axiosPrivate
       .put("reservation-detail/" + data.get("reservationDetailId"), formDetails)
       .catch((e) => {
-        Swal.fire({
-          position: "center",
-          icon: "error",
-          title: "Nhận phòng thất bại",
-          showConfirmButton: false,
-          timer: 1500,
-        });
+        console.log(e);
       });
-    if (response.data.success) {
-      Swal.fire({
-        position: "center",
-        icon: "success",
-        title: "Nhận phòng thành công",
-        showConfirmButton: false,
-        timer: 1500,
-      });
-    } else {
-      Swal.fire({
-        position: "center",
-        icon: "error",
-        title: "Nhận phòng thất bại",
-        showConfirmButton: false,
-        timer: 1500,
-      });
-    }
-    return { success: true };
+    return { success: true, checkinRoom: response.data };
   }
 
   //Change status room to checkout
@@ -728,36 +663,14 @@ export async function action({ request }) {
     const formDetails = new FormData();
     formDetails.append("checkInActual", data.get("fromTime"));
     formDetails.append("checkOutActual", data.get("toTime"));
+    formDetails.append("price", data.get("price"));
     formDetails.append("status", "CHECK_OUT");
     const response = await axiosPrivate
       .put("reservation-detail/" + data.get("reservationDetailId"), formDetails)
       .catch((e) => {
-        Swal.fire({
-          position: "center",
-          icon: "error",
-          title: "Trả phòng thất bại",
-          showConfirmButton: false,
-          timer: 1500,
-        });
+        console.log(e);
       });
-    if (response.data.success) {
-      Swal.fire({
-        position: "center",
-        icon: "success",
-        title: "Trả phòng thành công",
-        showConfirmButton: false,
-        timer: 1500,
-      });
-    } else {
-      Swal.fire({
-        position: "center",
-        icon: "error",
-        title: "Trả phòng thất bại",
-        showConfirmButton: false,
-        timer: 1500,
-      });
-    }
-    return { success: true };
+    return { success: true, checkoutRoom: response.data };
   }
   return { success: true };
 }

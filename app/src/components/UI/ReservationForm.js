@@ -142,17 +142,20 @@ function ReservationForm(props) {
         : reservation.reservation.customer
       : null
   );
+  const [openReceiveModal, setOpenReceiveModal] = useState(false);
+  const [openPayModal, setOpenPayModal] = useState(false);
   // console.log(customer);
   let priceByCateRoom = null;
   let priceById = null;
   if (reservation) {
-    priceById = allPrices.find(
-      (price) =>
-        price.PriceList.priceListId ===
-        reservation.reservation.priceList.priceListId
-    );
     if (!priceById) {
       priceById = allPrices[0];
+    } else {
+      priceById = allPrices.find(
+        (price) =>
+          price.PriceList.priceListId ===
+          reservation.reservation.priceList.priceListId
+      );
     }
     priceByCateRoom = priceById.ListPriceListDetail.find(
       (details) =>
@@ -168,23 +171,108 @@ function ReservationForm(props) {
   useEffect(() => {
     async function fetchRoomActive() {
       try {
-        setRoomActive(
-          reservation.listReservationDetails.find(
-            (details) =>
-              details.reservationDetailId === roomActive.reservationDetailId
-          )
+        if (actionData) {
+          //Notify error info of rooms in reservation
+          if (
+            actionData.listRoom &&
+            actionData.listRoom.find((room) => !room.success)
+          ) {
+            setOpenAddInvoiceModal(false);
+            setOpenAddRoomModal(false);
+            setOpenDeleteInvoiceModal(false);
+            setOpenEditInvoiceModal(false);
+            setOpenPayModal(false);
+            setOpenPaymentModal(false);
+            setOpenReceiveModal(false);
+            setOpenStatusInvoiceModal(false);
+            setOpenViewInvoiceModal(false);
+            setOpenVisitorModal(false);
+            Swal.fire({
+              position: "bottom",
+              html: `<div class="text-sm">${actionData.listRoom
+                .filter((room) => !room.success)
+                .map((room) => {
+                  const nameRoom = reservation.listReservationDetails.find(
+                    (details) => details.reservationDetailId === room.result
+                  );
+                  return `<button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Phòng ${nameRoom.room.roomName} đang trùng lịch đặt phòng.</button>`;
+                })}</div>`,
+              showConfirmButton: false,
+              background: "transparent",
+              backdrop: "none",
+              timer: 2500,
+            });
+          }
+          if (actionData.listAddingRoom) {
+            Swal.fire({
+              position: "bottom",
+              html: `<div class="text-sm">${actionData.listAddingRoom.map(
+                (room) => {
+                  return `<button type="button" class="px-4 py-2 mt-2 rounded-lg bg-green-800 text-white">Đặt phòng ... thành công!</button>`;
+                }
+              )}</div>`,
+              showConfirmButton: false,
+              background: "transparent",
+              backdrop: "none",
+              timer: 2500,
+            });
+          }
+          if (actionData.checkinRoom) {
+            const nameRoom = reservation.listReservationDetails.find(
+              (details) =>
+                details.reservationDetailId === actionData.checkinRoom.result
+            );
+            const bgColor = actionData.checkinRoom.success
+              ? "bg-green-800"
+              : "bg-red-800";
+            const message = actionData.checkinRoom.success
+              ? "nhận phòng thành công!"
+              : "đang trùng lịch đặt phòng.";
+            Swal.fire({
+              position: "bottom",
+              html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg ${bgColor} text-white">Phòng ${nameRoom.room.roomName} ${message}</button>`,
+              showConfirmButton: false,
+              background: "transparent",
+              backdrop: "none",
+              timer: 2500,
+            });
+          }
+          if (actionData.checkoutRoom) {
+            const nameRoom = reservation.listReservationDetails.find(
+              (details) =>
+                details.reservationDetailId === actionData.checkoutRoom.result
+            );
+            const bgColor = actionData.checkoutRoom.success
+              ? "bg-green-800"
+              : "bg-red-800";
+            const message = actionData.checkoutRoom.success
+              ? "trả phòng thành công!"
+              : "đang trùng lịch đặt phòng.";
+            Swal.fire({
+              position: "bottom",
+              html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg ${bgColor} text-white">Phòng ${nameRoom.room.roomName} ${message}</button>`,
+              showConfirmButton: false,
+              background: "transparent",
+              backdrop: "none",
+              timer: 2500,
+            });
+          }
+        }
+
+        const roomAc = reservation.listReservationDetails.find(
+          (details) =>
+            details.reservationDetailId === roomActive.reservationDetailId
         );
+        setRoomActive(roomAc ? roomAc : reservation.listReservationDetails[0]);
       } catch (error) {
         console.log(error);
       }
     }
     fetchRoomActive();
   }, [reservation]);
-  const [openReceiveModal, setOpenReceiveModal] = useState(false);
-  const [openPayModal, setOpenPayModal] = useState(false);
+  // console.log(roomActive);
   const [priceBook, setPriceBook] = useState(priceById);
   const [price, setPrice] = useState(priceByCateRoom);
-  // console.log(roomActive);
 
   const handlePriceBookChange = (event) => {
     const priceById = allPrices.find(
@@ -201,23 +289,33 @@ function ReservationForm(props) {
     }
     setPriceBook(priceById);
   };
+
   useEffect(() => {
-    async function fetchListInvoices() {
+    async function fetchListCustomers() {
       try {
         if (reservation) {
-          const response2 = await axiosPrivate.get(
+          const listCustomers = await axiosPrivate.get(
             "reservation-detail/list-customers/" +
               roomActive.reservationDetailId
           );
-          setListCustomers(response2.data.result);
+          setListCustomers(listCustomers.data.result);
         }
       } catch (error) {
         console.log(error);
       }
     }
-    fetchListInvoices();
+    fetchListCustomers();
   }, [actionData, roomActive]);
+
   const handleRoomChange = (room) => {
+    setPrice(
+      priceById.ListPriceListDetail.find(
+        (details) =>
+          details.RoomClass.roomCategoryId ===
+          room.room.roomCategory.roomCategoryId
+      ).PriceListDetailWithDayOfWeek
+    );
+
     setRoomActive(room);
   };
 
@@ -302,7 +400,9 @@ function ReservationForm(props) {
                           ? "bg-orange-500 text-white"
                           : "text-orange-500 hover:bg-orange-200"
                       } rounded`}
-                      onClick={() => handleRoomChange(room)}
+                      onClick={() => {
+                        handleRoomChange(room);
+                      }}
                     >
                       {room.room.roomName}
                       <i
@@ -323,7 +423,9 @@ function ReservationForm(props) {
                           ? "bg-green-500 text-white"
                           : "text-green-500 hover:bg-green-200"
                       } rounded`}
-                      onClick={() => handleRoomChange(room)}
+                      onClick={() => {
+                        handleRoomChange(room);
+                      }}
                     >
                       {room.room.roomName}
                     </button>
@@ -337,7 +439,9 @@ function ReservationForm(props) {
                           ? "bg-gray-500 text-white"
                           : "text-gray-500 hover:bg-gray-200"
                       } rounded`}
-                      onClick={() => handleRoomChange(room)}
+                      onClick={() => {
+                        handleRoomChange(room);
+                      }}
                     >
                       {room.room.roomName}
                     </button>
@@ -731,6 +835,15 @@ function ReservationForm(props) {
             <RemoveRoom
               open={removeRoomModal ? true : false}
               onClose={() => setRemoveRoomModal(null)}
+              // onChange={() =>
+              //   setRoomActive(
+              //     reservation.listReservationDetails.find(
+              //       (details) =>
+              //         details.reservationDetailId !==
+              //         removeRoomModal.reservationDetailId
+              //     )
+              //   )
+              // }
               room={removeRoomModal}
             />
           )}
@@ -775,6 +888,7 @@ function ReservationForm(props) {
           open={openReceiveModal}
           onClose={() => setOpenReceiveModal(false)}
           roomActive={roomActive}
+          price={price}
         />
       )}
       {openPayModal && (
@@ -782,6 +896,7 @@ function ReservationForm(props) {
           open={openPayModal}
           onClose={() => setOpenPayModal(false)}
           roomActive={roomActive}
+          price={price}
         />
       )}
     </>

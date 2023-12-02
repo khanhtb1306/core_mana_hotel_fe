@@ -33,9 +33,9 @@ const BarChart = ({ data }) => {
                                 display: true, // Hide x-axis grid lines
                             },
                             ticks: {
-                                callback: value => `${value}tr`,
+                                callback: value => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value),
                             },
-                             // max: 10000000,
+                            // max: 10000000,
                             min: 0,
                         }
                     }
