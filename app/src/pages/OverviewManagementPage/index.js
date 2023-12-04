@@ -98,9 +98,9 @@ const OverviewPage = () => {
   const [year, setYear] = useState(dayjs());
   const [reportRoomCapacity, setReportRoomCapacity] = useState(null);
   const options = [
-    { value: 1, name: "Theo ngày" },
-    { value: 2, name: "Theo tháng" },
-    { value: 3, name: "Theo Năm" }
+    { value: 1, name: "Theo ngày trong tháng" },
+    { value: 2, name: "Theo tháng trong năm" },
+    { value: 3, name: "Theo từng năm" }
   ];
 
   useEffect(() => {
@@ -175,15 +175,17 @@ const OverviewPage = () => {
   //barchart
   const [viewByMonthBarChart, setViewByMonthBarChart] = useState(null);
   const [selectedValueBarChart2, setSelectedValueBarChart2] = useState('ngay');
+  const [viewMonthOrDayBarChart, setViewMonthOrDayBarChart] = useState(null);
+  const [viewDayOfWeekBarChart, setViewDayOfWeekBarChart] = useState(null);
   const handleBarChartTypeChange = (value) => { setSelectedValueBarChart2(value);};
   const [selectedValueBarChart1, setSelectedValueBarChart1] = useState('1');
   const [monthBarChart, setMonthBarChart] = useState(dayjs());
   const [yearBarChart, setYearBarChart] = useState(dayjs());
   const [reportRoomCapacityBarChart, setReportRoomCapacityBarChart] = useState(null);
   const barChartOptions = [
-    { value: 1, name: "Theo ngày" },
-    { value: 2, name: "Theo tháng" },
-    { value: 3, name: "Theo Năm" }
+    { value: 1, name: "Theo ngày trong tháng" },
+    { value: 2, name: "Theo tháng trong năm" },
+    { value: 3, name: "Theo từng năm" }
   ];
   useEffect(() => {
     async function fetchListBarChartInvoices() {
@@ -200,6 +202,8 @@ const OverviewPage = () => {
               sum += response.data.result.data[i];
             }
             setViewByMonthBarChart('THEO THÁNG ' + sum.toLocaleString() + ' VND');
+            setViewMonthOrDay("Theo Ngày");
+            setViewDayOfWeek("Theo Thứ");
           } else if (selectedValueBarChart2 === 'thu') {
             const response = await axiosPrivate.get("/overview/report_revenue_day_of_week_by_month?date="
                 + monthBarChart.format('YYYY/MM/DD').toString());
@@ -209,6 +213,8 @@ const OverviewPage = () => {
               sum += response.data.result.data[i];
             }
             setViewByMonthBarChart('THEO THÁNG ' + sum.toLocaleString() + ' VND');
+            setViewMonthOrDay("Theo Ngày");
+            setViewDayOfWeek("Theo Thứ");
           }
         } else if (selectedValueBarChart1 === "2") {
           setViewByMonthBarChart('THEO NĂM')
@@ -218,12 +224,33 @@ const OverviewPage = () => {
                 "/overview/report_revenue_month_by_year?year=" + yearBarChart.year()
             );
             setReportRoomCapacityBarChart(response.data.result);
+            let sum = 0;
+            for (let i = 0; i < response.data.result.data.length; i++) {
+              sum += response.data.result.data[i];
+            }
+            setViewByMonthBarChart('THEO NĂM ' + sum.toLocaleString() + ' VND');
+            setViewMonthOrDay("Theo Tháng");
+            setViewDayOfWeek("Theo Thứ");
           } else if (selectedValueBarChart2 === 'thu') {
             const response = await axiosPrivate.get(
                 "/overview/report_revenue_day_of_week_by_year?date="
                 + yearBarChart.format('YYYY/MM/DD').toString());
             setReportRoomCapacityBarChart(response.data.result);
+            let sum = 0;
+            for (let i = 0; i < response.data.result.data.length; i++) {
+              sum += response.data.result.data[i];
+            }
+            setViewByMonthBarChart('THEO THÁNG ' + sum.toLocaleString() + ' VND');
+            setViewMonthOrDay("Theo Tháng");
+            setViewDayOfWeek("Theo Thứ");
           }
+        } else if (selectedValueBarChart1 === "3"){
+          const response = await axiosPrivate.get(
+              "/overview/report_revenue_by_many_years?startYear=" + yearBarChart.year());
+          setReportRoomCapacityBarChart(response.data.result);
+          setViewByMonthBarChart('THEO THÁNG CÁC NĂM ');
+          setViewMonthOrDay("");
+          setViewDayOfWeek("");
         }
       } catch (error) {
         console.log(error);
@@ -549,7 +576,7 @@ const OverviewPage = () => {
                             }}
                             format="YYYY"
                             views={['year']}
-                            openTo="year"  // This ensures that only the year is shown
+                            openTo="year"
                         />
                     )}
                   </LocalizationProvider>
@@ -577,7 +604,7 @@ const OverviewPage = () => {
                          textDecoration:
                              selectedValueBarChart2 === 'ngay' ? 'underline solid blue' : 'none',
                        }}>
-                    Theo ngày
+                    {viewMonthOrDayBarChart}
                   </li>
                   <span style={{ margin: '0 10px' }}></span>
                   <li onClick={() => handleBarChartTypeChange('thu')}
@@ -586,7 +613,7 @@ const OverviewPage = () => {
                         textDecoration:
                             selectedValueBarChart2 === 'thu' ? 'underline solid blue' : 'none',
                       }}>
-                    Theo thứ
+                    {viewDayOfWeekBarChart}
                   </li>
                 </ul>
               </div>
