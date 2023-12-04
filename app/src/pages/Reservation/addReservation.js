@@ -101,15 +101,6 @@ export async function action({ request }) {
     formReser.append("totalDeposit", 0);
     formReser.append("totalPrice", 0);
     const categories = data.get("categories");
-    // let total = 0;
-    // for (let i = 0; i < categories; i++) {
-    //   const numberRoom = data.get("numberRoom" + i);
-    //   for (let j = 0; j < numberRoom; j++) {
-    //     total += data.get("price" + i) * data.get("valueTime");
-    //     console.log(total);
-    //   }
-    // }
-    // formReser.append("totalPrice", total);
     formReser.append("status", "BOOKING");
     const response = await axiosPrivate
       .post("reservation", formReser)

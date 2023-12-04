@@ -2,6 +2,7 @@ import { defer, useLoaderData } from "react-router-dom";
 import { axiosPrivate } from "../../utils/axiosConfig";
 import ReservationForm from "../../components/UI/ReservationForm";
 import Swal from "sweetalert2";
+import dayjs from "dayjs";
 
 function EditReservationPage() {
   const { reservation } = useLoaderData();
@@ -81,6 +82,28 @@ async function loadTimeUsing() {
   }
 }
 
+async function loadListQR() {
+  const response = await axiosPrivate.get("qr-code");
+  if (response.data.success) {
+    return response.data.result;
+  } else {
+    Swal.close();
+    window.location.href = "/login";
+    return;
+  }
+}
+
+async function loadOtherRevenue() {
+  const response = await axiosPrivate.get("policy/OTHER_REVENUE");
+  if (response.data.success) {
+    return response.data.result;
+  } else {
+    Swal.close();
+    window.location.href = "/login";
+    return;
+  }
+}
+
 export async function loader({ request, params }) {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -106,6 +129,8 @@ export async function loader({ request, params }) {
     const invoices = await loadInvoicesById(id);
     const prices = await loadPriceList();
     const customers = await loadCustomers();
+    const listQR = await loadListQR();
+    const otherFees = await loadOtherRevenue();
     const reservation = await loadReservationById(id);
     return defer(
       {
@@ -116,6 +141,8 @@ export async function loader({ request, params }) {
         invoices,
         prices,
         customers,
+        listQR,
+        otherFees,
         reservation,
       },
       Swal.close()
@@ -128,16 +155,16 @@ export async function loader({ request, params }) {
 }
 
 export async function action({ request }) {
-  Swal.fire({
-    didOpen: () => {
-      Swal.showLoading();
-    },
-    allowOutsideClick: false,
-    allowEscapeKey: false,
-    allowEnterKey: false,
-    showConfirmButton: false,
-    background: "transparent",
-  });
+  // Swal.fire({
+  //   didOpen: () => {
+  //     Swal.showLoading();
+  //   },
+  //   allowOutsideClick: false,
+  //   allowEscapeKey: false,
+  //   allowEnterKey: false,
+  //   showConfirmButton: false,
+  //   background: "transparent",
+  // });
   const method = request.method;
   const data = await request.formData();
   const reservationId = data.get("reservationId");
@@ -210,23 +237,6 @@ export async function action({ request }) {
       .catch((e) => {
         console.log(e);
       });
-    if (response.data.success) {
-      Swal.fire({
-        position: "center",
-        icon: "success",
-        title: "Thêm nhóm khách hàng thành công",
-        showConfirmButton: false,
-        timer: 1500,
-      });
-    } else {
-      Swal.fire({
-        position: "center",
-        icon: "error",
-        title: "Thêm nhóm khách hàng thất bại",
-        showConfirmButton: false,
-        timer: 1500,
-      });
-    }
     return { success: true };
   }
   if (data.get("newMainCustomer")) {
@@ -436,6 +446,7 @@ export async function action({ request }) {
         await axiosPrivate
           .post("reservation-detail", formData)
           .then((res) => {
+            console.log(res);
             listAddingRoom = [...listAddingRoom, res.data];
           })
           .catch((er) => console.log(er));
@@ -460,6 +471,7 @@ export async function action({ request }) {
           `orderDetailDTOList[${i}].goodsId`,
           data.get("goodsId" + i)
         );
+        formData.append(`orderDetailDTOList[${i}].invoiceId`, "HD000000");
         formData.append(
           `orderDetailDTOList[${i}].goodsUnitId`,
           data.get("goodsUnitId" + i)
@@ -481,11 +493,11 @@ export async function action({ request }) {
     //Edit Invoice
     if (method === "PUT") {
       const formData = new FormData();
+      formData.append("orderDTO.orderId", data.get("orderId"));
       formData.append(
         "orderDTO.reservationDetailId",
         data.get("reservationDetailId")
       );
-      formData.append("orderDTO.orderId", data.get("orderId"));
       formData.append("orderDTO.totalPay", data.get("totalPay"));
       formData.append("orderDTO.status", "UNCONFIRMED");
       const length = data.get("length");
@@ -582,5 +594,91 @@ export async function action({ request }) {
       });
     return { success: true, checkoutRoom: response.data };
   }
+
+  //Change room
+  if (data.get("isChangeRoom")) {
+    if (data.get("status") === "BOOKING") {
+      const formDetails = new FormData();
+      formDetails.append("reservationId", reservationId);
+      formDetails.append("roomId", data.get("oldRoomId"));
+      formDetails.append("reservationDetailDTO.roomId", data.get("roomId"));
+      formDetails.append("reservationDetailDTO.price", data.get("price"));
+      const response = await axiosPrivate
+        .put("reservation-detail/change-room", formDetails)
+        .catch((e) => {
+          console.log(e);
+        });
+      return { success: true, changeRoom: response.data.success };
+    } else if (data.get("status") === "CHECK_IN") {
+      if (data.get("radio") === "1") {
+        const formDetails = new FormData();
+        formDetails.append("reservationId", reservationId);
+        formDetails.append("roomId", data.get("oldRoomId"));
+        formDetails.append("reservationDetailDTO.roomId", data.get("roomId"));
+        formDetails.append("reservationDetailDTO.price", data.get("price"));
+        const response = await axiosPrivate
+          .put("reservation-detail/change-room", formDetails)
+          .catch((e) => {
+            console.log(e);
+          });
+        console.log(response);
+        return { success: true, changeRoom: response.data.success };
+      } else {
+        const formCheckout = new FormData();
+        formCheckout.append("checkInActual", data.get("fromTime"));
+        formCheckout.append(
+          "checkOutActual",
+          dayjs().format("YYYY-MM-DD HH:mm:ss")
+        );
+        formCheckout.append("price", data.get("price1"));
+        formCheckout.append("status", "CHECK_OUT");
+        // return { success: true };
+        const response1 = await axiosPrivate
+          .put(
+            "reservation-detail/" + data.get("reservationDetailId"),
+            formCheckout
+          )
+          .catch((e) => {
+            console.log(e);
+          });
+        if (response1.data.success) {
+          const formCheckin = new FormData();
+          formCheckin.append("reservationId", reservationId);
+          formCheckin.append("roomId", data.get("roomId"));
+          formCheckin.append("reservationType", data.get("reservationType"));
+          formCheckin.append(
+            "checkInActual",
+            dayjs().format("YYYY-MM-DD HH:mm:ss")
+          );
+          formCheckin.append("checkOutEstimate", data.get("toTime"));
+          formCheckin.append("price", data.get("price2"));
+          formCheckin.append("status", "CHECK_IN");
+          const response2 = await axiosPrivate
+            .post("reservation-detail", formCheckin)
+            .catch((e) => {
+              console.log(e);
+            });
+          return { success: true, changeRoom: response2.data.success };
+        }
+        return { success: true, changeRoom: false };
+      }
+    }
+    return { success: true };
+  }
+
+  //Change status room to checkout
+  if (data.get("isAddAccountBank")) {
+    const formAccount = new FormData();
+    formAccount.append("bankId", data.get("bankId"));
+    formAccount.append("bankAccountNumber", data.get("bankAccountNumber"));
+    formAccount.append("bankAccountName", data.get("bankAccountName"));
+    const response = await axiosPrivate
+      .post("qr-code", formAccount)
+      .catch((e) => {
+        console.log(e);
+      });
+    return { success: true };
+  }
+
   return { success: true };
 }

@@ -1,19 +1,56 @@
-import { Form } from "react-router-dom";
+import { Form, useLoaderData } from "react-router-dom";
 import Modal from "../UI/Modal";
 import { useEffect, useState } from "react";
 import CreateInvoiceRoomModal from "./CreateInvoiceRoomModal";
 import ViewInvoice from "./ViewInvoice";
 import Swal from "sweetalert2";
+import {
+  FormControlLabel,
+  MenuItem,
+  Radio,
+  RadioGroup,
+  Select,
+} from "@mui/material";
+import NewAccBankModal from "./NewAccBankModal";
+import OtherFeeModal from "./OtherFeeModal";
 
 function PaymentModal(props) {
+  const { listQR, otherFees } = useLoaderData();
+  // console.log(otherFees);
   const reservation = props.reservation;
   const invoices = props.invoices;
-  console.log(reservation);
+  // console.log(reservation);
   // console.log(invoices);
   const [openCreateInvoice, setOpenCreateInvoice] = useState(false);
   const [openDetailsInvoiceModal, setOpenDetailsInvoiceModal] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [payType, setPayType] = useState(1);
+  const [openNewAccBankModal, setOpenNewAccBankModal] = useState(false);
+  const [openOtherFeeModal, setOpenOtherFeeModal] = useState(false);
+  const [selectedAcc, setSelectedAcc] = useState(listQR[0].bankAccountId);
+  const [otherFeePrice, setOtherFeePrice] = useState(0);
+  const [discountPrice, setDiscountPrice] = useState(0);
+  const [payPrice, setPayPrice] = useState(0);
+  const [banks, setBanks] = useState([]);
+  useEffect(() => {
+    fetch("https://api.vietqr.io/v2/banks")
+      .then((response) => response.json())
+      .then((data) => {
+        setBanks(data.data);
+      })
+      .catch((error) => console.error(error));
+  }, []);
   let priceAll = 0;
+  const listCheckout = reservation.listReservationDetails.filter(
+    (details) => details.status === "CHECK_OUT"
+  );
+  const listNotCheckOut = reservation.listReservationDetails.filter(
+    (details) => details.status !== "CHECK_OUT"
+  );
+
+  const handleOtherFeeChange = (price) => {
+    setOtherFeePrice(price);
+  };
   return (
     <>
       <Form onSubmit={() => props.onClose()}>
@@ -53,14 +90,14 @@ function PaymentModal(props) {
                 </button>
               </h1>
               <div className="w-full flex text-sm">
-                <div className="w-9/12 pr-4 border-r-2 border-gray-500 border-dotted">
+                <div className="w-9/12 pr-4 border-r-2 border-gray-500 border-dotted overflow-y-auto h-[41.5rem]">
                   <table className="text-left min-w-full divide-y divide-gray-300">
                     <thead className="bg-green-200">
                       <tr className="border border-black">
-                        <td className="px-2 py-1 text-center border-r border-black">
+                        <td className="px-4 py-2 text-center border-r border-black">
                           Thông tin phòng
                         </td>
-                        <td className="px-2 py-1">Thành tiền</td>
+                        <td className="px-4 py-2">Thành tiền</td>
                       </tr>
                     </thead>
                     <tbody>
@@ -75,7 +112,7 @@ function PaymentModal(props) {
                           );
                           return (
                             <tr className="border border-black">
-                              <td className="px-2 py-1 border-r border-black">
+                              <td className="px-4 py-2 border-r border-black">
                                 <h2 className="flex">
                                   <div className="mr-4">{index + 1}.</div>
                                   <div className="font-bold">
@@ -199,21 +236,171 @@ function PaymentModal(props) {
                     <div className="mr-auto">Tổng tiền</div>
                     <div className="ml-auto">{priceAll.toLocaleString()}</div>
                   </div>
-                  <div className="flex mt-2">
-                    <div className="mr-auto">Giảm giá</div>
-                    <div className="ml-auto">0</div>
-                  </div>
-                  <div className="flex mt-2">
-                    <div className="mr-auto">Phí khác</div>
-                    <div className="ml-auto">0</div>
-                  </div>
+                  {listNotCheckOut.length !== 0 && (
+                    <>
+                      <div className="flex mt-2">
+                        <div className="my-auto w-6/12">Giảm giá</div>
+                        <input
+                          className="p-0 text-sm border-0 border-b border-gray-500 text-right w-6/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                          type="text"
+                          name="discountPrice"
+                          defaultValue={0}
+                          onChange={(e) => {
+                            if (e.target.value === "") {
+                              e.target.value = 0;
+                            }
+                            let num = e.target.value.replace(/[^\d]/g, "");
+                            if (num > priceAll) {
+                              num = 0;
+                            }
+                            setDiscountPrice(num);
+                            e.target.value = parseInt(num, 10).toLocaleString();
+                          }}
+                        />
+                      </div>
+                      <div className="flex mt-2">
+                        <div className="w-6/12">Phí khác</div>
+                        <button
+                          type="button"
+                          className="w-6/12 text-right"
+                          onClick={() => {
+                            setOpenOtherFeeModal(true);
+                          }}
+                        >
+                          {otherFeePrice.toLocaleString()}
+                        </button>
+                      </div>
+                    </>
+                  )}
                   <div className="flex mt-2">
                     <div className="mr-auto">Khách đã trả</div>
-                    <div className="ml-auto">1,000,000</div>
+                    <div className="ml-auto">
+                      {reservation.reservation.totalDeposit.toLocaleString()}
+                    </div>
                   </div>
-                  <div className="flex mt-4">
+                  <div className="flex mt-4 font-bold">
                     <div className="mr-auto">Khách cần trả</div>
-                    <div className="ml-auto">2,800,000</div>
+                    <div className="ml-auto text-green-500">
+                      {(
+                        priceAll -
+                        reservation.reservation.totalDeposit +
+                        otherFeePrice -
+                        discountPrice
+                      ).toLocaleString()}
+                    </div>
+                  </div>
+                  <div className="flex mt-2">
+                    <div className="mr-auto my-auto">Khách thanh toán</div>
+                    <input
+                      className="p-0 text-sm border-0 border-b border-gray-500 text-right w-6/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                      type="text"
+                      name="bankAccountNumber"
+                      defaultValue={0}
+                      onChange={(e) => {
+                        if (e.target.value === "") {
+                          e.target.value = 0;
+                        }
+                        const num = e.target.value.replace(/[^\d]/g, "");
+                        setPayPrice(num);
+                        e.target.value = num
+                          ? parseInt(num, 10).toLocaleString()
+                          : "";
+                      }}
+                      // onBlur={(e) => {
+                      //   e.target.setCustomValidity("");
+                      // }}
+                    />
+                  </div>
+                  {payPrice -
+                    (priceAll -
+                      reservation.reservation.totalDeposit +
+                      otherFeePrice -
+                      discountPrice) >
+                    0 && (
+                    <div className="flex mt-2">
+                      <div className="mr-auto my-auto">Tiền thừa trả khách</div>
+                      <div className="ml-auto">
+                        {(
+                          payPrice -
+                          (priceAll -
+                            reservation.reservation.totalDeposit +
+                            otherFeePrice -
+                            discountPrice)
+                        ).toLocaleString()}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-4">
+                    <div className="flex">
+                      <RadioGroup
+                        value={payType}
+                        onChange={(e) => {
+                          setPayType(e.target.value);
+                        }}
+                        name="radio-buttons-group"
+                        sx={{
+                          display: "flex",
+                          flexDirection: "row",
+                        }}
+                      >
+                        <FormControlLabel
+                          value={1}
+                          control={<Radio />}
+                          label="Tiền mặt"
+                          sx={{
+                            "& .MuiFormControlLabel-label": {
+                              fontSize: "0.875rem",
+                            },
+                          }}
+                        />
+                        <FormControlLabel
+                          value={2}
+                          control={<Radio />}
+                          label="Chuyển khoản"
+                          sx={{
+                            "& .MuiFormControlLabel-label": {
+                              fontSize: "0.875rem",
+                            },
+                          }}
+                        />
+                      </RadioGroup>
+                    </div>
+                    {payType === "2" && (
+                      <div className="mt-2">
+                        <Select
+                          sx={{ width: 265, height: 40 }}
+                          value={selectedAcc}
+                          onChange={(e) => {
+                            setSelectedAcc(e.target.value);
+                          }}
+                        >
+                          {listQR.map((qr, index) => {
+                            const nameBank = banks.find(
+                              (bank) => bank.bin == qr.bankId
+                            ).code;
+                            return (
+                              <MenuItem key={index} value={qr.bankAccountId}>
+                                {nameBank +
+                                  " - " +
+                                  qr.bankAccountName +
+                                  " - " +
+                                  qr.bankAccountNumber}
+                              </MenuItem>
+                            );
+                          })}
+                        </Select>
+                        <button
+                          type="button"
+                          className="rounded border border-green-500 py-2 mt-2 w-full text-green-500 hover:bg-green-100"
+                          onClick={() => {
+                            setOpenNewAccBankModal(true);
+                          }}
+                        >
+                          Thêm tài khoản
+                        </button>
+                      </div>
+                    )}
                   </div>
                   <div className="mt-4 border-t-2 border-gray-500 border-dotted">
                     <div className="flex mt-4">
@@ -248,6 +435,22 @@ function PaymentModal(props) {
           open={openDetailsInvoiceModal}
           onClose={() => setOpenDetailsInvoiceModal(false)}
           invoice={selectedInvoice}
+        />
+      )}
+      {openNewAccBankModal && (
+        <NewAccBankModal
+          open={openNewAccBankModal}
+          onClose={() => setOpenNewAccBankModal(false)}
+          banks={banks}
+        />
+      )}
+      {openOtherFeeModal && (
+        <OtherFeeModal
+          open={openOtherFeeModal}
+          onClose={() => setOpenOtherFeeModal(false)}
+          otherFees={otherFees}
+          invoicePrice={priceAll}
+          changePrice={handleOtherFeeChange}
         />
       )}
     </>

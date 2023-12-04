@@ -39,9 +39,10 @@ function SelectRoom(props) {
     (r) => !listRoomIdByRes.includes(r.roomId)
   );
   const [selectedRoomId, setSelectedRoomId] = useState(room.room.roomId);
-  // const [roomByCate, setRoomByCate] = useState(
 
-  // );
+  useEffect(() => {
+    setSelectedRoomId(room.room.roomId);
+  }, [room]);
 
   let type = 1;
   let from = dayjs();
@@ -417,9 +418,12 @@ function SelectRoom(props) {
             <MenuItem value={3}>Đêm</MenuItem>
           </Select>
           <button
+            type={room.status !== "CHECK_OUT" ? "" : "button"}
             className="ml-auto rounded-lg px-2 border hover:border-green-500"
             onClick={() => {
-              props.handleVisitModalOpen();
+              if (room.status !== "CHECK_OUT") {
+                props.handleVisitModalOpen();
+              }
             }}
           >
             <i className="fa-solid fa-user-tie ml-2"></i>
@@ -671,24 +675,33 @@ function SelectRoom(props) {
           {typeTime === 1 ? "Giờ" : typeTime === 2 ? "Ngày" : "Đêm"})
         </p>
         <p className="w-1/12">{valueTime}</p>
-        <p className="w-2/12 text-right">
-          {getTimePrice(
-            typeTime,
-            fromTime,
-            toTime,
-            timeUsing,
-            props.price
-          ).price.toLocaleString()}
-        </p>
-        <p className="w-1/12">
-          <button
-            type="button"
-            className="ml-4"
-            onClick={() => setOpenPriceModal(true)}
-          >
-            <i className="fa-solid fa-comment-dollar fa-xl"></i>
-          </button>
-        </p>
+        {room.status === "CHECK_OUT" ? (
+          <>
+            <p className="w-2/12 text-right">{room.price.toLocaleString()}</p>
+            <p className="w-1/12"></p>
+          </>
+        ) : (
+          <>
+            <p className="w-2/12 text-right">
+              {getTimePrice(
+                typeTime,
+                fromTime,
+                toTime,
+                timeUsing,
+                props.price
+              ).price.toLocaleString()}
+            </p>
+            <p className="w-1/12">
+              <button
+                type="button"
+                className="ml-4"
+                onClick={() => setOpenPriceModal(true)}
+              >
+                <i className="fa-solid fa-comment-dollar fa-xl"></i>
+              </button>
+            </p>
+          </>
+        )}
       </div>
 
       {soonCheckin > 0 && isPaidSoonCheckin && (
