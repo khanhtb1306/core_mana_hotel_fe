@@ -349,13 +349,14 @@ function SelectRoom(props) {
             defaultValue={true}
           />
         )}
-        {room.status === "CHECK_OUT" && (
-          <input
-            type="hidden"
-            name={`isCheckout${props.index}`}
-            defaultValue={true}
-          />
-        )}
+        {room.status === "CHECK_OUT" ||
+          (room.status === "DONE" && (
+            <input
+              type="hidden"
+              name={`isCheckout${props.index}`}
+              defaultValue={true}
+            />
+          ))}
         <input
           type="hidden"
           name={`price${props.index}`}
@@ -418,10 +419,14 @@ function SelectRoom(props) {
             <MenuItem value={3}>Đêm</MenuItem>
           </Select>
           <button
-            type={room.status !== "CHECK_OUT" ? "" : "button"}
+            type={
+              room.status === "CHECK_IN" || room.status === "BOOKING"
+                ? ""
+                : "button"
+            }
             className="ml-auto rounded-lg px-2 border hover:border-green-500"
             onClick={() => {
-              if (room.status !== "CHECK_OUT") {
+              if (room.status === "CHECK_IN" || room.status === "BOOKING") {
                 props.handleVisitModalOpen();
               }
             }}
@@ -463,11 +468,12 @@ function SelectRoom(props) {
               );
             })}
           </Select>
-          {room.status === "CHECK_OUT" && (
-            <div className="ml-2 p-2 bg-gray-200 rounded-lg text-gray-700">
-              Đã trả
-            </div>
-          )}
+          {room.status === "CHECK_OUT" ||
+            (room.status === "DONE" && (
+              <div className="ml-2 p-2 bg-gray-200 rounded-lg text-gray-700">
+                Đã trả
+              </div>
+            ))}
           {room.status === "CHECK_IN" && (
             <div className="ml-2 p-2 bg-green-200 rounded-lg text-green-700">
               Đang sử dụng
@@ -609,7 +615,7 @@ function SelectRoom(props) {
                 </div>
               </>
             )}
-            {room.status === "CHECK_OUT" && (
+            {(room.status === "CHECK_OUT" || room.status === "DONE") && (
               <div className="flex">
                 <p className="text-gray-500 my-auto mr-2">Thức tế:</p>
                 <div className="pr-2">
@@ -643,7 +649,7 @@ function SelectRoom(props) {
           </LocalizationProvider>
         </div>
       </div>
-      {room.status !== "CHECK_OUT" && (
+      {(room.status === "CHECK_IN" || room.status === "BOOKING") && (
         <div className="flex border-t pt-2">
           {soonCheckin > 0 && (
             <FormControlLabel
@@ -675,7 +681,7 @@ function SelectRoom(props) {
           {typeTime === 1 ? "Giờ" : typeTime === 2 ? "Ngày" : "Đêm"})
         </p>
         <p className="w-1/12">{valueTime}</p>
-        {room.status === "CHECK_OUT" ? (
+        {room.status === "CHECK_OUT" || room.status === "DONE" ? (
           <>
             <p className="w-2/12 text-right">{room.price.toLocaleString()}</p>
             <p className="w-1/12"></p>

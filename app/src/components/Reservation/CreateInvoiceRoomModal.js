@@ -16,6 +16,8 @@ function CreateInvoiceRoomModal(props) {
   const otherFees = props.otherFees;
   const listQR = props.listQR;
   const banks = props.banks;
+  const listSurchage = props.listSurchage;
+  // console.log(listSurchage);
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [openDetailsInvoiceModal, setOpenDetailsInvoiceModal] = useState(false);
@@ -39,8 +41,17 @@ function CreateInvoiceRoomModal(props) {
       renderCell: (params) => {
         const checkout = params.row.checkout;
         const invoiceByDetails = params.row.listInvoices;
+        let surcharge = [];
+        listSurchage.map((sur) => {
+          if (
+            sur.length > 0 &&
+            sur[0].reservationDetail.reservationDetailId === params.row.id
+          ) {
+            surcharge = sur;
+          }
+        });
         return (
-          <div>
+          <div className="w-96">
             <h2 className="flex">
               <div className="mr-4">{params.row.index + 1}.</div>
               <div className="font-bold">
@@ -54,8 +65,24 @@ function CreateInvoiceRoomModal(props) {
                 {checkout.price.toLocaleString() + " VND"}
               </div>
             </h2>
+            {surcharge.length > 0 && (
+              <div className="ml-2 mt-2">
+                {surcharge.map((sur) => {
+                  return (
+                    <div className="font-medium">
+                      {sur.note +
+                        ": " +
+                        sur.value.toLocaleString() +
+                        " " +
+                        sur.typeValue}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
             {invoiceByDetails && (
-              <div className="mt-4 px-4">
+              <div className="mt-2 px-4">
+                <h3 className="ml-2 font-medium mb-1">Hoá đơn mua hàng</h3>
                 <div className="flex b">
                   <div className="w-1/4">Mã hoá đơn</div>
                   <div className="w-1/4">Trạng thái</div>
@@ -64,7 +91,6 @@ function CreateInvoiceRoomModal(props) {
                 </div>
                 {invoiceByDetails.listOrderByReservationDetailId.map(
                   (invoice) => {
-                    // console.log(invoice);
                     if (
                       invoice.order.status === "PAID" ||
                       invoice.order.status === "CONFIRMED"
@@ -85,7 +111,7 @@ function CreateInvoiceRoomModal(props) {
                             {invoice.order.status === "CONFIRMED" && "Xác nhận"}
                           </div>
                           <div className="w-1/4">
-                            {invoice.order.totalPay.toLocaleString()}
+                            {invoice.order.totalPay.toLocaleString() + " VND"}
                           </div>
                           <div className="w-1/4">
                             <button
@@ -119,9 +145,24 @@ function CreateInvoiceRoomModal(props) {
     let price = checkout.price;
     if (listInvoices) {
       listInvoices.listOrderByReservationDetailId.map((invoice) => {
-        price += invoice.order.totalPay;
+        if (invoice.order.status === "CONFIRMED") {
+          price += invoice.order.totalPay;
+        }
       });
     }
+    let surcharge = [];
+    listSurchage.map((sur) => {
+      if (
+        sur.length > 0 &&
+        sur[0].reservationDetail.reservationDetailId ===
+          checkout.reservationDetailId
+      ) {
+        surcharge = sur;
+      }
+    });
+    surcharge.map((sur) => {
+      price += sur.value;
+    });
     return {
       id: checkout.reservationDetailId,
       index: index,
@@ -143,10 +184,24 @@ function CreateInvoiceRoomModal(props) {
       );
       if (listInvoices) {
         listInvoices.listOrderByReservationDetailId.map((invoice) => {
-          price += invoice.order.totalPay;
+          if (invoice.order.status === "CONFIRMED") {
+            price += invoice.order.totalPay;
+          }
         });
       }
+      listSurchage.map((sur) => {
+        if (
+          sur.length > 0 &&
+          sur[0].reservationDetail.reservationDetailId ===
+            checkout.reservationDetailId
+        ) {
+          sur.map((s) => {
+            price += s.value;
+          });
+        }
+      });
     });
+
     setPriceAll(price);
     if (rowSelectionModel.length <= 0) {
       setDiscountPrice(0);
@@ -159,7 +214,7 @@ function CreateInvoiceRoomModal(props) {
   };
   return (
     <>
-      <Form onSubmit={() => props.onClose()}>
+      <Form method="POST" onSubmit={() => props.onClose()}>
         <div
           onClick={props.onClose}
           className={`fixed inset-0 flex justify-center items-center transition-colors overflow-auto z-10 ${
@@ -191,6 +246,47 @@ function CreateInvoiceRoomModal(props) {
                   <i className="fa-solid fa-arrow-left"></i>
                 </button>
                 Toạ hoá đơn mới
+                <input
+                  type="hidden"
+                  name="isCreateInvoiceRoom"
+                  defaultValue={true}
+                />
+                <input
+                  type="hidden"
+                  name="listReservationDetails"
+                  value={rowSelectionModel}
+                  onChange={() => console.log()}
+                />
+                <input
+                  type="hidden"
+                  name="reservationId"
+                  value={listCheckout[0].reservation.reservationId}
+                  onChange={() => console.log()}
+                />
+                <input
+                  type="hidden"
+                  name="total"
+                  value={priceAll}
+                  onChange={() => console.log()}
+                />
+                <input
+                  type="hidden"
+                  name="discount"
+                  value={discountPrice}
+                  onChange={() => console.log()}
+                />
+                <input
+                  type="hidden"
+                  name="priceOther"
+                  value={otherFeePrice}
+                  onChange={() => console.log()}
+                />
+                <input
+                  type="hidden"
+                  name="paidMethod"
+                  value={payType}
+                  onChange={() => console.log()}
+                />
               </h1>
               <div className="w-full flex text-sm">
                 <div className="w-9/12 pr-4 border-r-2 border-gray-500 border-dotted">
@@ -200,11 +296,23 @@ function CreateInvoiceRoomModal(props) {
                     rows={rows}
                     getRowHeight={(params) => {
                       const listInvoices = params.model.listInvoices;
+                      const surcharge = listSurchage[params.model.index];
                       let height = 50;
+                      if (surcharge.length > 0) {
+                        height += surcharge.length * 25;
+                      }
                       if (listInvoices) {
-                        return (height +=
-                          listInvoices.listOrderByReservationDetailId.length *
-                          15);
+                        height += 30;
+                        listInvoices.listOrderByReservationDetailId.map(
+                          (invoice) => {
+                            if (
+                              invoice.order.status === "CONFIRMED" ||
+                              invoice.order.status === "PAID"
+                            ) {
+                              height += 25;
+                            }
+                          }
+                        );
                       }
                       return height;
                     }}

@@ -1,4 +1,4 @@
-import { defer, useLoaderData } from "react-router-dom";
+import { defer, redirect, useLoaderData } from "react-router-dom";
 import { axiosPrivate } from "../../utils/axiosConfig";
 import ReservationForm from "../../components/UI/ReservationForm";
 import Swal from "sweetalert2";
@@ -104,6 +104,30 @@ async function loadOtherRevenue() {
   }
 }
 
+async function loadInvoiceReservation(id) {
+  const response = await axiosPrivate.get("invoice/reservation/" + id);
+  if (response.data.success) {
+    return response.data.result;
+  } else {
+    Swal.close();
+    window.location.href = "/login";
+    return;
+  }
+}
+
+async function loadListSurchage(id) {
+  const response = await axiosPrivate.get(
+    "reservation/get_control_policy_by_reservation?reservationId=" + id
+  );
+  if (response.data.success) {
+    return response.data.result;
+  } else {
+    Swal.close();
+    window.location.href = "/login";
+    return;
+  }
+}
+
 export async function loader({ request, params }) {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -131,6 +155,8 @@ export async function loader({ request, params }) {
     const customers = await loadCustomers();
     const listQR = await loadListQR();
     const otherFees = await loadOtherRevenue();
+    const invoiceReservation = await loadInvoiceReservation(id);
+    const listSurchage = await loadListSurchage(id);
     const reservation = await loadReservationById(id);
     return defer(
       {
@@ -143,6 +169,8 @@ export async function loader({ request, params }) {
         customers,
         listQR,
         otherFees,
+        invoiceReservation,
+        listSurchage,
         reservation,
       },
       Swal.close()
@@ -678,6 +706,38 @@ export async function action({ request }) {
         console.log(e);
       });
     return { success: true };
+  }
+  //Create payment
+  if (data.get("isCreateInvoiceRoom")) {
+    const formInvoice = new FormData();
+    const listReservationDetails = data
+      .get("listReservationDetails")
+      .split(",");
+    for (let i = 0; i < listReservationDetails.length; i++) {
+      formInvoice.append(
+        `reservationDetailDTO[${i}].reservationDetailId`,
+        listReservationDetails[i]
+      );
+      formInvoice.append(
+        `reservationDetailDTO[${i}].reservationId`,
+        data.get("reservationId")
+      );
+    }
+    formInvoice.append("invoiceDTO.total", data.get("total"));
+    formInvoice.append("invoiceDTO.discount", data.get("discount"));
+    formInvoice.append("invoiceDTO.priceOther", data.get("priceOther"));
+    formInvoice.append(
+      "invoiceDTO.paidMethod",
+      data.get("paidMethod") === "1" ? "CASH" : "TRANSFER"
+    );
+    // const response = await axiosPrivate
+    //   .post("invoice/reservation", formInvoice)
+    //   .catch((e) => {
+    //     console.log(e);
+    //   });
+    window.print();
+    return { success: true, isCreateInvoiceRoom: true };
+    return redirect("/listReservation");
   }
 
   return { success: true };

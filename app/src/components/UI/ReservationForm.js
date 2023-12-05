@@ -624,7 +624,8 @@ function ReservationForm(props) {
                   </button>
                 </>
               )}
-              {roomActive.status === "CHECK_OUT" && <></>}
+              {(roomActive.status === "CHECK_OUT" ||
+                roomActive.status === "DONE") && <></>}
             </div>
             {roomActive && listCustomers && (
               <>
@@ -765,7 +766,8 @@ function ReservationForm(props) {
                                 <i className="fa-solid fa-print"></i>
                               </button>
                               {invoice.order.status === "UNCONFIRMED" &&
-                                roomActive.status !== "CHECK_OUT" && (
+                                (roomActive.status === "CHECK_IN" ||
+                                  roomActive.status === "BOOKING") && (
                                   <>
                                     <button
                                       type="button"
@@ -798,7 +800,8 @@ function ReservationForm(props) {
                                   </>
                                 )}
                               {invoice.order.status === "CONFIRMED" &&
-                                roomActive.status !== "CHECK_OUT" && (
+                                (roomActive.status === "CHECK_IN" ||
+                                  roomActive.status === "BOOKING") && (
                                   <button
                                     className="mr-4 px-1 rounded-full hover:bg-gray-200"
                                     onClick={() => {
@@ -813,7 +816,8 @@ function ReservationForm(props) {
                           </div>
                         );
                       })}
-                  {roomActive.status !== "CHECK_OUT" && (
+                  {(roomActive.status === "CHECK_IN" ||
+                    roomActive.status === "BOOKING") && (
                     <button
                       className="rounded p-2 mt-2 text-white bg-green-500"
                       onClick={() => setOpenAddInvoiceModal(true)}

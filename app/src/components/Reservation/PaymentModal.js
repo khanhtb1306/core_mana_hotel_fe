@@ -13,9 +13,12 @@ import {
 } from "@mui/material";
 import NewAccBankModal from "./NewAccBankModal";
 import OtherFeeModal from "./OtherFeeModal";
+import dayjs from "dayjs";
 
 function PaymentModal(props) {
-  const { listQR, otherFees } = useLoaderData();
+  const { listQR, otherFees, listSurchage, invoiceReservation } =
+    useLoaderData();
+  // console.log(listSurchage);
   // console.log(otherFees);
   const reservation = props.reservation;
   const invoices = props.invoices;
@@ -47,7 +50,7 @@ function PaymentModal(props) {
     (details) => details.status === "CHECK_OUT"
   );
   const listNotCheckOut = reservation.listReservationDetails.filter(
-    (details) => details.status !== "CHECK_OUT"
+    (details) => details.status === "CHECK_IN" || details.status === "BOOKING"
   );
 
   const handleOtherFeeChange = (price) => {
@@ -55,7 +58,7 @@ function PaymentModal(props) {
   };
   return (
     <>
-      <Form onSubmit={() => props.onClose()}>
+      <Form onSubmit={() => props.onClose()} className="print:hidden">
         <div
           onClick={props.onClose}
           className={`fixed inset-0 flex justify-center items-center transition-colors overflow-auto z-10 ${
@@ -114,6 +117,7 @@ function PaymentModal(props) {
                               invoice.ReservationDetailId ===
                               details.reservationDetailId
                           );
+                          const surcharge = listSurchage[index];
                           return (
                             <tr className="border border-black">
                               <td className="px-4 py-2 border-r border-black">
@@ -130,7 +134,8 @@ function PaymentModal(props) {
                                       details.status === "CHECK_IN" &&
                                       "bg-green-200 text-green-500"
                                     } ${
-                                      details.status === "CHECK_OUT" &&
+                                      (details.status === "CHECK_OUT" ||
+                                        details.status === "DONE") &&
                                       "bg-gray-200"
                                     }`}
                                   >
@@ -144,7 +149,8 @@ function PaymentModal(props) {
                                       details.status === "CHECK_IN" &&
                                       "bg-green-200 text-green-500"
                                     } ${
-                                      details.status === "CHECK_OUT" &&
+                                      (details.status === "CHECK_OUT" ||
+                                        details.status === "DONE") &&
                                       "bg-gray-200"
                                     }`}
                                   >
@@ -152,14 +158,35 @@ function PaymentModal(props) {
                                       "Đã đặt trước"}
                                     {details.status === "CHECK_IN" &&
                                       "Đang sử dụng"}
-                                    {details.status === "CHECK_OUT" && "Đã trả"}
+                                    {(details.status === "CHECK_OUT" ||
+                                      details.status === "DONE") &&
+                                      "Đã trả"}
                                   </div>
                                   <div className="ml-auto mr-10">
                                     {details.price.toLocaleString() + " VND"}
                                   </div>
                                 </h2>
+                                {surcharge.length > 0 && (
+                                  <div className="ml-2 mt-2">
+                                    {surcharge.map((sur) => {
+                                      priceRoom += sur.value;
+                                      return (
+                                        <div>
+                                          {sur.note +
+                                            ": " +
+                                            sur.value.toLocaleString() +
+                                            " " +
+                                            sur.typeValue}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
                                 {invoiceByDetails && (
-                                  <div className="mt-4">
+                                  <div className="mt-2">
+                                    <h3 className="ml-2 font-medium mb-1">
+                                      Hoá đơn mua hàng
+                                    </h3>
                                     <div className="flex b">
                                       <div className="w-1/4">Mã hoá đơn</div>
                                       <div className="w-1/4">Trạng thái</div>
@@ -199,7 +226,8 @@ function PaymentModal(props) {
                                                   "CONFIRMED" && "Xác nhận"}
                                               </div>
                                               <div className="w-1/4">
-                                                {invoice.order.totalPay.toLocaleString()}
+                                                {invoice.order.totalPay.toLocaleString() +
+                                                  " VND"}
                                               </div>
                                               <div className="w-1/4">
                                                 <button
@@ -406,25 +434,37 @@ function PaymentModal(props) {
                       </div>
                     )}
                   </div>
-                  <div className="mt-4 border-t-2 border-gray-500 border-dotted">
-                    <div className="flex mt-4">
-                      <div className="mr-auto">Lịch sử hoá đơn</div>
+                  {invoiceReservation.length > 0 && (
+                    <div className="mt-4 border-t-2 border-gray-500 border-dotted">
+                      <div className="flex mt-4">
+                        <div className="mr-auto">Lịch sử hoá đơn</div>
+                      </div>
+                      <div className="mt-2 mx-2 rounded p-2 border border-gray-300 border-dotted flex">
+                        <div className="mr-auto">HD000001</div>
+                        <div className="ml-auto">1,000,000</div>
+                      </div>
                     </div>
-                    <div className="mt-2 mx-2 rounded p-2 border border-gray-300 border-dotted flex">
-                      <div className="mr-auto">HD000001</div>
-                      <div className="ml-auto">1,000,000</div>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
-            <div className="flex pt-5 absolute bottom-0 right-0">
-              <div className="mr-10 mb-10 ml-auto">
-                <button className="bg-white border border-green-500 text-green-500 py-2 px-6 rounded hover:bg-green-200">
-                  Lưu
-                </button>
+            {listNotCheckOut.length > 0 ? (
+              <div className="flex pt-5 absolute bottom-0 right-0">
+                <div className="mr-10 mb-10 ml-auto">
+                  <button className="bg-white border border-green-500 text-green-500 py-2 px-6 rounded hover:bg-green-200">
+                    Lưu
+                  </button>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex pt-5 absolute bottom-0 right-0">
+                <div className="mr-10 mb-10 ml-auto">
+                  <button className="bg-green-500 text-white py-2 px-6 rounded hover:bg-green-600">
+                    Hoàn thành
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </Form>
@@ -435,6 +475,7 @@ function PaymentModal(props) {
           listCheckout={listCheckout}
           otherFees={otherFees}
           invoices={invoices}
+          listSurchage={listSurchage}
           listQR={listQR}
           banks={banks}
         />
@@ -461,6 +502,39 @@ function PaymentModal(props) {
           invoicePrice={priceAll}
           changePrice={handleOtherFeeChange}
         />
+      )}
+      {1 && (
+        <div className="hidden print:block">
+          <p>Tên cửa hàng: Khách sạn Thành Công</p>
+          <p>Điện thoại: 0981987625</p>
+          <div className="mt-4 border-t border-black border-dotted">
+            Ngày xuất HĐ: {dayjs().format("DD/MM/YYYY HH:mm")}
+          </div>
+          <div className="mt-4">
+            <div className="font-bold text-center">
+              <h2>HOÁ ĐƠN BÁN HÀNG</h2>
+              <p className="text-sm"></p>
+            </div>
+            <div>
+              {/* <p>Khách hàng: {customer ? customer.customerName : "Khách lẻ"}</p>s */}
+              <p>Mã đặt phòng: {reservation.reservation.reservationId}</p>
+              <p>Thu ngân: </p>
+            </div>
+            <div className="flex mt-4">
+              <div className="ml-auto mr-10">Tổng tiền hàng: </div>
+              <div className="w-32 text-right"></div>
+            </div>
+            <div className="flex">
+              <div className="ml-auto mr-10">Chiếu khấu: </div>
+              <div className="w-32 text-right">0</div>
+            </div>
+            <div className="flex">
+              <div className="ml-auto mr-10">Tổng cộng: </div>
+              <div className="w-32 text-right"></div>
+            </div>
+          </div>
+          <div className="text-center mt-10 text-sm">Cảm ơn và hẹn gặp lại</div>
+        </div>
       )}
     </>
   );
