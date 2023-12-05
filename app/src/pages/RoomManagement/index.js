@@ -373,30 +373,25 @@ export async function action({ request }) {
     return redirect("/manager/roomManagement");
   }
   if (data.get("floorName")) {
-    const formData = {
-      floorName: data.get("floorName"),
-      status: 1,
-    };
-    const response = await axiosPrivate
-      .post("Floor", formData)
-      .then((response) => {
-        Swal.fire({
-          position: "center",
-          icon: "success",
-          title: response.data,
-          showConfirmButton: false,
-          timer: 1500,
-        });
-      })
-      .catch((e) => {
-        Swal.fire({
-          position: "center",
-          icon: "error",
-          title: e.response.data,
-          showConfirmButton: false,
-          timer: 1500,
-        });
+    const formData = new FormData();
+    formData.append("floorName", data.get("floorName"));
+    formData.append("status", 1);
+    const response = await axiosPrivate.post("Floor", formData).catch((e) => {
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        title: e.response.data,
+        showConfirmButton: false,
+        timer: 1500,
       });
+    });
+    Swal.fire({
+      position: "center",
+      icon: "success",
+      title: response.data,
+      showConfirmButton: false,
+      timer: 1500,
+    });
     return redirect("/manager/roomManagement");
   }
   if (data.get("status")) {

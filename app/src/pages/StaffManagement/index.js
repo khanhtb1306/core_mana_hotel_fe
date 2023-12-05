@@ -375,7 +375,7 @@ export async function action({ request }) {
         });
       });
 
-      if(data.get("staffId") === "" && data.get("userName") !== ""){
+      if(data.get("staffId") === null && data.get("userName") !== ""){
        
         const body ={ email: data.get("email"), type:1}
         const response = await axiosConfig.post("auth/password-reset-request",body

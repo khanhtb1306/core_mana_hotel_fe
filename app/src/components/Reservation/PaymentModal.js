@@ -27,7 +27,9 @@ function PaymentModal(props) {
   const [payType, setPayType] = useState(1);
   const [openNewAccBankModal, setOpenNewAccBankModal] = useState(false);
   const [openOtherFeeModal, setOpenOtherFeeModal] = useState(false);
-  const [selectedAcc, setSelectedAcc] = useState(listQR[0].bankAccountId);
+  const [selectedAcc, setSelectedAcc] = useState(
+    listQR.length > 0 ? listQR[0].bankAccountId : 0
+  );
   const [otherFeePrice, setOtherFeePrice] = useState(0);
   const [discountPrice, setDiscountPrice] = useState(0);
   const [payPrice, setPayPrice] = useState(0);
@@ -81,13 +83,15 @@ function PaymentModal(props) {
                 {reservation.reservation.reservationId +
                   " - " +
                   reservation.reservation.customer.customerName}
-                <button
-                  type="button"
-                  className="ml-4 rounded px-1 text-sm bg-white border border-green-500 text-green-500 font-normal hover:bg-green-200"
-                  onClick={() => setOpenCreateInvoice(true)}
-                >
-                  Tạo hoá đơn một phần
-                </button>
+                {listCheckout.length !== 0 && (
+                  <button
+                    type="button"
+                    className="ml-4 rounded px-1 text-sm bg-white border border-green-500 text-green-500 font-normal hover:bg-green-200"
+                    onClick={() => setOpenCreateInvoice(true)}
+                  >
+                    Tạo hoá đơn một phần
+                  </button>
+                )}
               </h1>
               <div className="w-full flex text-sm">
                 <div className="w-9/12 pr-4 border-r-2 border-gray-500 border-dotted overflow-y-auto h-[41.5rem]">
@@ -236,7 +240,7 @@ function PaymentModal(props) {
                     <div className="mr-auto">Tổng tiền</div>
                     <div className="ml-auto">{priceAll.toLocaleString()}</div>
                   </div>
-                  {listNotCheckOut.length !== 0 && (
+                  {listNotCheckOut.length === 0 && (
                     <>
                       <div className="flex mt-2">
                         <div className="my-auto w-6/12">Giảm giá</div>
@@ -330,7 +334,6 @@ function PaymentModal(props) {
                       </div>
                     </div>
                   )}
-
                   <div className="mt-4">
                     <div className="flex">
                       <RadioGroup
@@ -375,20 +378,21 @@ function PaymentModal(props) {
                             setSelectedAcc(e.target.value);
                           }}
                         >
-                          {listQR.map((qr, index) => {
-                            const nameBank = banks.find(
-                              (bank) => bank.bin == qr.bankId
-                            ).code;
-                            return (
-                              <MenuItem key={index} value={qr.bankAccountId}>
-                                {nameBank +
-                                  " - " +
-                                  qr.bankAccountName +
-                                  " - " +
-                                  qr.bankAccountNumber}
-                              </MenuItem>
-                            );
-                          })}
+                          {listQR.length > 0 &&
+                            listQR.map((qr, index) => {
+                              const nameBank = banks.find(
+                                (bank) => bank.bin == qr.bankId
+                              ).code;
+                              return (
+                                <MenuItem key={index} value={qr.bankAccountId}>
+                                  {nameBank +
+                                    " - " +
+                                    qr.bankAccountName +
+                                    " - " +
+                                    qr.bankAccountNumber}
+                                </MenuItem>
+                              );
+                            })}
                         </Select>
                         <button
                           type="button"
@@ -424,10 +428,15 @@ function PaymentModal(props) {
           </div>
         </div>
       </Form>
-      {openCreateInvoice && (
+      {openCreateInvoice && banks.length > 0 && (
         <CreateInvoiceRoomModal
           open={openCreateInvoice}
           onClose={() => setOpenCreateInvoice(false)}
+          listCheckout={listCheckout}
+          otherFees={otherFees}
+          invoices={invoices}
+          listQR={listQR}
+          banks={banks}
         />
       )}
       {selectedInvoice && openDetailsInvoiceModal && (
