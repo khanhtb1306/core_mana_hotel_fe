@@ -41,7 +41,9 @@ function AddRoom(props) {
           "reservation/list-empty-rooms?startDate=" +
             fromTime.format("YYYY-MM-DD HH:mm:ss") +
             "&endDate=" +
-            toTime.format("YYYY-MM-DD HH:mm:ss")
+            toTime.format("YYYY-MM-DD HH:mm:ss") +
+            "&reservationId=" +
+            props.reservationId
         );
         setCategory(response.data.result);
       } catch (error) {
@@ -51,26 +53,20 @@ function AddRoom(props) {
     fetchCategory();
   }, [typeTime, fromTime, toTime]);
 
-  console.log(category);
+  const listPrice = props.listPrice;
+  // console.log(listPrice);
 
   let time = 0;
-  let price = 0;
   let surchargeTime = 0;
   if (typeTime === 1) {
-    let timePrice = getTimePrice(1, fromTime, toTime, timeUsing, []);
-    time = timePrice.time;
-    price = timePrice.price;
+    time = getTimePrice(1, fromTime, toTime, timeUsing, []).time;
   } else if (typeTime === 2) {
-    let timePrice = getTimePrice(2, fromTime, toTime, timeUsing, []);
-    time = timePrice.time;
-    price = timePrice.price;
+    time = getTimePrice(2, fromTime, toTime, timeUsing, []).time;
     surchargeTime =
       getSoonCheckin(2, fromTime, timeUsing) +
       getlateCheckout(2, fromTime, toTime, timeUsing);
   } else {
-    let timePrice = getTimePrice(3, fromTime, toTime, timeUsing, []);
-    time = timePrice.time;
-    price = timePrice.price;
+    time = getTimePrice(3, fromTime, toTime, timeUsing, []).time;
     surchargeTime =
       getSoonCheckin(3, fromTime, timeUsing) +
       getlateCheckout(3, fromTime, toTime, timeUsing);
@@ -172,6 +168,9 @@ function AddRoom(props) {
       getActions: (params) => {
         const row = params.row;
         const listCateRoomId = row.listRoom.map((cate) => cate.roomId);
+        const priceByCate = listPrice.find(
+          (details) => details.RoomClass.roomCategoryId === row.roomCategoryId
+        ).PriceListDetailWithDayOfWeek;
         return [
           <GridActionsCellItem
             icon={
@@ -184,7 +183,15 @@ function AddRoom(props) {
                 <input
                   type="hidden"
                   name={`price` + row.id}
-                  value={row.price}
+                  value={
+                    getTimePrice(
+                      typeTime,
+                      fromTime,
+                      toTime,
+                      timeUsing,
+                      priceByCate
+                    ).price
+                  }
                 />
                 <input
                   type="number"
@@ -221,6 +228,7 @@ function AddRoom(props) {
       }
       return {
         id: index,
+        roomCategoryId: cate.roomClass.roomCategoryId,
         roomCategoryName: cate.roomClass.roomCategoryName,
         numberOfPeople: {
           numOfChildren: cate.roomClass.numOfChildren,
@@ -381,9 +389,9 @@ function AddRoom(props) {
                 columns={columns}
                 rows={rows}
                 initialState={{
-                  pagination: { paginationModel: { pageSize: 5 } },
+                  pagination: { paginationModel: { pageSize: 100 } },
                 }}
-                pageSizeOptions={[5, 10, 25]}
+                pageSizeOptions={[100]}
               />
             </>
           )}

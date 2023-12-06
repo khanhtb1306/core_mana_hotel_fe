@@ -13,6 +13,7 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.6.2",
     "chart.js": "^3.9.1",
     "dayjs": "^1.11.10",
     "jwt-decode": "^4.0.0",

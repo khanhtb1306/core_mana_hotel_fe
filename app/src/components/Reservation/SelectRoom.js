@@ -16,7 +16,6 @@ import { axiosPrivate } from "../../utils/axiosConfig";
 
 function SelectRoom(props) {
   const { categories, timeUsing } = useLoaderData();
-  console.log(getTimePrice(1, dayjs(), dayjs().add(1, "minute"), timeUsing, []).time)
   // console.log(props.price);
   // console.log(timeUsing);
   const priceNightStart = timeUsing.startTimeNight.split(":")[0];
@@ -40,9 +39,10 @@ function SelectRoom(props) {
     (r) => !listRoomIdByRes.includes(r.roomId)
   );
   const [selectedRoomId, setSelectedRoomId] = useState(room.room.roomId);
-  // const [roomByCate, setRoomByCate] = useState(
 
-  // );
+  useEffect(() => {
+    setSelectedRoomId(room.room.roomId);
+  }, [room]);
 
   let type = 1;
   let from = dayjs();
@@ -349,13 +349,14 @@ function SelectRoom(props) {
             defaultValue={true}
           />
         )}
-        {room.status === "CHECK_OUT" && (
-          <input
-            type="hidden"
-            name={`isCheckout${props.index}`}
-            defaultValue={true}
-          />
-        )}
+        {room.status === "CHECK_OUT" ||
+          (room.status === "DONE" && (
+            <input
+              type="hidden"
+              name={`isCheckout${props.index}`}
+              defaultValue={true}
+            />
+          ))}
         <input
           type="hidden"
           name={`price${props.index}`}
@@ -418,9 +419,16 @@ function SelectRoom(props) {
             <MenuItem value={3}>Đêm</MenuItem>
           </Select>
           <button
+            type={
+              room.status === "CHECK_IN" || room.status === "BOOKING"
+                ? ""
+                : "button"
+            }
             className="ml-auto rounded-lg px-2 border hover:border-green-500"
             onClick={() => {
-              props.handleVisitModalOpen();
+              if (room.status === "CHECK_IN" || room.status === "BOOKING") {
+                props.handleVisitModalOpen();
+              }
             }}
           >
             <i className="fa-solid fa-user-tie ml-2"></i>
@@ -460,11 +468,12 @@ function SelectRoom(props) {
               );
             })}
           </Select>
-          {room.status === "CHECK_OUT" && (
-            <div className="ml-2 p-2 bg-gray-200 rounded-lg text-gray-700">
-              Đã trả
-            </div>
-          )}
+          {room.status === "CHECK_OUT" ||
+            (room.status === "DONE" && (
+              <div className="ml-2 p-2 bg-gray-200 rounded-lg text-gray-700">
+                Đã trả
+              </div>
+            ))}
           {room.status === "CHECK_IN" && (
             <div className="ml-2 p-2 bg-green-200 rounded-lg text-green-700">
               Đang sử dụng
@@ -606,7 +615,7 @@ function SelectRoom(props) {
                 </div>
               </>
             )}
-            {room.status === "CHECK_OUT" && (
+            {(room.status === "CHECK_OUT" || room.status === "DONE") && (
               <div className="flex">
                 <p className="text-gray-500 my-auto mr-2">Thức tế:</p>
                 <div className="pr-2">
@@ -640,7 +649,7 @@ function SelectRoom(props) {
           </LocalizationProvider>
         </div>
       </div>
-      {room.status !== "CHECK_OUT" && (
+      {(room.status === "CHECK_IN" || room.status === "BOOKING") && (
         <div className="flex border-t pt-2">
           {soonCheckin > 0 && (
             <FormControlLabel
@@ -672,24 +681,33 @@ function SelectRoom(props) {
           {typeTime === 1 ? "Giờ" : typeTime === 2 ? "Ngày" : "Đêm"})
         </p>
         <p className="w-1/12">{valueTime}</p>
-        <p className="w-2/12 text-right">
-          {getTimePrice(
-            typeTime,
-            fromTime,
-            toTime,
-            timeUsing,
-            props.price
-          ).price.toLocaleString()}
-        </p>
-        <p className="w-1/12">
-          <button
-            type="button"
-            className="ml-4"
-            onClick={() => setOpenPriceModal(true)}
-          >
-            <i className="fa-solid fa-comment-dollar fa-xl"></i>
-          </button>
-        </p>
+        {room.status === "CHECK_OUT" || room.status === "DONE" ? (
+          <>
+            <p className="w-2/12 text-right">{room.price.toLocaleString()}</p>
+            <p className="w-1/12"></p>
+          </>
+        ) : (
+          <>
+            <p className="w-2/12 text-right">
+              {getTimePrice(
+                typeTime,
+                fromTime,
+                toTime,
+                timeUsing,
+                props.price
+              ).price.toLocaleString()}
+            </p>
+            <p className="w-1/12">
+              <button
+                type="button"
+                className="ml-4"
+                onClick={() => setOpenPriceModal(true)}
+              >
+                <i className="fa-solid fa-comment-dollar fa-xl"></i>
+              </button>
+            </p>
+          </>
+        )}
       </div>
 
       {soonCheckin > 0 && isPaidSoonCheckin && (

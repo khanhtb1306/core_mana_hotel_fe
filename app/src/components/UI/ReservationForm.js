@@ -18,6 +18,7 @@ import PaymentModal from "../Reservation/PaymentModal";
 import ReceiveRoomModal from "../Reservation/ReceiveRoomModal";
 import PayRoomModal from "../Reservation/PayRoomModal";
 import Swal from "sweetalert2";
+import ChangeRoomModal from "../Reservation/ChangeRoomModal";
 
 function ReservationForm(props) {
   const { customers, prices, categories, invoices } = useLoaderData();
@@ -143,19 +144,19 @@ function ReservationForm(props) {
       : null
   );
   const [openReceiveModal, setOpenReceiveModal] = useState(false);
+  const [openChangeModal, setOpenChangeModal] = useState(false);
   const [openPayModal, setOpenPayModal] = useState(false);
   // console.log(customer);
   let priceByCateRoom = null;
   let priceById = null;
   if (reservation) {
+    priceById = allPrices.find(
+      (price) =>
+        price.PriceList.priceListId ===
+        reservation.reservation.priceList.priceListId
+    );
     if (!priceById) {
       priceById = allPrices[0];
-    } else {
-      priceById = allPrices.find(
-        (price) =>
-          price.PriceList.priceListId ===
-          reservation.reservation.priceList.priceListId
-      );
     }
     priceByCateRoom = priceById.ListPriceListDetail.find(
       (details) =>
@@ -177,6 +178,7 @@ function ReservationForm(props) {
             actionData.listRoom &&
             actionData.listRoom.find((room) => !room.success)
           ) {
+            console.log(actionData.listRoom);
             setOpenAddInvoiceModal(false);
             setOpenAddRoomModal(false);
             setOpenDeleteInvoiceModal(false);
@@ -187,15 +189,13 @@ function ReservationForm(props) {
             setOpenStatusInvoiceModal(false);
             setOpenViewInvoiceModal(false);
             setOpenVisitorModal(false);
+            setOpenChangeModal(false);
             Swal.fire({
               position: "bottom",
               html: `<div class="text-sm">${actionData.listRoom
                 .filter((room) => !room.success)
                 .map((room) => {
-                  const nameRoom = reservation.listReservationDetails.find(
-                    (details) => details.reservationDetailId === room.result
-                  );
-                  return `<button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Phòng ${nameRoom.room.roomName} đang trùng lịch đặt phòng.</button>`;
+                  return `<button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">${room.displayMessage}.</button>`;
                 })}</div>`,
               showConfirmButton: false,
               background: "transparent",
@@ -203,12 +203,14 @@ function ReservationForm(props) {
               timer: 2500,
             });
           }
+          //Notify add list room succeess
           if (actionData.listAddingRoom) {
+            console.log(actionData.listAddingRoom);
             Swal.fire({
               position: "bottom",
               html: `<div class="text-sm">${actionData.listAddingRoom.map(
                 (room) => {
-                  return `<button type="button" class="px-4 py-2 mt-2 rounded-lg bg-green-800 text-white">Đặt phòng ... thành công!</button>`;
+                  return `<button type="button" class="px-4 py-2 mt-2 rounded-lg bg-green-800 text-white">${room.displayMessage}</button>`;
                 }
               )}</div>`,
               showConfirmButton: false,
@@ -217,26 +219,21 @@ function ReservationForm(props) {
               timer: 2500,
             });
           }
+          //Notify receive invoice
           if (actionData.checkinRoom) {
-            const nameRoom = reservation.listReservationDetails.find(
-              (details) =>
-                details.reservationDetailId === actionData.checkinRoom.result
-            );
             const bgColor = actionData.checkinRoom.success
               ? "bg-green-800"
               : "bg-red-800";
-            const message = actionData.checkinRoom.success
-              ? "nhận phòng thành công!"
-              : "đang trùng lịch đặt phòng.";
             Swal.fire({
               position: "bottom",
-              html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg ${bgColor} text-white">Phòng ${nameRoom.room.roomName} ${message}</button>`,
+              html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg ${bgColor} text-white">${actionData.checkinRoom.displayMessage}</button>`,
               showConfirmButton: false,
               background: "transparent",
               backdrop: "none",
               timer: 2500,
             });
           }
+          //Notify pay room
           if (actionData.checkoutRoom) {
             const nameRoom = reservation.listReservationDetails.find(
               (details) =>
@@ -257,13 +254,149 @@ function ReservationForm(props) {
               timer: 2500,
             });
           }
-        }
+          //Notify add invoice
+          if (actionData.isAddInvoice) {
+            if (actionData.isAddInvoice.data.success) {
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-green-800 text-white">Thêm hoá đơn thành công</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            } else {
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Thêm hoá đơn thất bại</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            }
+          }
+          //Notify edit invoice
+          if (actionData.isEditInvoice) {
+            if (actionData.isEditInvoice.data.success) {
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-green-800 text-white">Cập nhật hoá đơn thành công</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            } else {
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Cập nhật hoá đơn thất bại</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            }
+          }
+          //Notify status invoice
+          if (actionData.isStatusInvoice) {
+            if (actionData.isStatusInvoice.data.success) {
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-green-800 text-white">${actionData.status} hoá đơn thành công</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            } else {
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">${actionData.status} hoá đơn thất bại</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            }
+          }
+          //Notify cancel invoice
+          if (actionData.isCancelInvoice) {
+            if (actionData.isCancelInvoice.data.success) {
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-green-800 text-white">Huỷ hoá đơn thành công</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            } else {
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Huỷ hoá đơn thất bại</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            }
+          }
+          //Notify remove room
+          if (actionData.removeRoom) {
+            if (actionData.removeRoom.data.success) {
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-green-800 text-white">Xoá phòng thành công</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            } else {
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Xoá phòng thất bại</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            }
+          }
 
-        const roomAc = reservation.listReservationDetails.find(
-          (details) =>
-            details.reservationDetailId === roomActive.reservationDetailId
-        );
-        setRoomActive(roomAc ? roomAc : reservation.listReservationDetails[0]);
+          //Notify change room
+          if (actionData.changeRoom) {
+            if (actionData.changeRoom) {
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-green-800 text-white">Thay đổi phòng thành công</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            } else {
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Thay đổi phòng thất bại</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            }
+          }
+        }
+        if (reservation) {
+          const roomAc = reservation.listReservationDetails.find(
+            (details) =>
+              details.reservationDetailId === roomActive.reservationDetailId
+          );
+          setRoomActive(
+            roomAc ? roomAc : reservation.listReservationDetails[0]
+          );
+        }
       } catch (error) {
         console.log(error);
       }
@@ -272,20 +405,18 @@ function ReservationForm(props) {
   }, [reservation]);
   // console.log(roomActive);
   const [priceBook, setPriceBook] = useState(priceById);
-  const [price, setPrice] = useState(priceByCateRoom);
+  let price = priceByCateRoom;
 
   const handlePriceBookChange = (event) => {
     const priceById = allPrices.find(
       (price) => price.PriceList.priceListId === event.target.value
     );
     if (roomActive) {
-      setPrice(
-        priceById.ListPriceListDetail.find(
-          (details) =>
-            details.RoomClass.roomCategoryId ===
-            roomActive.room.roomCategory.roomCategoryId
-        ).PriceListDetailWithDayOfWeek
-      );
+      price = priceById.ListPriceListDetail.find(
+        (details) =>
+          details.RoomClass.roomCategoryId ===
+          roomActive.room.roomCategory.roomCategoryId
+      ).PriceListDetailWithDayOfWeek;
     }
     setPriceBook(priceById);
   };
@@ -308,13 +439,11 @@ function ReservationForm(props) {
   }, [actionData, roomActive]);
 
   const handleRoomChange = (room) => {
-    setPrice(
-      priceById.ListPriceListDetail.find(
-        (details) =>
-          details.RoomClass.roomCategoryId ===
-          room.room.roomCategory.roomCategoryId
-      ).PriceListDetailWithDayOfWeek
-    );
+    price = priceBook.ListPriceListDetail.find(
+      (details) =>
+        details.RoomClass.roomCategoryId ===
+        room.room.roomCategory.roomCategoryId
+    ).PriceListDetailWithDayOfWeek;
 
     setRoomActive(room);
   };
@@ -328,7 +457,6 @@ function ReservationForm(props) {
   };
 
   // console.log(listCustomers);
-
   return (
     <>
       <div className="px-4 w-full py-2 h-1/6 print:hidden">
@@ -466,7 +594,12 @@ function ReservationForm(props) {
                   >
                     Nhận phòng
                   </button>
-                  <button className="px-4 py-2 ml-2 rounded-lg text-white bg-gray-500 hover:bg-gray-600">
+                  <button
+                    className="px-4 py-2 ml-2 rounded-lg text-white bg-gray-500 hover:bg-gray-600"
+                    onClick={() => {
+                      setOpenChangeModal(true);
+                    }}
+                  >
                     Đổi phòng
                   </button>
                 </>
@@ -481,12 +614,18 @@ function ReservationForm(props) {
                   >
                      Trả phòng
                   </button>
-                  <button className="px-4 py-2 ml-2 rounded-lg text-white bg-gray-500 hover:bg-gray-600">
+                  <button
+                    className="px-4 py-2 ml-2 rounded-lg text-white bg-gray-500 hover:bg-gray-600"
+                    onClick={() => {
+                      setOpenChangeModal(true);
+                    }}
+                  >
                     Đổi phòng
                   </button>
                 </>
               )}
-              {roomActive.status === "CHECK_OUT" && <></>}
+              {(roomActive.status === "CHECK_OUT" ||
+                roomActive.status === "DONE") && <></>}
             </div>
             {roomActive && listCustomers && (
               <>
@@ -531,7 +670,13 @@ function ReservationForm(props) {
                             (res) => res.room.roomId !== room.room.roomId
                           )}
                           index={index}
-                          price={price}
+                          price={
+                            priceBook.ListPriceListDetail.find(
+                              (details) =>
+                                details.RoomClass.roomCategoryId ===
+                                room.room.roomCategory.roomCategoryId
+                            ).PriceListDetailWithDayOfWeek
+                          }
                           visitors={listCustomers}
                           handleVisitModalOpen={() => setOpenVisitorModal(true)}
                         />
@@ -620,18 +765,43 @@ function ReservationForm(props) {
                               >
                                 <i className="fa-solid fa-print"></i>
                               </button>
-                              {invoice.order.status === "UNCONFIRMED" && (
-                                <>
-                                  <button
-                                    type="button"
-                                    className="mr-4 px-1 rounded-full hover:bg-gray-200"
-                                    onClick={() => {
-                                      setSelectedInvoice(invoice);
-                                      setOpenEditInvoiceModal(true);
-                                    }}
-                                  >
-                                    <i className="fa-solid fa-pen"></i>
-                                  </button>
+                              {invoice.order.status === "UNCONFIRMED" &&
+                                (roomActive.status === "CHECK_IN" ||
+                                  roomActive.status === "BOOKING") && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      className="mr-4 px-1 rounded-full hover:bg-gray-200"
+                                      onClick={() => {
+                                        setSelectedInvoice(invoice);
+                                        setOpenEditInvoiceModal(true);
+                                      }}
+                                    >
+                                      <i className="fa-solid fa-pen"></i>
+                                    </button>
+                                    <button
+                                      className="mr-4 px-1 rounded-full hover:bg-gray-200"
+                                      onClick={() => {
+                                        setSelectedInvoice(invoice);
+                                        setOpenStatusInvoiceModal(true);
+                                      }}
+                                    >
+                                      <i className="fa-solid fa-check"></i>
+                                    </button>
+                                    <button
+                                      className="mr-4 px-1 rounded-full hover:bg-gray-200"
+                                      onClick={() => {
+                                        setSelectedInvoice(invoice);
+                                        setOpenDeleteInvoiceModal(true);
+                                      }}
+                                    >
+                                      <i className="fa-solid fa-trash"></i>
+                                    </button>
+                                  </>
+                                )}
+                              {invoice.order.status === "CONFIRMED" &&
+                                (roomActive.status === "CHECK_IN" ||
+                                  roomActive.status === "BOOKING") && (
                                   <button
                                     className="mr-4 px-1 rounded-full hover:bg-gray-200"
                                     onClick={() => {
@@ -641,38 +811,20 @@ function ReservationForm(props) {
                                   >
                                     <i className="fa-solid fa-check"></i>
                                   </button>
-                                  <button
-                                    className="mr-4 px-1 rounded-full hover:bg-gray-200"
-                                    onClick={() => {
-                                      setSelectedInvoice(invoice);
-                                      setOpenDeleteInvoiceModal(true);
-                                    }}
-                                  >
-                                    <i className="fa-solid fa-trash"></i>
-                                  </button>
-                                </>
-                              )}
-                              {invoice.order.status === "CONFIRMED" && (
-                                <button
-                                  className="mr-4 px-1 rounded-full hover:bg-gray-200"
-                                  onClick={() => {
-                                    setSelectedInvoice(invoice);
-                                    setOpenStatusInvoiceModal(true);
-                                  }}
-                                >
-                                  <i className="fa-solid fa-check"></i>
-                                </button>
-                              )}
+                                )}
                             </div>
                           </div>
                         );
                       })}
-                  <button
-                    className="rounded p-2 mt-2 text-white bg-green-500"
-                    onClick={() => setOpenAddInvoiceModal(true)}
-                  >
-                    <i className="fa-solid fa-plus mr-2"></i>Tạo hoá đơn
-                  </button>
+                  {(roomActive.status === "CHECK_IN" ||
+                    roomActive.status === "BOOKING") && (
+                    <button
+                      className="rounded p-2 mt-2 text-white bg-green-500"
+                      onClick={() => setOpenAddInvoiceModal(true)}
+                    >
+                      <i className="fa-solid fa-plus mr-2"></i>Tạo hoá đơn
+                    </button>
+                  )}
                 </div>
                 <div className="w-full py-2 h-.5/6 flex">
                   <div>
@@ -710,12 +862,12 @@ function ReservationForm(props) {
               </>
             )}
           </Form>
-
           {openAddRoomModal && (
             <AddRoom
               open={openAddRoomModal}
               onClose={() => setOpenAddRoomModal(false)}
               reservationId={reservation.reservation.reservationId}
+              listPrice={priceBook.ListPriceListDetail}
             />
           )}
           {openAddInvoiceModal && (
@@ -740,7 +892,9 @@ function ReservationForm(props) {
                   <p className="text-sm">{selectedInvoice.order.orderId}</p>
                 </div>
                 <div>
-                  <p>Khách hàng: {customer.customerName}</p>
+                  <p>
+                    Khách hàng: {customer ? customer.customerName : "Khách lẻ"}
+                  </p>
                   <p>Mã đặt phòng: {reservation.reservation.reservationId}</p>
                   <p>Thu ngân: </p>
                 </div>
@@ -879,6 +1033,11 @@ function ReservationForm(props) {
                   : allPrices[0].PriceList.priceListId
               }
               customerId={customer ? customer.customerId : null}
+              listPrice={
+                priceBook
+                  ? priceBook.ListPriceListDetail
+                  : allPrices[0].ListPriceListDetail
+              }
             />
           )}
         </>
@@ -888,7 +1047,13 @@ function ReservationForm(props) {
           open={openReceiveModal}
           onClose={() => setOpenReceiveModal(false)}
           roomActive={roomActive}
-          price={price}
+          price={
+            priceBook.ListPriceListDetail.find(
+              (details) =>
+                details.RoomClass.roomCategoryId ===
+                roomActive.room.roomCategory.roomCategoryId
+            ).PriceListDetailWithDayOfWeek
+          }
         />
       )}
       {openPayModal && (
@@ -896,7 +1061,27 @@ function ReservationForm(props) {
           open={openPayModal}
           onClose={() => setOpenPayModal(false)}
           roomActive={roomActive}
-          price={price}
+          price={
+            priceBook.ListPriceListDetail.find(
+              (details) =>
+                details.RoomClass.roomCategoryId ===
+                roomActive.room.roomCategory.roomCategoryId
+            ).PriceListDetailWithDayOfWeek
+          }
+        />
+      )}
+      {openChangeModal && (
+        <ChangeRoomModal
+          open={openChangeModal}
+          onClose={() => setOpenChangeModal(false)}
+          roomActive={roomActive}
+          price={
+            priceBook.ListPriceListDetail.find(
+              (details) =>
+                details.RoomClass.roomCategoryId ===
+                roomActive.room.roomCategory.roomCategoryId
+            ).PriceListDetailWithDayOfWeek
+          }
         />
       )}
     </>
