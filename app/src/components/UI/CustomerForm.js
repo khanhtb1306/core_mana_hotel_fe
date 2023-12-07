@@ -72,6 +72,8 @@ function CustomerForm({ name, open, onClose, method, customer }) {
                           className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                           type="text"
                           name="customerName"
+                          minLength="1"
+                          maxLength="255"
                           defaultValue={
                             customer.customerName ? customer.customerName : ""
                           }
@@ -200,6 +202,8 @@ function CustomerForm({ name, open, onClose, method, customer }) {
                         <input
                           className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                           type="text"
+                          minLength="1"
+                          maxLength="255"
                           name="nationality"
                           defaultValue={
                             customer.nationality ? customer.nationality : ""

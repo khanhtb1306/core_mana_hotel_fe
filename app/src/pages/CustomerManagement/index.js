@@ -10,8 +10,6 @@ import EditCustomer from "../../components/Customer/EditCustomer";
 import DeleteCustomer from "../../components/Customer/DeleteCustomer";
 import ButtonClick from "../../components/UI/ButtonClick";
 import Swal from "sweetalert2";
-import NewArea from "../../components/NewArea";
-import EditArea from "../../components/UI/EditArea";
 import NewGroupCustomer from "../../components/NewGroupCustomer";
 
 function CustomerManagementPage() {

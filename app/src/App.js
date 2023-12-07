@@ -63,10 +63,12 @@ import OverviewManagementPage,{
   loader as loadOverview,
 } from "./pages/OverviewManagementPage";
 import TransactionManagementPage, {
+  loader as loadTransaction
 } from "./pages/TransactionManagement";
 import ImportManagementPage, {
 } from "./pages/ImportManagement";
 import FundBookManagementPage, {
+  // loader as loadFundBooks
 }from "./pages/FundBookManagement";
 import StaffManagementPage,{
   loader as loadStaffs,
@@ -117,6 +119,8 @@ const routesForManager = [
   {
     path: "transactionManagement",
     element: <TransactionManagementPage />,
+    loader: loadTransaction,
+
   },
   {
     path: "importManagement",
@@ -125,6 +129,8 @@ const routesForManager = [
   {
     path: "fundBookManagement",
     element: <FundBookManagementPage />,
+    // loader: loadFundBooks,
+
   },
   {
     path: "customerManagement",
