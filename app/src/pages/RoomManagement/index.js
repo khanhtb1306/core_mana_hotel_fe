@@ -197,7 +197,7 @@ function RoomManagementPage() {
                   onChange={(e) => setSearchValue(e.target.value)}
               />
             </div>
-            <div>
+            <div className="pt-2">
               {filteredFloors.map((floor, index) => (
                   <div
                       key={index}
@@ -210,7 +210,7 @@ function RoomManagementPage() {
                       onMouseEnter={() => setHoveredFloor(floor.floorName)}
                       onMouseLeave={() => setHoveredFloor(null)}
                   >
-                    <div
+                    <div className= "pt-1"
                         style={{
                           width: "80%",
                           backgroundColor:
