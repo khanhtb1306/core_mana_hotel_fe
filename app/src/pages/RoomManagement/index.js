@@ -59,6 +59,24 @@ function RoomManagementPage() {
     setFilteredFloors(filtered);
   }, [floors, searchValue]);
 
+  const [selectedFloorName, setSelectedFloorName] = useState(null);
+  const handleSelectAllFloors = () => {
+    setSelectedFloor(null);
+    setSelectedFloorName(null);
+    setRoomByFloor(rooms);
+  };
+
+  const handleFloorSelection = (floorName) => {
+    setSelectedFloor(floorName);
+    setSelectedFloorName(floorName);
+  };
+
+  useEffect(() => {
+    const filtered = selectedFloor
+        ? rooms.filter((room) => room.floor.floorName === selectedFloor)
+        : rooms;
+    setRoomByFloor(filtered);
+  }, [rooms, selectedFloor]);
 
   const handleDetailsRoom = (id) => {
     setOpenDetailsRoom(true);
@@ -166,28 +184,28 @@ function RoomManagementPage() {
   return (
     <>
       <div className="flex">
-        <div className="w-1.5/12 mx-auto mt-36 h-150 max-w-full flex-col bg-white text-left rounded shadow-lg">
+        <div className="w-1.5/12 mx-auto mt-36 h-100 max-w-full flex-col bg-white text-left rounded shadow-lg" style={{ overflowY: 'auto' }}>
           <div className="pl-2 pr-2">
-          <div className="flex pt-1">
-          <div className="w-10/12 text-1xl ">
-            <p className="text-lg font-bold">Khu vực</p>
-          </div>
-          <div className="w-2/12">
-            <button
-                type="button"
-                className="text-2xl text-gray-500"
-                onClick={() => setOpenNewAreaModal(true)}
-            >
-              <i className="fa-solid fa-plus "></i>
-            </button>
-            {openNewAreaModal && (
-                <NewArea
-                    open={openNewAreaModal}
-                    onClose={() => setOpenNewAreaModal(false)}
-                />
-            )}
-          </div>
-          </div>
+            <div className="flex pt-1">
+              <div className="w-10/12 text-1xl ">
+                <p className="text-lg font-bold">Khu vực</p>
+              </div>
+                <div className="w-2/12">
+                    <button
+                        type="button"
+                        className="text-2xl text-gray-500"
+                        onClick={() => setOpenNewAreaModal(true)}
+                    >
+                      <i className="fa-solid fa-plus "></i>
+                    </button>
+                    {openNewAreaModal && (
+                        <NewArea
+                            open={openNewAreaModal}
+                            onClose={() => setOpenNewAreaModal(false)}
+                        />
+                    )}
+                </div>
+            </div>
             <div className="">
               <input
                   type="text"
@@ -198,23 +216,36 @@ function RoomManagementPage() {
               />
             </div>
             <div className="pt-2">
+              <button
+                  type="button"
+                  className="w-full p-1 border border-gray-300 rounded bg-gray-200"
+                  onClick={handleSelectAllFloors}
+              >
+                Tất cả khu vực
+              </button>
               {filteredFloors.map((floor, index) => (
-                  <div
+                  <div className=""
                       key={index}
                       style={{
                         display: "flex",
                         alignItems: "center",
                         backgroundColor:
-                            selectedFloor === floor.floorName ? "lightgray" : "transparent",
+                            selectedFloorName === floor.floorName
+                                ? "lightgray"
+                                : "transparent",
                       }}
                       onMouseEnter={() => setHoveredFloor(floor.floorName)}
                       onMouseLeave={() => setHoveredFloor(null)}
+                      onClick={() => handleFloorSelection(floor.floorName)}
                   >
-                    <div className= "pt-1"
+                    <div
+                        className="pt-1 "
                         style={{
                           width: "80%",
                           backgroundColor:
-                              selectedFloor === floor.floorName ? "lightgray" : "transparent",
+                              selectedFloorName === floor.floorName
+                                  ? "lightgray"
+                                  : "transparent",
                         }}
                     >
                       {floor.floorName}
@@ -238,7 +269,6 @@ function RoomManagementPage() {
                   />
               )}
             </div>
-
           </div>
         </div>
         <Box className="h-full w-10/12 mx-auto mt-10">
