@@ -5,7 +5,7 @@ import {
   GridToolbar,
   viVN,
 } from "@mui/x-data-grid";
-import { useState } from "react";
+import React, {useEffect, useState} from "react";
 import ButtonHover from "../../components/UI/ButtonHover";
 import NewRoom from "../../components/Room/NewRoom";
 import NewCategoryRoom from "../../components/CategoryRoom/NewCategoryRoom";
@@ -25,6 +25,8 @@ import Swal from "sweetalert2";
 import { Tooltip } from "react-tooltip";
 import SetStatusRoom from "../../components/Room/SetStatusRoom";
 import ButtonClick from "../../components/UI/ButtonClick";
+import NewArea from "../../components/NewArea";
+import EditArea from "../../components/UI/EditArea";
 
 function RoomManagementPage() {
   const token = useRouteLoaderData("root");
@@ -38,6 +40,26 @@ function RoomManagementPage() {
   const [openDetailsRoom, setOpenDetailsRoom] = useState(false);
   const [openEditRoom, setOpenEditRoom] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState(null);
+  const [hoveredFloor, setHoveredFloor] = useState(null);
+  const [selectedFloor, setSelectedFloor] = useState(null);
+  const [searchValue, setSearchValue] = useState('');
+  const [filteredFloors, setFilteredFloors] = useState([]);
+  const [openNewAreaModal, setOpenNewAreaModal] = useState(false);
+  const [openEditAreaModal, setOpenEditAreaModal] = useState(false);
+  const [selectedFloorId, setSelectedFloorId] = useState(null);
+
+  const handleEditArea = (floorId) => {
+    setSelectedFloorId(floorId);
+    setOpenEditAreaModal(true);
+  };
+
+
+  useEffect(() => {
+    // Filter floors based on the search input
+    const filtered = floors.filter(floor => floor.floorName.toLowerCase().includes(searchValue.toLowerCase()));
+    setFilteredFloors(filtered);
+  }, [floors, searchValue]);
+
 
   const handleDetailsRoom = (id) => {
     setOpenDetailsRoom(true);
@@ -131,7 +153,6 @@ function RoomManagementPage() {
       status: status,
     };
   });
-
   const newCateRoomHandler = () => {
     setOpenNewCateRoomModal(true);
   };
@@ -143,10 +164,79 @@ function RoomManagementPage() {
   const deleteRoomsHandler = () => {
     setOpenDeleteRoomsModal(true);
   };
-
   return (
     <>
-      <Box className="h-full w-10/12 mx-auto mt-10">
+      <div className="flex">
+        <div className="w-1.5/12 mx-auto mt-36 h-150 max-w-full flex-col bg-white text-left rounded shadow-lg">
+          <div className="pl-2 pr-2">
+          <div className="flex pt-1">
+          <div className="w-10/12 text-1xl ">
+            <p className="text-lg font-bold">Khu vực</p>
+          </div>
+          <div className="w-2/12">
+            <button
+                type="button"
+                className="text-2xl text-gray-500"
+                onClick={() => setOpenNewAreaModal(true)}
+            >
+              <i className="fa-solid fa-plus"></i>
+            </button>
+            {openNewAreaModal && (
+                <NewArea
+                    open={openNewAreaModal}
+                    onClose={() => setOpenNewAreaModal(false)}
+                />
+            )}
+          </div>
+          </div>
+            <div className="">
+              <input
+                  type="text"
+                  placeholder="Tìm kiếm khu vực"
+                  className="w-full p-2 border border-gray-300 rounded"
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+              />
+            </div>
+            <div>
+              {floors.map((floor, index) => (
+                  <div
+                      key={index}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        backgroundColor:
+                            selectedFloor === floor.floorName ? "lightgray" : "transparent",
+                      }}
+                      onMouseEnter={() => setHoveredFloor(floor.floorName)}
+                      onMouseLeave={() => setHoveredFloor(null)}
+                      onClick={() => handleEditArea(floor.floorId)}
+                  >
+                    <div style={{ width: "80%", backgroundColor: selectedFloor === floor.floorName ? "lightgray" : "transparent" }}>
+                      {floor.floorName}
+                    </div>
+                    {hoveredFloor === floor.floorName && (
+                        <button
+                            type="button"
+                            className="w-1/12 text-1xl text-gray-500"
+                            onClick={() => setOpenEditAreaModal(true)}
+                        >
+                          <i className="fa-solid fa-pen-to-square edit-action"></i>
+                        </button>
+                    )}
+                  </div>
+              ))}
+              {openEditAreaModal && (
+                  <EditArea
+                      open={openEditAreaModal}
+                      onClose={() => setOpenEditAreaModal(false)}
+                      floorId={selectedFloorId}
+                  />
+              )}
+            </div>
+          </div>
+        </div>
+        <Box className="h-full w-10/12 mx-auto mt-10">
         <div className="flex">
           <h1 className="text-4xl">Hạng phòng & Phòng</h1>
           <div className="ml-auto flex">
@@ -263,6 +353,7 @@ function RoomManagementPage() {
       <Tooltip anchorSelect=".inactive-action" place="top">
         Ngừng hoạt động
       </Tooltip>
+      </div>
     </>
   );
 }
