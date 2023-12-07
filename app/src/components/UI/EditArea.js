@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Form } from "react-router-dom";
+import {Form, redirect} from "react-router-dom";
 import { axiosPrivate } from "../../utils/axiosConfig";
+import Swal from "sweetalert2";
 
 function EditArea(props) {
     const [editedFloorName, setEditedFloorName] = useState("");
@@ -24,6 +25,16 @@ function EditArea(props) {
         setEditedFloorName(e.target.value);
     };
 
+    const showSweetAlert = (icon, title) => {
+        Swal.fire({
+            position: "center",
+            icon: icon,
+            title: title,
+            showConfirmButton: false,
+            timer: 1500,
+        });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -41,25 +52,54 @@ function EditArea(props) {
                 }
             );
 
-            console.log(response);
-
-            props.onClose(); // Close the modal or perform other actions after successful update
+            if (response.status === 200) {
+                showSweetAlert("success", response.data);
+            } else {
+                showSweetAlert("error", response.data);
+            }
+            props.onClose();
+            window.location.href = "/manager/roomManagement";
+            return;
         } catch (error) {
             console.error("Error updating floor:", error);
-            // Handle errors, show messages, etc.
         }
     };
 
     const handleDelete = async () => {
-        try {
-            // Add logic to delete the floor based on props.floorId
-            const response = await axiosPrivate.delete(`Floor/${props.floorId}`);
-            console.log(response);
+        // Display a confirmation dialog
+        const confirmDelete = await Swal.fire({
+            title: "Xác nhận xóa",
+            text: "Bạn chắc chắn muốn xóa khu vực này?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Xóa",
+            cancelButtonText: "Hủy",
+        });
 
-            props.onClose(); // Close the modal or perform other actions after successful delete
-        } catch (error) {
-            console.error("Error deleting floor:", error);
-            // Handle errors, show messages, etc.
+        // If the user confirms the delete action
+        if (confirmDelete.isConfirmed) {
+            try {
+                // Make the delete request
+                const response = await axiosPrivate.delete(`Floor/${props.floorId}`);
+
+                // Show success or error alert based on the response
+                if (response.status === 200) {
+                    showSweetAlert("success", response.data);
+                } else {
+                    showSweetAlert("error", response.data);
+                }
+
+                // Close the modal
+                props.onClose();
+
+                // Redirect to the desired location
+                window.location.href = "/manager/roomManagement";
+                return;
+            } catch (error) {
+                console.error("Error deleting floor:", error);
+            }
         }
     };
 

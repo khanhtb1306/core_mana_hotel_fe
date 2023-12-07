@@ -31,6 +31,7 @@ import EditArea from "../../components/UI/EditArea";
 function RoomManagementPage() {
   const token = useRouteLoaderData("root");
   const { rooms, categories, floors } = useLoaderData();
+  const [roomsByFloor, setRoomByFloor] = useState(rooms);
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openNewRoomModal, setOpenNewRoomModal] = useState(false);
   const [openDeleteRoomsModal, setOpenDeleteRoomsModal] = useState(false);
@@ -47,7 +48,6 @@ function RoomManagementPage() {
   const [openNewAreaModal, setOpenNewAreaModal] = useState(false);
   const [openEditAreaModal, setOpenEditAreaModal] = useState(false);
   const [selectedFloorId, setSelectedFloorId] = useState(null);
-
   const handleEditArea = (floorId) => {
     setSelectedFloorId(floorId);
     setOpenEditAreaModal(true);
@@ -55,7 +55,6 @@ function RoomManagementPage() {
 
 
   useEffect(() => {
-    // Filter floors based on the search input
     const filtered = floors.filter(floor => floor.floorName.toLowerCase().includes(searchValue.toLowerCase()));
     setFilteredFloors(filtered);
   }, [floors, searchValue]);
@@ -134,7 +133,7 @@ function RoomManagementPage() {
     },
   ];
 
-  const rows = rooms.map((room) => {
+  const rows = roomsByFloor ? roomsByFloor.map((room) => {
     const status = room.status === 1 ? "Đang hoạt động" : "Ngừng hoạt động";
     return {
       id: room.roomId,
@@ -152,7 +151,7 @@ function RoomManagementPage() {
         : 0,
       status: status,
     };
-  });
+  }):[];
   const newCateRoomHandler = () => {
     setOpenNewCateRoomModal(true);
   };
@@ -179,7 +178,7 @@ function RoomManagementPage() {
                 className="text-2xl text-gray-500"
                 onClick={() => setOpenNewAreaModal(true)}
             >
-              <i className="fa-solid fa-plus"></i>
+              <i className="fa-solid fa-plus "></i>
             </button>
             {openNewAreaModal && (
                 <NewArea
@@ -199,7 +198,7 @@ function RoomManagementPage() {
               />
             </div>
             <div>
-              {floors.map((floor, index) => (
+              {filteredFloors.map((floor, index) => (
                   <div
                       key={index}
                       style={{
@@ -210,16 +209,21 @@ function RoomManagementPage() {
                       }}
                       onMouseEnter={() => setHoveredFloor(floor.floorName)}
                       onMouseLeave={() => setHoveredFloor(null)}
-                      onClick={() => handleEditArea(floor.floorId)}
                   >
-                    <div style={{ width: "80%", backgroundColor: selectedFloor === floor.floorName ? "lightgray" : "transparent" }}>
+                    <div
+                        style={{
+                          width: "80%",
+                          backgroundColor:
+                              selectedFloor === floor.floorName ? "lightgray" : "transparent",
+                        }}
+                    >
                       {floor.floorName}
                     </div>
                     {hoveredFloor === floor.floorName && (
                         <button
                             type="button"
                             className="w-1/12 text-1xl text-gray-500"
-                            onClick={() => setOpenEditAreaModal(true)}
+                            onClick={() => handleEditArea(floor.floorId)}
                         >
                           <i className="fa-solid fa-pen-to-square edit-action"></i>
                         </button>
@@ -234,6 +238,7 @@ function RoomManagementPage() {
                   />
               )}
             </div>
+
           </div>
         </div>
         <Box className="h-full w-10/12 mx-auto mt-10">
