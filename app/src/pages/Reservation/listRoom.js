@@ -1,25 +1,123 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import ReservationLayout from "../ReservationLayout";
-import { Checkbox, FormControlLabel } from "@mui/material";
+import { Checkbox, FormControlLabel, MenuItem, Select } from "@mui/material";
 import { orange, green, grey } from "@mui/material/colors";
 import { defer, redirect, useLoaderData } from "react-router-dom";
 import { axiosPrivate } from "../../utils/axiosConfig";
-import DetailsReservation from "../../components/Reservation/DetailsReservation";
+import { DatePicker } from "@mui/x-date-pickers";
+import dayjs from "dayjs";
+import Swal from "sweetalert2";
+import FullCalendar from "@fullcalendar/react";
+import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
+import interactionPlugin from "@fullcalendar/interaction";
+import viLocale from "@fullcalendar/core/locales/vi";
+import "dayjs/locale/vi";
+dayjs.locale("vi");
 
 function ListRoomPage() {
-  const { floors } = useLoaderData();
-  console.log(floors);
-  const [listFloors, setListFloors] = useState(floors);
-  const [isChecked1, setIsChecked1] = useState(false);
-  const [isChecked2, setIsChecked2] = useState(false);
-  const [isChecked3, setIsChecked3] = useState(false);
+  const { listRoomsBycate } = useLoaderData();
+  // console.log(listRoomsBycate);
+  const [empty, setEmpty] = useState(false);
+  const [order, setOrder] = useState(false);
+  const [using, setUsing] = useState(false);
+  const [paid, setPaid] = useState(false);
 
-  const [openDetailsReservationModal, setOpenDetailsReservationModal] =
-    useState(false);
+  const [type, setType] = useState(1);
+  const [day, setDay] = useState(dayjs());
+  const dayRef = useRef(day);
 
-  const handleCheckboxChange1 = (event) => {};
-  const handleCheckboxChange2 = (event) => {};
-  const handleCheckboxChange3 = (event) => {};
+  const listCategories = listRoomsBycate.map((cate) => {
+    return {
+      id: cate.roomCategory.roomCategoryId,
+      title: cate.roomCategory.roomCategoryName,
+      children: cate.ListRoom.map((room) => {
+        return {
+          id: room.roomId,
+          title: room.roomName,
+          extendedProps: {
+            isChild: true,
+          },
+        };
+      }),
+    };
+  });
+
+  const handleEventChange =
+    (dayRef, isResize) =>
+    ({ event, oldEvent, revert }) => {
+      console.log(event.extendedProps);
+      console.log(dayRef);
+    };
+
+  const [listReservations, setListReservations] = useState([]);
+
+  useEffect(() => {
+    async function fetchList() {
+      try {
+        if (day.year()) {
+          const response = await axiosPrivate.get(
+            "reservation-detail/get-by-booking-and-check-in?date=" +
+              day.format("YYYY-MM-DD HH:mm:ss")
+          );
+          if (response) {
+            setListReservations(response.data.result);
+          }
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchList();
+  }, [day]);
+
+  // console.log(listReservations);
+
+  const handleEmptyChange = (event) => {
+    const checked = event.target.checked;
+    setEmpty(checked);
+    if (
+      (checked && order && using && paid) ||
+      (!checked && !order && !using && !paid)
+    ) {
+    } else {
+    }
+  };
+  const handleOrderChange = (event) => {
+    const checked = event.target.checked;
+    setOrder(checked);
+    if (
+      (empty && checked && using && paid) ||
+      (!empty && !checked && !using && !paid)
+    ) {
+    } else {
+    }
+  };
+  const handleUsingChange = (event) => {
+    const checked = event.target.checked;
+    setUsing(checked);
+    if (
+      (empty && order && checked && paid) ||
+      (!empty && !order && !checked && !paid)
+    ) {
+    } else {
+    }
+  };
+  const handlePaidChange = (event) => {
+    const checked = event.target.checked;
+    setPaid(checked);
+    if (
+      (empty && order && using && checked) ||
+      (!empty && !order && !using && !checked)
+    ) {
+    } else {
+    }
+  };
+
+  const handleErrorDay = () => {
+    setDay(dayjs());
+  };
 
   return (
     <div className="h-full px-4 mx-auto mt-2">
@@ -27,10 +125,16 @@ function ListRoomPage() {
         <div>
           <FormControlLabel
             value="end"
+            control={<Checkbox checked={empty} onChange={handleEmptyChange} />}
+            label="Phòng trống"
+            labelPlacement="end"
+          />
+          <FormControlLabel
+            value="end"
             control={
               <Checkbox
-                checked={isChecked1}
-                onChange={handleCheckboxChange1}
+                checked={order}
+                onChange={handleOrderChange}
                 sx={{
                   color: orange[800],
                   "&.Mui-checked": {
@@ -39,15 +143,15 @@ function ListRoomPage() {
                 }}
               />
             }
-            label="Đặt trước"
+            label="Phòng sắp đến"
             labelPlacement="end"
           />
           <FormControlLabel
             value="end"
             control={
               <Checkbox
-                checked={isChecked2}
-                onChange={handleCheckboxChange2}
+                checked={using}
+                onChange={handleUsingChange}
                 sx={{
                   color: green[800],
                   "&.Mui-checked": {
@@ -63,196 +167,284 @@ function ListRoomPage() {
             value="end"
             control={
               <Checkbox
-                checked={isChecked3}
-                onChange={handleCheckboxChange3}
+                checked={paid}
+                onChange={handlePaidChange}
                 sx={{
-                  color: grey[800],
+                  color: green[800],
                   "&.Mui-checked": {
-                    color: grey[600],
+                    color: green[600],
                   },
                 }}
               />
             }
-            label="Đã trả phòng"
+            label="Phòng sắp trả"
             labelPlacement="end"
           />
         </div>
         <div className="ml-auto">
-          <button
-            type="button"
-            className="bg-green-500 p-2 rounded-lg text-white"
+          <Select
+            sx={{ mr: 2, minWidth: 120, background: "white" }}
+            size="small"
+            value={type}
+            onChange={(event) => {
+              const value = event.target.value;
+              setType(value);
+              if (day.year()) {
+                if (value === 1) {
+                  dayRef.current.getApi().gotoDate(day.toDate());
+                } else if (value === 2) {
+                  dayRef.current.getApi().gotoDate(day.toDate());
+                } else {
+                  dayRef.current.getApi().gotoDate(day.toDate());
+                }
+              }
+            }}
           >
-            <i className="fa-solid fa-plus px-2"></i>
-            <span className="pr-2">Đặt phòng</span>
-          </button>
+            <MenuItem value={1}>Ngày</MenuItem>
+            <MenuItem value={2}>Tuần</MenuItem>
+            <MenuItem value={3}>Tháng</MenuItem>
+          </Select>
+          <LocalizationProvider
+            dateAdapter={AdapterDayjs}
+            adapterLocale="vi-VN"
+          >
+            {type === 1 && (
+              <>
+                <button
+                  type="button"
+                  className="px-4 py-2 bg-white rounded-tl rounded-bl"
+                  onClick={() => {
+                    setDay(day.add(-1, "day"));
+                    dayRef.current.getApi().prev();
+                  }}
+                >
+                  <i className="fa-solid fa-chevron-left"></i>
+                </button>
+                <DatePicker
+                  sx={{
+                    ".MuiInputBase-input": {
+                      padding: 1,
+                      width: 180,
+                      border: 0,
+                      background: "white",
+                    },
+                  }}
+                  value={day}
+                  onChange={(value) => {
+                    setDay(value);
+                    if (value.year()) {
+                      dayRef.current.getApi().gotoDate(value.toDate());
+                    }
+                  }}
+                  onError={handleErrorDay}
+                  size="small"
+                  format="dddd, DD/MM/YYYY"
+                />
+                <button
+                  type="button"
+                  className="px-4 py-2 bg-white rounded-tr rounded-br"
+                  onClick={() => {
+                    setDay(day.add(1, "day"));
+                    dayRef.current.getApi().next();
+                  }}
+                >
+                  <i className="fa-solid fa-chevron-right"></i>
+                </button>
+              </>
+            )}
+            {type === 2 && (
+              <>
+                <button
+                  type="button"
+                  className="px-4 py-2 bg-white rounded-tl rounded-bl"
+                  onClick={() => {
+                    setDay(day.add(-1, "week"));
+                    dayRef.current
+                      .getApi()
+                      .gotoDate(day.add(-1, "week").toDate());
+                  }}
+                >
+                  <i className="fa-solid fa-chevron-left"></i>
+                </button>
+                <DatePicker
+                  sx={{
+                    ".MuiInputBase-input": {
+                      padding: 1,
+                      width: 200,
+                      border: 0,
+                      background: "white",
+                    },
+                  }}
+                  value={day}
+                  onChange={(value) => {
+                    setDay(value);
+                    if (value.year()) {
+                      dayRef.current.getApi().gotoDate(value.toDate());
+                    }
+                  }}
+                  onError={handleErrorDay}
+                  size="small"
+                  format={`${day.startOf("week").format("DD/MM/YYYY")} - ${day
+                    .endOf("week")
+                    .format("DD/MM/YYYY")}     HH`}
+                />
+                <button
+                  type="button"
+                  className="px-4 py-2 bg-white rounded-tr rounded-br"
+                  onClick={() => {
+                    setDay(day.add(1, "week"));
+                    dayRef.current
+                      .getApi()
+                      .gotoDate(day.add(1, "week").toDate());
+                  }}
+                >
+                  <i className="fa-solid fa-chevron-right"></i>
+                </button>
+              </>
+            )}
+            {type === 3 && (
+              <>
+                <button
+                  type="button"
+                  className="px-4 py-2 bg-white rounded-tl rounded-bl"
+                  onClick={() => {
+                    setDay(day.add(-1, "M"));
+                    dayRef.current.getApi().gotoDate(day.add(-1, "M").toDate());
+                  }}
+                >
+                  <i className="fa-solid fa-chevron-left"></i>
+                </button>
+                <DatePicker
+                  sx={{
+                    ".MuiInputBase-input": {
+                      padding: 1,
+                      width: 100,
+                      border: 0,
+                      background: "white",
+                    },
+                  }}
+                  views={["month", "year"]}
+                  value={day}
+                  onChange={(value) => {
+                    setDay(value);
+                    if (value.year()) {
+                      dayRef.current.getApi().gotoDate(value.toDate());
+                    }
+                  }}
+                  onError={handleErrorDay}
+                  size="small"
+                  format="MM/YYYY"
+                />
+                <button
+                  type="button"
+                  className="px-4 py-2 bg-white rounded-tr rounded-br"
+                  onClick={() => {
+                    setDay(day.add(1, "M"));
+                    dayRef.current.getApi().gotoDate(day.add(1, "M").toDate());
+                  }}
+                >
+                  <i className="fa-solid fa-chevron-right"></i>
+                </button>
+              </>
+            )}
+          </LocalizationProvider>
         </div>
       </div>
       <ReservationLayout isActive={false} />
-      {listFloors.map((floor) => {
-        if (floor.roomListWithRDs.length > 0) {
-          return (
-            <div className="w-full">
-              <div className="border-t-2 pt-2">
-                <div className="flex mb-2 mt-1">
-                  <h2 className="font-bold mr-2">{floor.floor[0].floorName}</h2>
-                  <div className="bg-green-500 rounded-full px-2">
-                    {floor.roomListWithRDs.length}
-                  </div>
-                </div>
-                <div className="grid grid-cols-5 gap-4">
-                  {floor.roomListWithRDs.map((room) => {
-                    let isUsing = false;
-                    if (room.room.bookingStatus === "ROOM_USING") {
-                      isUsing = true;
-                    }
-                    let isClean = false;
-                    if (room.room.conditionStatus == "ROOM_CLEAN") {
-                      isClean = true;
-                    }
-                    return isUsing ? (
-                      <>
-                        <button
-                          type="button"
-                          className="mb-2 p-4 rounded-lg border border-green-600 bg-green-200 hover:shadow-lg hover:shadow-green-200"
-                          onClick={() => console.log("1")}
-                        >
-                          <div className="flex">
-                            <div className="bg-green-500 text-white rounded px-2 py-1">
-                              {room.room.roomName}
-                            </div>
-                            {isClean ? (
-                              <>
-                                <div className="ml-auto pr-4">
-                                  <div className="text-green-500">
-                                    <i className="fa-solid fa-spray-can-sparkles pr-2"></i>
-                                    Sạch
-                                  </div>
-                                </div>
-                                <div>
-                                  <div
-                                    className="text-red-500 hover:bg-gray-300 px-1 rounded-full"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      console.log("123");
-                                    }}
-                                  >
-                                    <i className="fa-solid fa-broom"></i>
-                                  </div>
-                                </div>
-                              </>
-                            ) : (
-                              <>
-                                <div className="ml-auto pr-4">
-                                  <div className="text-red-500">
-                                    <i className="fa-solid fa-broom pr-2"></i>
-                                    Chưa dọn
-                                  </div>
-                                </div>
-                                <div>
-                                  <div
-                                    className="text-green-500 hover:bg-gray-300 px-1 rounded-full"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      console.log("123");
-                                    }}
-                                  >
-                                    <i className="fa-solid fa-spray-can-sparkles"></i>
-                                  </div>
-                                </div>
-                              </>
-                            )}
-                          </div>
-                          <div className="text-left py-2">Khách lẻ</div>
-                          <p className="text-left mt-2 text-sm bg-gray-200 px-1 rounded w-8/12">
-                            1 ngày / 1 ngày
-                          </p>
-                        </button>
-                      </>
-                    ) : (
-                      <button
-                        type="button"
-                        className="mb-2 p-4 rounded-lg border border-gray-600 bg-white hover:shadow-lg hover:shadow-gray-200"
-                        onClick={() => {
-                          console.log("1");
-                        }}
-                      >
-                        <div className="flex">
-                          <div className="bg-gray-500 text-white rounded px-2 py-1">
-                            {room.room.roomName}
-                          </div>
-                          {isClean ? (
-                            <>
-                              <div className="ml-auto pr-4">
-                                <div className="text-green-500">
-                                  <i className="fa-solid fa-spray-can-sparkles pr-2"></i>
-                                  Sạch
-                                </div>
-                              </div>
-                              <div>
-                                <div
-                                  className="text-red-500 hover:bg-gray-300 px-1 rounded-full"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    console.log("123");
-                                  }}
-                                >
-                                  <i className="fa-solid fa-broom"></i>
-                                </div>
-                              </div>
-                            </>
-                          ) : (
-                            <>
-                              <div className="ml-auto pr-4">
-                                <div className="text-red-500  ">
-                                  <i className="fa-solid fa-broom pr-2"></i>Chưa
-                                  dọn
-                                </div>
-                              </div>
-                              <div>
-                                <div
-                                  className="text-green-500 hover:bg-gray-300 px-1 rounded-full"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    console.log("123");
-                                  }}
-                                >
-                                  <i className="fa-solid fa-spray-can-sparkles"></i>
-                                </div>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                        <div className="text-left py-2">
-                          <h3>{room.room.roomCategory.roomCategoryName}</h3>
-                          <p className="text-gray-500 text-xs">{`${room.room.roomCategory.priceByHour}/Giờ - ${room.room.roomCategory.priceByDay}/Ngày - ${room.room.roomCategory.priceByNight}/Đêm`}</p>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          );
+      <FullCalendar
+        ref={dayRef}
+        plugins={[resourceTimelinePlugin, interactionPlugin]}
+        resourceAreaHeaderContent=""
+        resourceLabelContent={(args) => {
+          const isChildResource = args.resource.extendedProps.isChild;
+          if (isChildResource) {
+            let room = null;
+            listRoomsBycate.map((cate) => {
+              const findRoom = cate.ListRoom.find(
+                (room) => room.roomId === args.resource.id
+              );
+              if (findRoom) {
+                room = findRoom;
+                return;
+              }
+            });
+            const clean =
+              room.conditionStatus === "ROOM_CLEAN"
+                ? `<button type="button" class="mr-2 text-green-500"><i class="fa-solid fa-spray-can-sparkles"></i></button>`
+                : `<button type="button" class="mr-2 text-red-500"><i class="fa-solid fa-broom"></i></button>`;
+            return {
+              html: `<div class="ml-5">${clean}${args.resource.title}</div>`,
+            };
+          } else {
+            return {
+              html: `${args.resource.title}`,
+            };
+          }
+        }}
+        height={600}
+        initialView="resourceTimeline"
+        headerToolbar={false}
+        slotDuration={type === 1 ? { hours: 1 } : { days: 1 }}
+        duration={
+          type === 1 ? { days: 1 } : type === 2 ? { weeks: 1 } : { months: 1 }
         }
-      })}
-      {openDetailsReservationModal && <DetailsReservation reservation={null} />}
+        slotLabelFormat={
+          type === 1
+            ? [{ hour: "2-digit" }]
+            : type === 2
+            ? [{ day: "2-digit" }]
+            : [{ day: "2-digit" }]
+        }
+        resources={listCategories}
+        eventResize={handleEventChange(dayRef, true)}
+        // editable={true}
+        selectable={true}
+        selectMirror={true}
+        dayMaxEvents={true}
+        locale={viLocale}
+      />
     </div>
   );
 }
 
 export default ListRoomPage;
 
-async function loadFloors() {
-  const response = await axiosPrivate.get("Floor/list-by-floor");
-  if (response.data.success) {
-    return response.data.result;
+async function loadListRooms() {
+  const response = await axiosPrivate.get("room-class");
+  if (response.data) {
+    return response.data;
   } else {
     return redirect("/login");
   }
 }
 
 export async function loader() {
-  return defer({
-    floors: await loadFloors(),
+  const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "/login";
+    return;
+  }
+  Swal.fire({
+    didOpen: () => {
+      Swal.showLoading();
+    },
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    allowEnterKey: false,
+    showConfirmButton: false,
+    background: "transparent",
   });
+  try {
+    const listRoomsBycate = await loadListRooms();
+    return defer(
+      {
+        listRoomsBycate,
+      },
+      Swal.close()
+    );
+  } catch (error) {
+    Swal.close();
+    window.location.href = "/error";
+    return;
+  }
 }

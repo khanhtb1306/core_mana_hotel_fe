@@ -735,6 +735,7 @@ export async function action({ request }) {
     //   .catch((e) => {
     //     console.log(e);
     //   });
+
     window.print();
     return { success: true, isCreateInvoiceRoom: true };
     return redirect("/listReservation");

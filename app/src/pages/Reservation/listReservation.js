@@ -10,7 +10,7 @@ import { orange, green, grey } from "@mui/material/colors";
 import ReservationLayout from "../ReservationLayout";
 import { useState } from "react";
 import dayjs from "dayjs";
-import 'dayjs/locale/vi'
+import "dayjs/locale/vi";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import {
@@ -25,7 +25,7 @@ import { DataGrid, GridActionsCellItem, GridToolbar } from "@mui/x-data-grid";
 
 function ListReservationPage() {
   const { reservations } = useLoaderData();
-  console.log(reservations);
+  // console.log(reservations);
   const [type, setType] = useState(1);
   const [listReservations, setListReservations] = useState(
     reservations.filter(
@@ -602,7 +602,13 @@ function ListReservationPage() {
           ),
           status !== 3 ? (
             <GridActionsCellItem
-              icon={<button type="button"><Link to={`/editReservation/${row.reservationId}`}>Điều chỉnh</Link></button>}
+              icon={
+                <button type="button">
+                  <Link to={`/editReservation/${row.reservationId}`}>
+                    Điều chỉnh
+                  </Link>
+                </button>
+              }
               showInMenu
             />
           ) : (
@@ -852,19 +858,16 @@ function ListReservationPage() {
               </>
             )}
           </LocalizationProvider>
-          <button
-            type="button"
-            className="bg-green-500 p-2 ml-4 rounded-lg text-white"
-          >
-            <i className="fa-solid fa-plus px-2"></i>
-            <span className="pr-2">Đặt phòng</span>
-          </button>
         </div>
       </div>
       <ReservationLayout isActive={true} />
       <DataGrid
         className="bg-white"
-        rowHeight={90}
+        getRowHeight={(params) => {
+          let height = (params.model.status.length / 4).toFixed() * 40;
+          height += params.model.status.length % 4 <= 2 ? 40 : 0;
+          return height;
+        }}
         columns={columns}
         rows={rows}
         initialState={{
