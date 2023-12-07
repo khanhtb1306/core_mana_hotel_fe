@@ -50,6 +50,7 @@ import ListReservationPage, {
 } from "./pages/Reservation/listReservation";
 import ListRoomPage, {
   loader as loadRooms,
+  action as actionListRooms,
 } from "./pages/Reservation/listRoom";
 import EditReservationPage, {
   loader as loadReservationById,
@@ -59,25 +60,21 @@ import PolicyManagementPage, {
   loader as loadPolicy,
   action as actionPolicy,
 } from "./pages/PolicyManagement/index";
-import OverviewManagementPage,{
+import OverviewManagementPage, {
   loader as loadOverview,
 } from "./pages/OverviewManagementPage";
-import TransactionManagementPage, {
-} from "./pages/TransactionManagement";
-import ImportManagementPage, {
-} from "./pages/ImportManagement";
-import FundBookManagementPage, {
-}from "./pages/FundBookManagement";
-import StaffManagementPage,{
+import TransactionManagementPage from "./pages/TransactionManagement";
+import ImportManagementPage from "./pages/ImportManagement";
+import FundBookManagementPage from "./pages/FundBookManagement";
+import StaffManagementPage, {
   loader as loadStaffs,
   action as actionStaff,
 } from "./pages/StaffManagement";
 
-import InforManagementPage ,{
+import InforManagementPage, {
   loader as loadInforManagement,
   action as actionInforManagement,
-}
-from "./pages/InforManagement";
+} from "./pages/InforManagement";
 
 const routesForManager = [
   {
@@ -145,20 +142,17 @@ const routesForManager = [
     action: actionPolicy,
   },
   {
-    path:"staffManagement",
+    path: "staffManagement",
     element: <StaffManagementPage />,
     loader: loadStaffs,
     action: actionStaff,
-
   },
   {
-    path:"inforManagement",
+    path: "inforManagement",
     element: <InforManagementPage />,
     loader: loadInforManagement,
     action: actionInforManagement,
-
   },
-
 ];
 
 const routesForReceptionist = [
@@ -182,6 +176,7 @@ const routesForReceptionist = [
     path: "listRoom",
     element: <ListRoomPage />,
     loader: loadRooms,
+    action: actionListRooms,
   },
   {
     path: "addReservation",
@@ -194,11 +189,10 @@ const routesForReceptionist = [
     element: <AddInvoicePage />,
   },
   {
-    path:"account",
+    path: "account",
     element: <InforManagementPage />,
     loader: loadInforManagement,
     action: actionInforManagement,
-
   },
 ];
 

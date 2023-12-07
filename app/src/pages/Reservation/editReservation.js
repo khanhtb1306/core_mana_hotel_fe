@@ -23,7 +23,7 @@ async function loadPriceList() {
     return response.data.result;
   } else {
     Swal.close();
-    window.location.href = "/login";
+    window.location.href = "/error";
     return;
   }
 }
@@ -39,7 +39,7 @@ async function loadReservationById(id) {
     return response.data.result;
   } else {
     Swal.close();
-    window.location.href = "/login";
+    window.location.href = "/error";
     return;
   }
 }
@@ -50,7 +50,7 @@ async function loadInvoicesById(id) {
     return response.data.result;
   } else {
     Swal.close();
-    window.location.href = "/login";
+    window.location.href = "/error";
     return;
   }
 }
@@ -66,7 +66,7 @@ async function loadCustomerGroup() {
     return response.data.result;
   } else {
     Swal.close();
-    window.location.href = "/login";
+    window.location.href = "/error";
     return;
   }
 }
@@ -77,7 +77,7 @@ async function loadTimeUsing() {
     return response.data.result;
   } else {
     Swal.close();
-    window.location.href = "/login";
+    window.location.href = "/error";
     return;
   }
 }
@@ -88,7 +88,7 @@ async function loadListQR() {
     return response.data.result;
   } else {
     Swal.close();
-    window.location.href = "/login";
+    window.location.href = "/error";
     return;
   }
 }
@@ -99,7 +99,7 @@ async function loadOtherRevenue() {
     return response.data.result;
   } else {
     Swal.close();
-    window.location.href = "/login";
+    window.location.href = "/error";
     return;
   }
 }
@@ -110,7 +110,7 @@ async function loadInvoiceReservation(id) {
     return response.data.result;
   } else {
     Swal.close();
-    window.location.href = "/login";
+    window.location.href = "/error";
     return;
   }
 }
@@ -123,7 +123,7 @@ async function loadListSurchage(id) {
     return response.data.result;
   } else {
     Swal.close();
-    window.location.href = "/login";
+    window.location.href = "/error";
     return;
   }
 }
@@ -131,7 +131,7 @@ async function loadListSurchage(id) {
 export async function loader({ request, params }) {
   const token = localStorage.getItem("token");
   if (!token) {
-    window.location.href = "/login";
+    window.location.href = "/error";
     return;
   }
   const id = params.reservationId;
@@ -183,16 +183,16 @@ export async function loader({ request, params }) {
 }
 
 export async function action({ request }) {
-  // Swal.fire({
-  //   didOpen: () => {
-  //     Swal.showLoading();
-  //   },
-  //   allowOutsideClick: false,
-  //   allowEscapeKey: false,
-  //   allowEnterKey: false,
-  //   showConfirmButton: false,
-  //   background: "transparent",
-  // });
+  Swal.fire({
+    didOpen: () => {
+      Swal.showLoading();
+    },
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    allowEnterKey: false,
+    showConfirmButton: false,
+    background: "transparent",
+  });
   const method = request.method;
   const data = await request.formData();
   const reservationId = data.get("reservationId");
