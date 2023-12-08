@@ -21,10 +21,13 @@ import viLocale from "@fullcalendar/core/locales/vi";
 import "dayjs/locale/vi";
 import ViewDetailsModal from "../../components/FullCalendar/ViewDetailsModal";
 import CleanRoomModal from "../../components/FullCalendar/CleanRoomModal";
+import AddRoomModal from "../../components/FullCalendar/AddRoomModal";
 dayjs.locale("vi");
 
 function ListRoomPage() {
-  const { listRoomsBycate } = useLoaderData();
+  const { listRoomsBycate, timeUsing } = useLoaderData();
+  const priceDayStart = timeUsing.startTimeDay.split(":")[0];
+  const priceDayEnd = timeUsing.endTimeDay.split(":")[0];
   const actionData = useActionData();
   // console.log(listRoomsBycate);
   const [empty, setEmpty] = useState(false);
@@ -40,6 +43,8 @@ function ListRoomPage() {
   const [openDetailsModal, setOpenDetailsModal] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [openCleanModal, setOpenCleanModal] = useState(false);
+  const [selectedRoomInfo, setSelectedRoomInfo] = useState(null);
+  const [openAddModal, setOpenAddModal] = useState(false);
 
   useEffect(() => {
     async function fetchList() {
@@ -72,7 +77,6 @@ function ListRoomPage() {
                 "&end=" +
                 day.endOf("M").format("YYYY-MM-DD HH:mm:ss")
             );
-            console.log(response);
             if (response) {
               setListReservations(response.data.result);
             }
@@ -132,6 +136,8 @@ function ListRoomPage() {
     };
   });
 
+  console.log(listReservations);
+
   const events = listReservations.map((reservation) => {
     let start = dayjs();
     let end = dayjs();
@@ -185,6 +191,11 @@ function ListRoomPage() {
     );
   };
   // console.log(listReservations);
+
+  const handleEventAdd = (info) => {
+    setSelectedRoomInfo(info);
+    setOpenAddModal(true);
+  };
 
   const handleEmptyChange = (event) => {
     const checked = event.target.checked;
@@ -463,7 +474,7 @@ function ListRoomPage() {
         </div>
       </div>
       <ReservationLayout isActive={false} />
-      <div className="bg-white">
+      <div className="bg-white text-xs">
         <FullCalendar
           ref={dayRef}
           plugins={[resourceTimelinePlugin, interactionPlugin]}
@@ -496,9 +507,7 @@ function ListRoomPage() {
           nowIndicator={true}
           initialView="resourceTimeline"
           headerToolbar={false}
-          slotDuration={
-            type === 1 ? { hours: 1, minutes: 60 } : { days: 1, hour: 1 }
-          }
+          slotDuration={type === 1 ? { minutes: 120 } : { hours: 24 }}
           duration={
             type === 1 ? { days: 1 } : type === 2 ? { weeks: 1 } : { months: 1 }
           }
@@ -520,7 +529,8 @@ function ListRoomPage() {
               return true;
             }
           }}
-          select={(info) => console.log(info)}
+          select={handleEventAdd}
+          schedulerLicenseKey="3245444545"
           selectMirror={true}
           dayMaxEvents={true}
           locale={viLocale}
@@ -542,6 +552,14 @@ function ListRoomPage() {
           room={selectedRoom}
         />
       )}
+      {openAddModal && selectedRoomInfo && (
+        <AddRoomModal
+          open={openAddModal}
+          onClose={() => setOpenAddModal(false)}
+          type={type}
+          roomInfo={selectedRoomInfo}
+        />
+      )}
     </div>
   );
 }
@@ -549,9 +567,11 @@ function ListRoomPage() {
 export default ListRoomPage;
 
 async function loadListRooms() {
-  const response = await axiosPrivate.get("room-class");
-  if (response.data) {
-    return response.data;
+  const response = await axiosPrivate.get(
+    "reservation/get_active_room_class_with_active_rooms"
+  );
+  if (response.data.success) {
+    return response.data.result;
   } else {
     return redirect("/error");
   }
@@ -750,5 +770,40 @@ export async function action({ request }) {
         console.log(e);
       });
     return { success: true, checkoutRoom: response.data };
+  }
+
+  if (data.get("addRoom")) {
+    //Add new reservation
+    const formReser = new FormData();
+    formReser.append("customerId", "C000000");
+    formReser.append("priceListId", "BG000000");
+    formReser.append("totalChildren", 0);
+    formReser.append("totalAdults", 0);
+    formReser.append("totalDeposit", 0);
+    formReser.append("totalPrice", 0);
+    formReser.append("status", "BOOKING");
+    const response = await axiosPrivate
+      .post("reservation", formReser)
+      .catch((e) => {
+        console.log(e);
+      });
+    console.log(response);
+    if (response.data.success) {
+      //Add new room in reservation
+      const formData = new FormData();
+      formData.append("reservationId", response.data.result);
+      formData.append("checkInEstimate", data.get("fromTime"));
+      formData.append("checkOutEstimate", data.get("toTime"));
+      formData.append("reservationType", data.get("reservationType"));
+      formData.append("status", "BOOKING");
+      formData.append("price", data.get("price"));
+      formData.append("roomId", data.get("roomId"));
+      await axiosPrivate
+        .post("reservation-detail", formData)
+        .catch((er) => console.log(er));
+      return { success: true };
+    } else {
+      return { success: false };
+    }
   }
 }
