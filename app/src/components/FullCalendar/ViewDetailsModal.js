@@ -10,7 +10,6 @@ import PayRoomModal from "../Reservation/PayRoomModal";
 
 function ViewDetailsModal(props) {
   const { timeUsing, prices, categories } = useLoaderData();
-  console.log(categories);
   const priceNightStart = timeUsing.startTimeNight.split(":")[0];
   const priceNightEnd = timeUsing.endTimeNight.split(":")[0];
   const priceDayStart = timeUsing.startTimeDay.split(":")[0];
@@ -21,7 +20,7 @@ function ViewDetailsModal(props) {
   const [openChangeModal, setOpenChangeModal] = useState(false);
   const [openReceiveModal, setOpenReceiveModal] = useState(false);
   const [openPayModal, setOpenPayModal] = useState(false);
-  console.log(reservationDetail);
+  // console.log(reservationDetail);
   const dayInWeek = ["2", "3", "4", "5", "6", "7", "8"];
   const pricesMore = prices.map((price) => {
     // console.log(price);

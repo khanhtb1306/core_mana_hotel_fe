@@ -35,7 +35,7 @@ function ListRoomPage() {
   const [using, setUsing] = useState(false);
   const [paid, setPaid] = useState(false);
 
-  const [type, setType] = useState(2);
+  const [type, setType] = useState(1);
   const [day, setDay] = useState(dayjs());
   const dayRef = useRef(day);
   const [listReservations, setListReservations] = useState([]);
@@ -51,6 +51,8 @@ function ListRoomPage() {
       try {
         if (day.year()) {
           if (type === 1) {
+            console.log(day.startOf("date").format("YYYY-MM-DD HH:mm:ss"));
+            console.log(day.endOf("date").format("YYYY-MM-DD HH:mm:ss"));
             const response = await axiosPrivate.get(
               "reservation-detail/get-by-date?start=" +
                 day.startOf("date").format("YYYY-MM-DD HH:mm:ss") +
@@ -136,57 +138,113 @@ function ListRoomPage() {
     };
   });
 
-  console.log(listReservations);
+  // console.log(listReservations);
 
-  const events = listReservations.map((reservation) => {
-    let start = dayjs();
-    let end = dayjs();
-    if (reservation.status === "BOOKING") {
-      start = reservation.checkInEstimate;
-      end = reservation.checkOutEstimate;
-    } else if (reservation.status === "CHECK_IN") {
-      start = reservation.checkInActual;
-      end = reservation.checkOutEstimate;
-    } else if (reservation.status === "CHECK_OUT") {
-      start = reservation.checkInActual;
-      end = reservation.checkOutActual;
-    }
-    return {
-      id: reservation.reservationDetailId,
-      resourceId: reservation.room.roomId,
-      title: "Đặt phòng",
-      data: reservation,
-      start: start,
-      end: end,
-    };
-  });
+  let events = [];
+  if (
+    (empty && order && using && paid) ||
+    (!empty && !order && !using && !paid)
+  ) {
+    events = listReservations.map((reservation) => {
+      let start = "";
+      let end = "";
+      if (reservation.status === "BOOKING") {
+        start = reservation.checkInEstimate;
+        end = reservation.checkOutEstimate;
+      } else if (reservation.status === "CHECK_IN") {
+        start = reservation.checkInActual;
+        end = reservation.checkOutEstimate;
+        if (dayjs().diff(dayjs(reservation.checkOutEstimate)) > 0) {
+          end = dayjs().format("YYYY-MM-DD HH:mm:ss");
+        }
+      } else if (reservation.status === "CHECK_OUT") {
+        start = reservation.checkInActual;
+        end = reservation.checkOutActual;
+      }
+      return {
+        id: reservation.reservationDetailId,
+        resourceId: reservation.room.roomId,
+        title: "Đặt phòng",
+        data: reservation,
+        start: start,
+        end: end,
+      };
+    });
+  } else {
+    events = listReservations
+      .filter(
+        (details) =>
+          (empty &&
+            (details.status === "DONE" || details.status === "CHECK_OUT")) ||
+          (order && details.status === "BOOKING") ||
+          (using && details.status === "CHECK_IN") ||
+          (paid && details.status === "CHECK_OUT")
+      )
+      .map((reservation) => {
+        let start = "";
+        let end = "";
+        if (reservation.status === "BOOKING") {
+          start = reservation.checkInEstimate;
+          end = reservation.checkOutEstimate;
+        } else if (reservation.status === "CHECK_IN") {
+          start = reservation.checkInActual;
+          end = reservation.checkOutEstimate;
+          if (dayjs().diff(dayjs(reservation.checkOutEstimate)) > 0) {
+            end = dayjs().format("YYYY-MM-DD HH:mm:ss");
+          }
+        } else if (reservation.status === "CHECK_OUT") {
+          start = reservation.checkInActual;
+          end = reservation.checkOutActual;
+        }
+        return {
+          id: reservation.reservationDetailId,
+          resourceId: reservation.room.roomId,
+          title: "Đặt phòng",
+          data: reservation,
+          start: start,
+          end: end,
+        };
+      });
+  }
 
   const handleEventDisplay = (eventInfo) => {
     const reservationDetail = eventInfo.event.extendedProps.data;
     // console.log(eventInfo);
     // console.log(reservationDetail);
     let bgColor = "";
+    let warning = false;
     if (reservationDetail.status === "BOOKING") {
-      bgColor = "bg-orange-200 hover:bg-orange-500";
+      bgColor = "bg-orange-200 hover:bg-orange-500 hover:text-white";
+      if (dayjs().diff(dayjs(reservationDetail.checkInEstimate)) > 0) {
+        warning = true;
+      }
     } else if (reservationDetail.status === "CHECK_IN") {
-      bgColor = "bg-green-200 hover:bg-green-500";
+      bgColor = "bg-green-200 hover:bg-green-500 hover:text-white";
+      if (dayjs().diff(dayjs(reservationDetail.checkOutEstimate)) > 0) {
+        warning = true;
+      }
     } else if (reservationDetail.status === "CHECK_OUT") {
-      bgColor = "bg-gray-200 hover:bg-gray-500";
+      bgColor = "bg-gray-200 hover:bg-gray-500 hover:text-white";
     } else {
       bgColor = "bg-gray-200 hover:bg-gray-500";
     }
     return (
       <button
         type="button"
-        className={`rounded text-black ${bgColor} w-full p-1`}
+        className={`rounded text-black ${bgColor} w-full p-1 flex whitespace-nowrap overflow-hidden overflow-ellipsis`}
         onMouseOver={() => {
           setSelectedDetailsId(reservationDetail.reservationDetailId);
         }}
         onClick={() => setOpenDetailsModal(true)}
       >
-        <div className="font-bold">
+        <div className="font-bold ml-1">
           {reservationDetail.reservation.reservationId}
         </div>
+        {warning && (
+          <div className="ml-auto mr-1">
+            <i className="fa-solid fa-circle-exclamation"></i>
+          </div>
+        )}
       </button>
     );
   };
@@ -198,44 +256,16 @@ function ListRoomPage() {
   };
 
   const handleEmptyChange = (event) => {
-    const checked = event.target.checked;
-    setEmpty(checked);
-    if (
-      (checked && order && using && paid) ||
-      (!checked && !order && !using && !paid)
-    ) {
-    } else {
-    }
+    setEmpty(event.target.checked);
   };
   const handleOrderChange = (event) => {
-    const checked = event.target.checked;
-    setOrder(checked);
-    if (
-      (empty && checked && using && paid) ||
-      (!empty && !checked && !using && !paid)
-    ) {
-    } else {
-    }
+    setOrder(event.target.checked);
   };
   const handleUsingChange = (event) => {
-    const checked = event.target.checked;
-    setUsing(checked);
-    if (
-      (empty && order && checked && paid) ||
-      (!empty && !order && !checked && !paid)
-    ) {
-    } else {
-    }
+    setUsing(event.target.checked);
   };
   const handlePaidChange = (event) => {
-    const checked = event.target.checked;
-    setPaid(checked);
-    if (
-      (empty && order && using && checked) ||
-      (!empty && !order && !using && !checked)
-    ) {
-    } else {
-    }
+    setPaid(event.target.checked);
   };
 
   const handleErrorDay = () => {
@@ -249,7 +279,7 @@ function ListRoomPage() {
           <FormControlLabel
             value="end"
             control={<Checkbox checked={empty} onChange={handleEmptyChange} />}
-            label="Phòng trống"
+            label="Đã trả phòng"
             labelPlacement="end"
           />
           <FormControlLabel
@@ -266,7 +296,7 @@ function ListRoomPage() {
                 }}
               />
             }
-            label="Phòng sắp đến"
+            label="Đặt trước"
             labelPlacement="end"
           />
           <FormControlLabel
@@ -288,19 +318,8 @@ function ListRoomPage() {
           />
           <FormControlLabel
             value="end"
-            control={
-              <Checkbox
-                checked={paid}
-                onChange={handlePaidChange}
-                sx={{
-                  color: green[800],
-                  "&.Mui-checked": {
-                    color: green[600],
-                  },
-                }}
-              />
-            }
-            label="Phòng sắp trả"
+            control={<Checkbox checked={paid} onChange={handlePaidChange} />}
+            label="Chờ tạo hoá đơn"
             labelPlacement="end"
           />
         </div>
@@ -502,12 +521,16 @@ function ListRoomPage() {
               return "bg-gray-200";
             }
           }}
-          eventClassNames="bg-gray-100 border-0"
+          eventClassNames="bg-white border-0"
           height={600}
           nowIndicator={true}
+          nowIndicatorContent={dayjs().format("HH:mm")}
+          nowIndicatorClassNames="w-0 text-[0.6rem] pt-4"
           initialView="resourceTimeline"
           headerToolbar={false}
-          slotDuration={type === 1 ? { minutes: 120 } : { hours: 24 }}
+          slotDuration={
+            type === 1 ? { hours: 2 } : { hours: 24 }
+          }
           duration={
             type === 1 ? { days: 1 } : type === 2 ? { weeks: 1 } : { months: 1 }
           }
@@ -518,6 +541,7 @@ function ListRoomPage() {
               ? [{ weekday: "long", day: "numeric" }]
               : [{ day: "2-digit" }]
           }
+          slotLabelClassNames="h-10"
           resources={listCategories}
           eventContent={handleEventDisplay}
           events={events}
@@ -787,7 +811,6 @@ export async function action({ request }) {
       .catch((e) => {
         console.log(e);
       });
-    console.log(response);
     if (response.data.success) {
       //Add new room in reservation
       const formData = new FormData();

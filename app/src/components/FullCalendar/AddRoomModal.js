@@ -12,6 +12,7 @@ import {
   getlateCheckout,
 } from "../../utils/getTimePrice";
 import { MenuItem, Select } from "@mui/material";
+import { axiosPrivate } from "../../utils/axiosConfig";
 
 function AddRoomModal(props) {
   const { timeUsing, prices, categories } = useLoaderData();
@@ -23,8 +24,8 @@ function AddRoomModal(props) {
   const timeBonusHour = timeUsing.timeBonusHour;
   const roomInfo = props.roomInfo;
   const room = roomInfo.resource.extendedProps.data;
-  console.log(roomInfo);
-  console.log(room);
+  //   console.log(roomInfo);
+  //   console.log(room);
   const type = props.type;
   let fromDate = dayjs(roomInfo.startStr);
   let toDate = dayjs(roomInfo.endStr);
@@ -37,6 +38,21 @@ function AddRoomModal(props) {
   const [typeTime, setTypeTime] = useState(defaultTypeTime);
   const [fromTime, setFromTime] = useState(fromDate);
   const [toTime, setToTime] = useState(toDate);
+  const [checkDuplicate, setCheckDuplicate] = useState(false);
+  useEffect(() => {
+    async function fetchCheck() {
+      const check = await axiosPrivate.get(
+        "reservation-detail/check-duplicate-booking?start=" +
+          fromTime.format("YYYY-MM-DD HH:mm:ss") +
+          "&end=" +
+          toTime.format("YYYY-MM-DD HH:mm:ss") +
+          "&roomId=" +
+          room.roomId
+      );
+      setCheckDuplicate(!check.data.success);
+    }
+    fetchCheck();
+  }, [fromTime, toTime]);
 
   const dayInWeek = ["2", "3", "4", "5", "6", "7", "8"];
   const pricesMore = prices.map((price) => {
@@ -340,7 +356,22 @@ function AddRoomModal(props) {
         </div>
         <div className="flex pt-5">
           <div className="ml-auto">
-            <button className="bg-orange-500 py-2 px-6 mr-2 text-white rounded hover:bg-orange-600">
+            <button
+              type={checkDuplicate ? "button" : ""}
+              className="bg-orange-500 py-2 px-6 mr-2 text-white rounded hover:bg-orange-600"
+              onClick={() => {
+                if (checkDuplicate) {
+                  Swal.fire({
+                    position: "bottom",
+                    html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Phòng bị trùng lịch</button>`,
+                    showConfirmButton: false,
+                    background: "transparent",
+                    backdrop: "none",
+                    timer: 2500,
+                  });
+                }
+              }}
+            >
               Đặt trước
             </button>
           </div>
