@@ -471,7 +471,12 @@ function PaymentModal(props) {
       {openCreateInvoice && banks.length > 0 && (
         <CreateInvoiceRoomModal
           open={openCreateInvoice}
+          onCloseAll={() => {
+            setOpenCreateInvoice(false);
+            props.onClose();
+          }}
           onClose={() => setOpenCreateInvoice(false)}
+          reservation={reservation}
           listCheckout={listCheckout}
           otherFees={otherFees}
           invoices={invoices}
@@ -502,39 +507,6 @@ function PaymentModal(props) {
           invoicePrice={priceAll}
           changePrice={handleOtherFeeChange}
         />
-      )}
-      {1 && (
-        <div className="hidden print:block">
-          <p>Tên cửa hàng: Khách sạn Thành Công</p>
-          <p>Điện thoại: 0981987625</p>
-          <div className="mt-4 border-t border-black border-dotted">
-            Ngày xuất HĐ: {dayjs().format("DD/MM/YYYY HH:mm")}
-          </div>
-          <div className="mt-4">
-            <div className="font-bold text-center">
-              <h2>HOÁ ĐƠN BÁN HÀNG</h2>
-              <p className="text-sm"></p>
-            </div>
-            <div>
-              {/* <p>Khách hàng: {customer ? customer.customerName : "Khách lẻ"}</p>s */}
-              <p>Mã đặt phòng: {reservation.reservation.reservationId}</p>
-              <p>Thu ngân: </p>
-            </div>
-            <div className="flex mt-4">
-              <div className="ml-auto mr-10">Tổng tiền hàng: </div>
-              <div className="w-32 text-right"></div>
-            </div>
-            <div className="flex">
-              <div className="ml-auto mr-10">Chiếu khấu: </div>
-              <div className="w-32 text-right">0</div>
-            </div>
-            <div className="flex">
-              <div className="ml-auto mr-10">Tổng cộng: </div>
-              <div className="w-32 text-right"></div>
-            </div>
-          </div>
-          <div className="text-center mt-10 text-sm">Cảm ơn và hẹn gặp lại</div>
-        </div>
       )}
     </>
   );

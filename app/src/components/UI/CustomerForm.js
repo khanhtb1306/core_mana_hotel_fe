@@ -1,16 +1,11 @@
 import { Form, useLoaderData } from "react-router-dom";
 import Modal from "./Modal";
 import ImageInput from "../UI/ImageInput";
-import { useState } from "react";
-import NewGroupCustomer from "../NewGroupCustomer";
 import dayjs from "dayjs";
 
 function CustomerForm({ name, open, onClose, method, customer }) {
   const { customerGroups } = useLoaderData();
-  // console.log(customerGroups);
   let formattedDate = null;
-  const [openNewGroupCusModal, setOpenNewGroupCusModal] = useState(false);
-  // console.log(customer);
   if (customer.dob) {
     const dateNow = new Date(customer.dob);
     const year = dateNow.getFullYear();
@@ -20,7 +15,6 @@ function CustomerForm({ name, open, onClose, method, customer }) {
   }
   return (
     customer && (
-      <>
         <Form method={method} onSubmit={onClose} encType="multipart/form-data">
           <Modal open={open} onClose={onClose} size="w-8/12 h-.5/6">
             <div className="p-2 w-full">
@@ -87,7 +81,7 @@ function CustomerForm({ name, open, onClose, method, customer }) {
                       </td>
                       <td className="w-9/12">
                         <select
-                          className="border-0 border-b border-gray-500 w-11/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                          className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                           name="customerGroupId"
                           defaultValue={
                             customer.customerGroup
@@ -105,13 +99,7 @@ function CustomerForm({ name, open, onClose, method, customer }) {
                             );
                           })}
                         </select>
-                        <button
-                          type="button"
-                          className="w-1/12 text-2xl text-gray-500"
-                          onClick={() => setOpenNewGroupCusModal(true)}
-                        >
-                          <i className="fa-solid fa-plus"></i>
-                        </button>
+                       
                       </td>
                     </tr>
                     <tr>
@@ -202,8 +190,6 @@ function CustomerForm({ name, open, onClose, method, customer }) {
                         <input
                           className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                           type="text"
-                          minLength="1"
-                          maxLength="255"
                           name="nationality"
                           defaultValue={
                             customer.nationality ? customer.nationality : ""
@@ -219,6 +205,8 @@ function CustomerForm({ name, open, onClose, method, customer }) {
                         <input
                           className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                           type="text"
+                          minLength="1"
+                          maxLength="255"
                           name="taxCode"
                           defaultValue={
                             customer.taxCode ? customer.taxCode : ""
@@ -281,13 +269,6 @@ function CustomerForm({ name, open, onClose, method, customer }) {
             </div>
           </Modal>
         </Form>
-        {openNewGroupCusModal && (
-          <NewGroupCustomer
-            open={openNewGroupCusModal}
-            onClose={() => setOpenNewGroupCusModal(false)}
-          />
-        )}
-      </>
     )
   );
 }

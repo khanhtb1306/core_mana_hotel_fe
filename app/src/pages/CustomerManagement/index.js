@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import { DataGrid, GridActionsCellItem, GridToolbar } from "@mui/x-data-grid";
-import React, {useEffect, useState} from "react";
+import { useState, useEffect } from "react";
 import ButtonHover from "../../components/UI/ButtonHover";
 import NewCustomer from "../../components/Customer/NewCustomer";
 import DetailsCustomer from "../../components/Customer/DetailsCustomer";
@@ -11,31 +11,33 @@ import DeleteCustomer from "../../components/Customer/DeleteCustomer";
 import ButtonClick from "../../components/UI/ButtonClick";
 import Swal from "sweetalert2";
 import NewGroupCustomer from "../../components/NewGroupCustomer";
+import CustomerGroupForm from "../../components/UI/CustomerGroupForm";
+import DeleteCustomerGroup from "../../components/CustomerGroup/DeleteCustomerGroup";
 
 function CustomerManagementPage() {
   const { customers, customerGroups } = useLoaderData();
+  const [hoveredCustomerGroups, setHoveredCustomerGroups] = useState(null);
+  const [filteredCustomerGroups, setfilteredCustomerGroups] = useState([]);
+  const [openNewGroupCusModal, setOpenNewGroupCusModal] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
+  const [selectedCustomerGroups, setSelectedCustomerGroups] = useState(null);
+  const [selectedCustomerGroupName, setSelectedCustomerGroupName] = useState(null);
+  const [customerByCustomerGroups, setCustomerByCustomerGroups] = useState(customers);
+  const [selectedCustomerGroupId, setSelectedCustomerGroupId] = useState(null);
+  const [openEditCustomerGroupModal, setOpenEditCustomerGroupModal] = useState(null);
+  const [openDeleteCustomerGroupModal, setOpenDeleteCustomerGroupModal] = useState(null);
+
 
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openNewCustomerModal, setOpenNewCustomerModal] = useState(false);
   const [openEditCustomerModal, setOpenEditCustomerModal] = useState(false);
-  const [openDetailsCustomerModal, setOpenDetailsCustomerModal] =
-    useState(false);
+  const [openDetailsCustomerModal, setOpenDetailsCustomerModal] = useState(false);
   const [openDeleteCustomerModal, setOpenDeleteCustomerModal] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
 
-  const [hoveredCustomerGroup, setHoveredCustomerGroup] = useState(null);
-  const [selectedCustomerGroup, setselectedCustomerGroup] = useState(null);
-  const [searchValue, setSearchValue] = useState('');
-  const [filteredCustomerGroup, setFilteredCustomerGroup] = useState([]);
-  const [openNewCustomerGroupModal, setOpenNewCustomerGroupModal] = useState(false);
-  const [openEditCustomerGroupModal, setOpenEditCustomerGroupModal] = useState(false);
-  const [selectedCustomerGroupId, setSelectedCustomerGroupId] = useState(null);
-
-  useEffect(() => {
-    const filtered = customerGroups.filter(customerGroups => customerGroups.customerGroupName.toLowerCase().includes(searchValue.toLowerCase()));
-    setFilteredCustomerGroup(filtered);
-  }, [customerGroups, searchValue]);
-
+  const newCustomerHandler = () => {
+    setOpenNewCustomerModal(true);
+  };
 
   const handleDetailsCustomer = (id) => {
     setOpenDetailsCustomerModal(true);
@@ -50,6 +52,47 @@ function CustomerManagementPage() {
   const deleteCustomerHandler = () => {
     setOpenDeleteCustomerModal(true);
   };
+
+
+  const handleEditCustomerGroup = (id) => {
+    setOpenEditCustomerGroupModal(true);
+    setSelectedCustomerGroupId(id);
+  };
+  const handleDeleteCustomerGroup = (id) => {
+    setOpenDeleteCustomerGroupModal(true);
+    setSelectedCustomerGroupId(id);
+  };
+
+
+  // const handleEditArea = (customerGroupsId) => {
+  //   setSelectedCustomerGroupsId(customerGroupsId);
+  //   setOpenEditAreaModal(true);
+  // };
+
+  useEffect(() => {
+    const filtered = customerGroups.filter(customerGroups => customerGroups.customerGroupName.toLowerCase().includes(searchValue.toLowerCase()));
+    setfilteredCustomerGroups(filtered);
+  }, [customerGroups, searchValue]);
+
+  useEffect(() => {
+    console.log(customers);
+    const filtered = selectedCustomerGroups
+      ? customers.filter(customer => customer.customerGroup.customerGroupName === selectedCustomerGroups)
+      : customers;
+    setCustomerByCustomerGroups(filtered);
+  }, [customers, selectedCustomerGroups]);
+
+  const handleSelectAllCustomerGroups = () => {
+    setSelectedCustomerGroups(null);
+    setSelectedCustomerGroupName(null);
+    setCustomerByCustomerGroups(customers);
+  };
+
+  const handleCustomerGroupsSelection = (customerGroupName) => {
+    setSelectedCustomerGroups(customerGroupName);
+    setSelectedCustomerGroupName(customerGroupName);
+  };
+
 
   const columns = [
     { field: "code", headerName: "Mã khách hàng", width: 150 },
@@ -91,7 +134,7 @@ function CustomerManagementPage() {
     },
   ];
 
-  const rows = customers.map((cus) => {
+  const rows = customerByCustomerGroups.filter((customer) => customer.status !== 'NO_ACTIVE').map((cus) => {
     const gender = cus.gender ? "Nam giới" : "Nữ giới";
     const dateNow = new Date(cus.dob);
     const year = dateNow.getFullYear();
@@ -114,162 +157,178 @@ function CustomerManagementPage() {
     };
   });
 
-  const newCustomerHandler = () => {
-    setOpenNewCustomerModal(true);
-  };
 
   return (
-    <>
-      <div className="flex">
-      <div className="w-1.5/12 mx-auto mt-36 h-150 max-w-full flex-col bg-white text-left rounded shadow-lg">
-        <div className="pl-2 pr-2">
-          <div className="flex pt-1">
-            <div className="w-10/12 text-1xl p-2 ">
-              <p className="text-1xl font-bold">Nhóm Khách Hàng</p>
-            </div>
-            <div className="w-2/12">
-              <button
-                  type="button"
-                  className="text-2xl text-gray-500"
-                  onClick={() => setOpenNewCustomerGroupModal(true)}
-              >
-                <i className="fa-solid fa-plus p-2"></i>
-              </button>
-              {openNewCustomerGroupModal && (
-                  <NewGroupCustomer
-                      open={openNewCustomerGroupModal}
-                      onClose={() => setOpenNewCustomerGroupModal(false)}
-                  />
-              )}
-            </div>
-          </div>
-          <div className="pt-1">
-            <input
-                type="text"
-                placeholder="Tìm kiếm nhóm khách hàng"
-                className="w-full p-1 border border-gray-300 rounded"
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-            />
-          </div>
-          <div className="pt-2">
-            {filteredCustomerGroup.map((customerGroups, index) => (
-                <div
-                    key={index}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      backgroundColor:
-                          selectedCustomerGroup === customerGroups ? "lightgray" : "transparent",
-                    }}
-                    onMouseEnter={() => setHoveredCustomerGroup(customerGroups.customerGroupName)}
-                    onMouseLeave={() => setHoveredCustomerGroup(null)}
-                >
-                  <div className="pt-1"
-                      style={{
-                        width: "80%",
-                        backgroundColor:
-                            selectedCustomerGroup === customerGroups.customerGroupName ? "lightgray" : "transparent",
-                      }}
-                  >
-                    {customerGroups.customerGroupName}
-                  </div>
-                  {hoveredCustomerGroup === customerGroups.customerGroupName && (
-                      <button
-                          type="button"
-                          className="w-1/12 text-1xl text-gray-500">
-                        <i className="fa-solid fa-pen-to-square edit-action"></i>
-                      </button>
-                  )}
-                </div>
-            ))}
-          </div>
 
+    <div className="flex flex-row">
+      <div className=" mt-10 mx-5">
+        <div className="flex pt-1 mt-10">
+          <div className="w-10/12 text-1xl ">
+            <p className="text-lg font-bold">Nhóm khách hàng</p>
+          </div>
+          <div className="w-2/12">
+            <button
+              type="button"
+              className="w-1/12 text-2xl text-gray-500"
+              onClick={() => setOpenNewGroupCusModal(true)}
+            >
+              <i className="fa-solid fa-plus"></i>
+            </button>
+            {openNewGroupCusModal && (
+              <NewGroupCustomer
+                open={openNewGroupCusModal}
+                onClose={() => setOpenNewGroupCusModal(false)}
+              />
+            )}
+          </div>
+        </div>
+        <div className="">
+          <input
+            type="text"
+            placeholder="Tìm kiếm "
+            className="w-full p-2 border border-gray-300 rounded"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+          />
+        </div>
+        <div className="pt-2 ">
+          <button
+            type="button"
+            className="w-full p-1 border border-gray-300 rounded bg-gray-200"
+            onClick={handleSelectAllCustomerGroups}
+          >
+            Tất cả nhóm khách hàng
+          </button>
+          <div className="overflow-y-auto h-40">
+            {filteredCustomerGroups.map((customerGroups, index) => (
+              <div className="flex flex-row custom-button "
+                key={index}
+                onMouseEnter={() => setHoveredCustomerGroups(customerGroups.customerGroupName)}
+                onMouseLeave={() => setHoveredCustomerGroups(null)}
+              >
+                <button className="pt-1 ms-3 basis-3/4 text-left " onClick={() => handleCustomerGroupsSelection(customerGroups.customerGroupName)}>
+                  {customerGroups.customerGroupName}
+                </button>
+                {hoveredCustomerGroups === customerGroups.customerGroupName && (
+                  <button
+                    type="button"
+                    className="basis-1/4 text-1xl text-gray-500"
+                    onClick={() => handleEditCustomerGroup(customerGroups.customerGroupId)}
+                  >
+                    <i className="fa-solid fa-pen-to-square edit-action"></i>
+                  </button>
+                )}
+                {hoveredCustomerGroups === customerGroups.customerGroupName && (
+                  <button
+                    type="button"
+                    className="basis-1/4 text-1xl text-gray-500"
+                    onClick={() => handleDeleteCustomerGroup(customerGroups.customerGroupId)}
+                  >
+                    <i className="fa-solid fa-trash edit-action"></i>
+                  </button>
+                )}
+              </div>
+            ))}
+            {openEditCustomerGroupModal && (
+              <CustomerGroupForm
+                open={openEditCustomerGroupModal}
+                onClose={() => setOpenEditCustomerGroupModal(false)}
+                customerGroupId={selectedCustomerGroupId}
+              />
+            )}
+             {openDeleteCustomerGroupModal && (
+              <DeleteCustomerGroup
+                open={openDeleteCustomerGroupModal}
+                onClose={() => setOpenDeleteCustomerGroupModal(false)}
+                customerGroupId={selectedCustomerGroupId}
+              />
+            )}
+          </div>
         </div>
       </div>
-
-      <Box className="h-full w-10/12 mx-auto mt-10">
-        <div className="flex mb-10">
-          <h1 className="text-4xl">Khách hàng</h1>
-          <div className="ml-auto flex">
-            {rowSelectionModel.length > 0 ? (
+      <div className="w-10/12">
+        <Box className="h-full w-11/12 mt-10">
+          <div className="flex mb-10">
+            <h1 className="text-4xl">Khách hàng</h1>
+            <div className="ml-auto flex">
+              {rowSelectionModel.length > 0 ? (
+                <div className="mx-2">
+                  <ButtonHover
+                    action="Thao tác"
+                    iconAction="fa-solid fa-ellipsis-vertical"
+                    names={[
+                      {
+                        name: "Xoá khách hàng",
+                        icon: "fa-solid fa-trash",
+                        action: deleteCustomerHandler,
+                      },
+                    ]}
+                  />
+                </div>
+              ) : null}
               <div className="mx-2">
-                <ButtonHover
-                  action="Thao tác"
-                  iconAction="fa-solid fa-ellipsis-vertical"
-                  names={[
-                    {
-                      name: "Xoá khách hàng",
-                      icon: "fa-solid fa-trash",
-                      action: deleteCustomerHandler,
-                    },
-                  ]}
+                <ButtonClick
+                  name="Thêm mới khách hàng"
+                  iconAction="fa-solid fa-plus"
+                  action={newCustomerHandler}
                 />
               </div>
-            ) : null}
-            <div className="mx-2">
-              <ButtonClick
-                name="Thêm mới khách hàng"
-                iconAction="fa-solid fa-plus"
-                action={newCustomerHandler}
-              />
             </div>
           </div>
-        </div>
-        <DataGrid
-          className="bg-white"
-          columns={columns}
-          rows={rows}
-          initialState={{
-            pagination: { paginationModel: { pageSize: 5 } },
-          }}
-          pageSizeOptions={[5, 10, 25]}
-          checkboxSelection
-          disableRowSelectionOnClick
-          onRowSelectionModelChange={(newRowSelectionModel) => {
-            setRowSelectionModel(newRowSelectionModel);
-          }}
-          rowSelectionModel={rowSelectionModel}
-          slots={{ toolbar: GridToolbar }}
-        />
-      </Box>
-      {openNewCustomerModal && (
-        <NewCustomer
-          open={openNewCustomerModal}
-          onClose={() => setOpenNewCustomerModal(false)}
-        />
-      )}
-
-      {openEditCustomerModal && selectedCustomerId && (
-        <EditCustomer
-          open={openEditCustomerModal}
-          onClose={() => setOpenEditCustomerModal(false)}
-          customerId={selectedCustomerId}
-        />
-      )}
-      {openDetailsCustomerModal && selectedCustomerId && (
-        <DetailsCustomer
-          open={openDetailsCustomerModal}
-          onClose={() => setOpenDetailsCustomerModal(false)}
-          customerId={selectedCustomerId}
-        />
-      )}
-      {openDeleteCustomerModal && rowSelectionModel && (
-        <DeleteCustomer
-          open={openDeleteCustomerModal}
-          onClose={() => setOpenDeleteCustomerModal(false)}
-          listCateRoomId={rowSelectionModel}
-        />
-      )}
-      {openDeleteCustomerModal && selectedCustomerId && (
-        <DeleteCustomer
-          open={openDeleteCustomerModal}
-          onClose={() => setOpenDeleteCustomerModal(false)}
-          listCateRoomId={selectedCustomerId}
-        />
-      )}
+          <DataGrid
+            className="bg-white"
+            columns={columns}
+            rows={rows}
+            initialState={{
+              pagination: { paginationModel: { pageSize: 5 } },
+            }}
+            pageSizeOptions={[5, 10, 25]}
+            checkboxSelection
+            disableRowSelectionOnClick
+            onRowSelectionModelChange={(newRowSelectionModel) => {
+              setRowSelectionModel(newRowSelectionModel);
+            }}
+            rowSelectionModel={rowSelectionModel}
+            slots={{ toolbar: GridToolbar }}
+          />
+        </Box>
+        {openNewCustomerModal && (
+          <NewCustomer
+            open={openNewCustomerModal}
+            onClose={() => setOpenNewCustomerModal(false)}
+          />
+        )}
+        {openEditCustomerModal && selectedCustomerId && (
+          <EditCustomer
+            open={openEditCustomerModal}
+            onClose={() => setOpenEditCustomerModal(false)}
+            customerId={selectedCustomerId}
+          />
+        )}
+        {openDetailsCustomerModal && selectedCustomerId && (
+          <DetailsCustomer
+            open={openDetailsCustomerModal}
+            onClose={() => setOpenDetailsCustomerModal(false)}
+            customerId={selectedCustomerId}
+          />
+        )}
+        {openDeleteCustomerModal && rowSelectionModel && (
+          <DeleteCustomer
+            open={openDeleteCustomerModal}
+            onClose={() => setOpenDeleteCustomerModal(false)}
+            listCateRoomId={rowSelectionModel}
+          />
+        )}
+        {openDeleteCustomerModal && selectedCustomerId && (
+          <DeleteCustomer
+            open={openDeleteCustomerModal}
+            onClose={() => setOpenDeleteCustomerModal(false)}
+            listCateRoomId={selectedCustomerId}
+          />
+        )}
       </div>
-    </>
+    </div >
+
   );
 }
 
@@ -292,7 +351,7 @@ async function loadCustomerGroup() {
         redirect("/login");
       });
     if (response.data.success) {
-      return response.data.result;
+      return response.data.result.filter((customer) => customer.status !== 'NO_ACTIVE');
     } else {
       window.location.href = "/login";
       return;
@@ -336,6 +395,41 @@ export async function action({ request }) {
         position: "center",
         icon: "success",
         title: "Thêm nhóm khách hàng thành công",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    } else {
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        title: "Thêm nhóm khách hàng thất bại",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    }
+    return redirect("/manager/customerManagement");
+  }
+  if (data.get("isEditGroup")) {
+    const formData = new FormData();
+    formData.append("customerGroupId", data.get("customerGroupId"));
+    formData.append("customerGroupName", data.get("groupCusName"));
+
+    const response = await axiosPrivate
+      .post("customer/customerGroup", formData)
+      .catch((e) => {
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: "Chỉnh sửa nhóm khách hàng thất bại",
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      });
+    if (response.data.success) {
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: "Chỉnh sửa nhóm khách hàng thành công",
         showConfirmButton: false,
         timer: 1500,
       });
@@ -419,13 +513,38 @@ export async function action({ request }) {
     return redirect("/manager/customerManagement");
   }
   if (method === "DELETE") {
+    const dataArray = data.get("customerGroupId");
+    const response = await axiosPrivate
+      .delete("customer/customerGroup/" + dataArray)
+      .then((response) => {
+        let message = "";
+       
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: "Xóa nhóm khách hàng thành công",
+          showConfirmButton: true,
+        });
+      })
+      .catch((e) => {
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: "Xóa nhóm khách hàng thất bại",
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      });
+    return redirect("/manager/customerManagement");
+  }
+  if (method === "DELETE") {
     const dataArray = data.get("customerId").split(",");
     const response = await axiosPrivate
       .delete("customer/" + dataArray)
       .then((response) => {
         let message = "";
         dataArray.map((id) => {
-          message += response.data[id] + " có mã sản phẩm là " + id + "<br/>";
+          message += response.data[id] + " có mã khách hàng là " + id + "<br/>";
         });
         Swal.fire({
           position: "center",

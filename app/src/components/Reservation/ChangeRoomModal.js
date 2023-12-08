@@ -24,8 +24,9 @@ function ChangeRoomModal(props) {
   const [listRoom, setListRoom] = useState([]);
   const [selectedRadio, setSelectedRadio] = useState(1);
   const roomActive = props.roomActive;
-    // console.log(roomActive);
+  // console.log(roomActive);
   const listPrice = props.price;
+  // console.log(listPrice);
   let fromTime = dayjs();
   let toTime = dayjs();
   if (roomActive.status === "BOOKING") {
@@ -101,7 +102,15 @@ function ChangeRoomModal(props) {
   }
 
   return (
-    <Form method="PUT" onSubmit={props.onClose}>
+    <Form
+      method="PUT"
+      onSubmit={() => {
+        props.onClose();
+        if (props.onCloseAll) {
+          props.onCloseAll();
+        }
+      }}
+    >
       <Modal
         open={props.open}
         onClose={props.onClose}

@@ -91,7 +91,7 @@ function StaffManagementPage() {
     },
   ];
 
-  const rows = Array.isArray(staffs)?staffs.filter((staff) => staff.role !== 'ROLE_MANAGER').map((staff) => {
+  const rows = Array.isArray(staffs)?staffs.map((staff) => {
     const gender = staff.gender ? "Nam giới" : "Nữ giới";
     const dateNow = new Date(staff.dob);
     const year = dateNow.getFullYear();

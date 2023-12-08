@@ -459,7 +459,7 @@ function ReservationForm(props) {
   // console.log(listCustomers);
   return (
     <>
-      <div className="px-4 w-full py-2 h-1/6 print:hidden">
+      <div className="px-4 w-full py-2 print:hidden">
         <div className="flex">
           <SearchCustomer
             customers={customers}
@@ -508,7 +508,7 @@ function ReservationForm(props) {
       </div>
       {reservation ? (
         <>
-          <Form method="PUT" className="h-[41.5rem] px-5 print:hidden">
+          <Form method="PUT" className="h-[45rem] px-5 print:hidden">
             <div className="flex my-auto rounded-lg py-2">
               <div className="px-2 py-1 mr-2 rounded-lg bg-white">
                 {reservation.listReservationDetails.map((room, index) => {
@@ -1041,6 +1041,39 @@ function ReservationForm(props) {
             />
           )}
         </>
+      )}
+      {reservation && (
+        <div className="hidden print:block">
+          <p>Tên cửa hàng: Khách sạn Thành Công</p>
+          <p>Điện thoại: 0981987625</p>
+          <div className="mt-4 border-t border-black border-dotted">
+            Ngày xuất HĐ: {dayjs().format("DD/MM/YYYY HH:mm")}
+          </div>
+          <div className="mt-4">
+            <div className="font-bold text-center">
+              <h2>HOÁ ĐƠN BÁN HÀNG</h2>
+              <p className="text-sm"></p>
+            </div>
+            <div>
+              {/* <p>Khách hàng: {customer ? customer.customerName : "Khách lẻ"}</p>s */}
+              <p>Mã đặt phòng: {reservation.reservation.reservationId}</p>
+              <p>Thu ngân: </p>
+            </div>
+            <div className="flex mt-4">
+              <div className="ml-auto mr-10">Tổng tiền hàng: </div>
+              <div className="w-32 text-right"></div>
+            </div>
+            <div className="flex">
+              <div className="ml-auto mr-10">Chiếu khấu: </div>
+              <div className="w-32 text-right">0</div>
+            </div>
+            <div className="flex">
+              <div className="ml-auto mr-10">Tổng cộng: </div>
+              <div className="w-32 text-right"></div>
+            </div>
+          </div>
+          <div className="text-center mt-10 text-sm">Cảm ơn và hẹn gặp lại</div>
+        </div>
       )}
       {openReceiveModal && (
         <ReceiveRoomModal

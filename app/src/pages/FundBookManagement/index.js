@@ -16,8 +16,14 @@ import { DatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 function FundBookManagementPage() {
-  // const { fundBooks } = useLoaderData();
   const [fundBooks, setFundBooks] = useState(null);
+  const [fundBooksSummary, setFundBooksSummary] = useState({
+    openingBalance: 0,
+    allIncome: 0,
+    allExpense: 0,
+    fundBalance: 0,
+  });
+
 
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openNewFundBookModal, setOpenNewFundBookModal] = useState(false);
@@ -39,21 +45,59 @@ function FundBookManagementPage() {
   ];
   useEffect(() => {
     async function fetchListInvoices() {
-      const response = null;
-      try {
-        if (selectedValue1 === "1") {
-           response = await axiosPrivate.get(
-            "/overview/report_room_capacity_by_month?date=" + month.format('YYYY/MM/DD').toString()
-          );
+      let response = null;
+      let responseSummary = null;
+      let formattedDate = null;
+      let formData = new FormData();
+      console.log(selectedValue1);
+      console.log(month.format('YYYY/MM/DD').toString());
+      console.log(year.format('YYYY/MM/DD').toString());
+
+      if (selectedValue1 !==null &&( month !== null || year!==null)) {
+        try {
+          if (selectedValue1 === "1") {
+            formattedDate = month.format('YYYY/MM/DD').toString();
+            formData.append("time", formattedDate);
+            formData.append("isMonth", true);
+            const urlSearchParams = new URLSearchParams(formData);
+            response = await axiosPrivate.get("fund-book?" + urlSearchParams, {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            });
+            responseSummary = await axiosPrivate.get("fund-book/summary?" + urlSearchParams, {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            });
+            setFundBooks(response.data.result);
+            setFundBooksSummary(responseSummary.data.result);
+            if (responseSummary.data.result.openingBalance === null) {
+              console.log("as");
+            }
+          }
+          else {
+            formattedDate = year.format('YYYY/MM/DD').toString();
+            formData.append("time", formattedDate);
+            formData.append("isMonth", false);
+            const urlSearchParams = new URLSearchParams(formData);
+            response = await axiosPrivate.get("fund-book?" + urlSearchParams, {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            });
+            responseSummary = await axiosPrivate.get("fund-book/summary?" + urlSearchParams, {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            });
+            setFundBooks(response.data.result);
+            setFundBooksSummary(responseSummary.data.result);
+
+          }
+        } catch (error) {
+          console.log(error);
         }
-        else {
-          console.log(year.year().toString());
-           response = await axiosPrivate.get(
-            "overview/report_room_capacity_by_many_year?year=" + year.year()
-          );
-        }
-      } catch (error) {
-        console.log(error);
       }
     }
 
@@ -77,10 +121,12 @@ function FundBookManagementPage() {
 
 
   const columns = [
-    { field: "code", headerName: "Mã sổ quỹ", width: 150 },
-    { field: "codeInvoice", headerName: "Mã hóa đơn", width: 200 },
-    { field: "time", headerName: "Thời gian", width: 200 },
-    { field: "type", headerName: "Loại", width: 200 },
+    { field: "code", headerName: "Mã sổ quỹ", width: 200 },
+    { field: "time", headerName: "Thời gian", width: 150 },
+    { field: "type", headerName: "Loại", width: 150 },
+    { field: "paidMethod", headerName: "Thanh toán", width: 150 },
+    { field: "value", headerName: "Giá trị", width: 200 },
+    { field: "status", headerName: "Trạng thái", width: 150 },
     {
       field: "actions",
       headerName: "Hoạt động",
@@ -122,7 +168,11 @@ function FundBookManagementPage() {
     return {
       id: fundBook.fundBookId,
       code: fundBook.fundBookId,
-      time: formattedDate
+      time: formattedDate,
+      type: fundBook.type === "INCOME" ? 'Thu nhập' : fundBook.type === "OTHER_INCOME" ? 'Thu nhập khác' : fundBook.type === "OTHER_EXPENSE" ? 'Chi phí khác' : 'Chi phí',
+      paidMethod: fundBook.paidMethod,
+      value: fundBook.value,
+      status: fundBook.status === "COMPLETE" ? "Hoàn tất" : ""
     };
   }) : [];
 
@@ -132,9 +182,7 @@ function FundBookManagementPage() {
 
   return (
     <>
-      <div>
 
-      </div>
       <Box className="h-full w-10/12 mx-auto mt-10">
         <div className="flex mb-10">
           <h1 className="text-4xl">Sổ quỹ</h1>
@@ -213,6 +261,24 @@ function FundBookManagementPage() {
             </div>
           </div>
         </div>
+        <div className="flex justify-end bg-gray-200">
+          <div className="mx-5">
+            <div className="text-lg">Quỹ đầu kì:</div>
+            <div className="text-lg text-gray-400">{fundBooksSummary.openingBalance}</div>
+          </div>
+          <div className="mx-5">
+            <div className="text-lg">Tổng thu:</div>
+            <div className="text-lg text-green-400">{fundBooksSummary.allIncome}</div>
+          </div>
+          <div className="mx-5">
+            <div className="text-lg">Tổng chi:</div>
+            <div className="text-lg text-red-400">{fundBooksSummary.allExpense}</div>
+          </div>
+          <div className="mx-5">
+            <div className="text-lg">Tồn quỹ:</div>
+            <div className="text-lg text-blue-400"> {fundBooksSummary.fundBalance}</div>
+          </div>
+        </div>
         <DataGrid
           className="bg-white"
           columns={columns}
@@ -275,25 +341,72 @@ function FundBookManagementPage() {
 
 export default FundBookManagementPage;
 
-// async function loadFundBooks() {
-//   const token = localStorage.getItem("token");
-//   if (!token) {
-//     return redirect("/login");
-//   }
-//   const response = await axiosPrivate.get("fund-book");
-//   return response.data.result;
-// }
+async function loadFundBooks() {
+  const token = localStorage.getItem("token");
+  const dateNow = new Date();
+  const year = dateNow.getFullYear();
+  const month = String(dateNow.getMonth() + 1).padStart(2, "0");
+  const day = String(dateNow.getDate()).padStart(2, "0");
+  const formattedDate = `${year}/${month}/${day}`;
+  const formData = new FormData();
+  if (!token) {
+    return redirect("/login");
+  }
+
+  formData.append("time", formattedDate);
+  formData.append("isMonth", true);
+  const urlSearchParams = new URLSearchParams(formData);
+
+  const response = await axiosPrivate.get("fund-book?" + urlSearchParams, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
+  console.log(response);
+
+  return response.data.result;
+
+}
+async function loadFundBooksSummary() {
+  const token = localStorage.getItem("token");
+  const dateNow = new Date();
+  const year = dateNow.getFullYear();
+  const month = String(dateNow.getMonth() + 1).padStart(2, "0");
+  const day = String(dateNow.getDate()).padStart(2, "0");
+  const formattedDate = `${year}/${month}/${day}`;
+  const formData = new FormData();
+  if (!token) {
+    return redirect("/login");
+  }
+
+  formData.append("time", formattedDate);
+  formData.append("isMonth", true);
+  const urlSearchParams = new URLSearchParams(formData);
+
+  const response = await axiosPrivate.get("fund-book/summary?" + urlSearchParams, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  console.log(response.data.result);
+
+  return response.data.result;
+
+}
 
 
-// export async function loader() {
-//   const token = localStorage.getItem("token");
-//   if (!token) {
-//     return redirect("/login");
-//   }
-//   return defer({
-//     fundBooks: await loadFundBooks(),
-//   });
-// }
+export async function loader() {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return redirect("/login");
+  }
+  return defer({
+    fundBooks: await loadFundBooks(),
+    fundBooksSummary: await loadFundBooksSummary(),
+
+  });
+}
 
 export async function action({ request }) {
   const method = request.method;

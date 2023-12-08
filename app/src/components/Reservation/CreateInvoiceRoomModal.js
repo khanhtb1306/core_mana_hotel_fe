@@ -17,6 +17,7 @@ function CreateInvoiceRoomModal(props) {
   const listQR = props.listQR;
   const banks = props.banks;
   const listSurchage = props.listSurchage;
+  const totalDeposit = props.reservation.reservation.totalDeposit;
   // console.log(listSurchage);
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
@@ -26,6 +27,7 @@ function CreateInvoiceRoomModal(props) {
   const [otherFeePrice, setOtherFeePrice] = useState(0);
   const [discountPrice, setDiscountPrice] = useState(0);
   const [payPrice, setPayPrice] = useState(0);
+  const [depositPrice, setDepositPrice] = useState(0);
   const [payType, setPayType] = useState(1);
   const [selectedAcc, setSelectedAcc] = useState(
     listQR.length > 0 ? listQR[0].bankAccountId : 0
@@ -207,6 +209,7 @@ function CreateInvoiceRoomModal(props) {
       setDiscountPrice(0);
       setPayPrice(0);
       setOtherFeePrice(0);
+      setDepositPrice(0);
     }
   }, [rowSelectionModel]);
   const handleOtherFeeChange = (price) => {
@@ -214,7 +217,7 @@ function CreateInvoiceRoomModal(props) {
   };
   return (
     <>
-      <Form method="POST" onSubmit={() => props.onClose()}>
+      <Form method="POST" onSubmit={() => props.onCloseAll()}>
         <div
           onClick={props.onClose}
           className={`fixed inset-0 flex justify-center items-center transition-colors overflow-auto z-10 ${
@@ -368,12 +371,40 @@ function CreateInvoiceRoomModal(props) {
                       {otherFeePrice.toLocaleString()}
                     </button>
                   </div>
+                  <div className="flex mt-2">
+                    <div className="mr-auto">Khách đã trả</div>
+                    <div className="ml-auto">
+                      {totalDeposit.toLocaleString()}
+                    </div>
+                  </div>
+                  <div className="flex mt-2">
+                    <div className="mr-auto">Sử dùng tiền cọc</div>
+                    <input
+                      className="p-0 text-sm border-0 border-b border-gray-500 text-right w-6/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                      type="text"
+                      name="bankAccountNumber"
+                      readOnly={rowSelectionModel.length > 0 ? false : true}
+                      defaultValue={0}
+                      onChange={(e) => {
+                        if (e.target.value === "") {
+                          e.target.value = 0;
+                        }
+                        let num = e.target.value.replace(/[^\d]/g, "");
+                        if (num > totalDeposit) {
+                          num = 0;
+                        }
+                        setDepositPrice(num);
+                        e.target.value = parseInt(num, 10).toLocaleString();
+                      }}
+                    />
+                  </div>
                   <div className="flex mt-4">
                     <div className="mr-auto">Khách cần trả</div>
                     <div className="ml-auto">
                       {(
                         priceAll -
-                        discountPrice +
+                        discountPrice -
+                        depositPrice +
                         otherFeePrice
                       ).toLocaleString()}
                     </div>
@@ -398,18 +429,23 @@ function CreateInvoiceRoomModal(props) {
                       }}
                     />
                   </div>
-                  {payPrice - (priceAll + otherFeePrice - discountPrice) >
-                    0 && (
-                    <div className="flex mt-2">
-                      <div className="mr-auto my-auto">Tiền thừa trả khách</div>
-                      <div className="ml-auto">
-                        {(
-                          payPrice -
-                          (priceAll + otherFeePrice - discountPrice)
-                        ).toLocaleString()}
+                  {payPrice - (priceAll + otherFeePrice - discountPrice) > 0 &&
+                    rowSelectionModel.length > 0 && (
+                      <div className="flex mt-2">
+                        <div className="mr-auto my-auto">
+                          Tiền thừa trả khách
+                        </div>
+                        <div className="ml-auto">
+                          {(
+                            payPrice -
+                            (priceAll +
+                              otherFeePrice -
+                              discountPrice -
+                              depositPrice)
+                          ).toLocaleString()}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                   <div className="mt-4">
                     <div className="flex">
                       <RadioGroup

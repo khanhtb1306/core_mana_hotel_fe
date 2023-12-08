@@ -49,7 +49,15 @@ function PayRoomModal(props) {
     surchargeTime += getlateCheckout(3, fromTime, toTime, timeUsing);
   }
   return (
-    <Form method="PUT" onSubmit={props.onClose}>
+    <Form
+      method="PUT"
+      onSubmit={() => {
+        props.onClose();
+        if (props.onCloseAll) {
+          props.onCloseAll();
+        }
+      }}
+    >
       <Modal
         open={props.open}
         onClose={props.onClose}
