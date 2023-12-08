@@ -542,86 +542,55 @@ function ListReservationPage() {
       getActions: (params) => {
         const row = params.row;
         // console.log(row);
-        let status = 3;
-        if (row.status.some((room) => room.bookingStatus === "BOOKING")) {
-          status = 1;
-          if (row.status.some((room) => room.bookingStatus === "CHECK_IN")) {
-            status = 4;
-          }
-        } else if (
-          row.status.some((room) => room.bookingStatus === "CHECK_IN")
-        ) {
+        let status = 1;
+        if (row.status.some((room) => room.bookingStatus === "CHECK_OUT")) {
           status = 2;
+        } else if (row.status.every((room) => room.bookingStatus === "DONE")) {
+          status = 3;
         }
         return [
-          status === 1 || status === 4 ? (
-            <>
-              <GridActionsCellItem
-                icon={
-                  <button className="bg-green-600 text-base text-white px-6 rounded">
-                    Nhận phòng
-                  </button>
-                }
-                label="Nhận phòng"
-              />
-            </>
-          ) : status === 2 ? (
-            <>
-              <GridActionsCellItem
-                icon={
-                  <button
-                    type="button"
-                    className="bg-blue-600 text-base text-white px-6 rounded"
-                  >
-                    Trả phòng
-                  </button>
-                }
-                label="Trả phòng"
-              />
-            </>
-          ) : (
-            <GridActionsCellItem
-              icon={
-                <button
-                  type="button"
-                  className="bg-white text-base text-green-600 border border-green-600 px-6 rounded"
-                >
-                  Hoá đơn
-                </button>
-              }
-              label="Hoá đơn"
-            />
-          ),
-          status === 4 ? (
-            <GridActionsCellItem
-              icon={<button type="button">Trả phòng</button>}
-              showInMenu
-            />
-          ) : (
-            <></>
-          ),
-          status !== 3 ? (
-            <GridActionsCellItem
-              icon={
-                <button type="button">
-                  <Link to={`/editReservation/${row.reservationId}`}>
-                    Điều chỉnh
-                  </Link>
-                </button>
-              }
-              showInMenu
-            />
-          ) : (
-            <></>
-          ),
-          status !== 3 ? (
-            <GridActionsCellItem
-              icon={<button type="button">Huỷ đặt phòng</button>}
-              showInMenu
-            />
-          ) : (
-            <></>
-          ),
+          <>
+            {status === 1 && (
+              <>
+                <GridActionsCellItem
+                  icon={
+                    <button
+                      type="button"
+                      className="text-medium text-green-600"
+                    >
+                      <Link to={`/editReservation/${row.reservationId}`}>
+                        <i className="fa-solid fa-pen-to-square"></i>
+                      </Link>
+                    </button>
+                  }
+                />
+                <GridActionsCellItem
+                  icon={
+                    <button
+                      type="button"
+                      className="text-medium text-green-600"
+                    >
+                      <i className="fa-solid fa-trash"></i>
+                    </button>
+                  }
+                />
+              </>
+            )}
+            {status === 2 && (
+              <>
+                <GridActionsCellItem
+                  icon={
+                    <button
+                      type="button"
+                      className="text-medium text-green-600"
+                    >
+                      <i className="fa-solid fa-eye"></i>
+                    </button>
+                  }
+                />
+              </>
+            )}
+          </>,
         ];
       },
       width: 200,
