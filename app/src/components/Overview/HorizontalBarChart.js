@@ -48,7 +48,7 @@ const HorizontalBarChart = ({ data }) => {
         };
     }, [data]);
 
-    return <canvas ref={chartRef} />;
+    return <canvas ref={chartRef} style={{ width: '100%', height: '100px' }} />;
 };
 
 export default HorizontalBarChart;
