@@ -78,8 +78,7 @@ export async function loader() {
 export async function action({ request }) {
   const method = request.method;
   const data = await request.formData();
-  const isAddRoom = data.get("addRoom");
-  if (isAddRoom) {
+  if (data.get("addRoom")) {
     //Add new reservation
     const formReser = new FormData();
     if (data.get("customerId")) {
@@ -129,6 +128,5 @@ export async function action({ request }) {
     } else {
       return { success: false };
     }
-    // return { success: true };
   }
 }
