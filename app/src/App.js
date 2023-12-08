@@ -63,10 +63,15 @@ import PolicyManagementPage, {
 import OverviewManagementPage, {
   loader as loadOverview,
 } from "./pages/OverviewManagementPage";
-import TransactionManagementPage from "./pages/TransactionManagement";
-import ImportManagementPage from "./pages/ImportManagement";
-import FundBookManagementPage from "./pages/FundBookManagement";
-import StaffManagementPage, {
+import TransactionManagementPage, {
+  loader as loadTransaction
+} from "./pages/TransactionManagement";
+import ImportManagementPage, {
+} from "./pages/ImportManagement";
+import FundBookManagementPage, {
+  // loader as loadFundBooks
+}from "./pages/FundBookManagement";
+import StaffManagementPage,{
   loader as loadStaffs,
   action as actionStaff,
 } from "./pages/StaffManagement";
@@ -114,6 +119,8 @@ const routesForManager = [
   {
     path: "transactionManagement",
     element: <TransactionManagementPage />,
+    loader: loadTransaction,
+
   },
   {
     path: "importManagement",

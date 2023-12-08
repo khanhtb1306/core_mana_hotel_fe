@@ -5,7 +5,7 @@ import {
   GridToolbar,
   viVN,
 } from "@mui/x-data-grid";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ButtonHover from "../../components/UI/ButtonHover";
 import NewRoom from "../../components/Room/NewRoom";
 import NewCategoryRoom from "../../components/CategoryRoom/NewCategoryRoom";
@@ -25,10 +25,15 @@ import Swal from "sweetalert2";
 import { Tooltip } from "react-tooltip";
 import SetStatusRoom from "../../components/Room/SetStatusRoom";
 import ButtonClick from "../../components/UI/ButtonClick";
+import NewArea from "../../components/NewArea";
+import EditArea from "../../components/UI/EditArea";
+import DeleteArea from "../../components/Area/DeleteArea";
+
 
 function RoomManagementPage() {
   const token = useRouteLoaderData("root");
   const { rooms, categories, floors } = useLoaderData();
+  const [roomsByFloor, setRoomByFloor] = useState(rooms);
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openNewRoomModal, setOpenNewRoomModal] = useState(false);
   const [openDeleteRoomsModal, setOpenDeleteRoomsModal] = useState(false);
@@ -38,6 +43,47 @@ function RoomManagementPage() {
   const [openDetailsRoom, setOpenDetailsRoom] = useState(false);
   const [openEditRoom, setOpenEditRoom] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState(null);
+  const [hoveredFloor, setHoveredFloor] = useState(null);
+  const [selectedFloor, setSelectedFloor] = useState(null);
+  const [searchValue, setSearchValue] = useState('');
+  const [filteredFloors, setFilteredFloors] = useState([]);
+  const [openNewAreaModal, setOpenNewAreaModal] = useState(false);
+  const [openDeleteAreaModal, setOpenDeleteAreaModal] = useState(false);
+  const [openEditAreaModal, setOpenEditAreaModal] = useState(false);
+  const [selectedFloorId, setSelectedFloorId] = useState(null);
+  const handleEditArea = (floorId) => {
+    setSelectedFloorId(floorId);
+    setOpenEditAreaModal(true);
+  };
+  const handleDeleteArea = (floorId) => {
+    setSelectedFloorId(floorId);
+    setOpenDeleteAreaModal(true);
+  };
+
+
+  useEffect(() => {
+    const filtered = floors.filter(floor => floor.floorName.toLowerCase().includes(searchValue.toLowerCase()));
+    setFilteredFloors(filtered);
+  }, [floors, searchValue]);
+
+  const [selectedFloorName, setSelectedFloorName] = useState(null);
+  const handleSelectAllFloors = () => {
+    setSelectedFloor(null);
+    setSelectedFloorName(null);
+    setRoomByFloor(rooms);
+  };
+
+  const handleFloorSelection = (floorName) => {
+    setSelectedFloor(floorName);
+    setSelectedFloorName(floorName);
+  };
+
+  useEffect(() => {
+    const filtered = selectedFloor
+      ? rooms.filter((room) => room.floor.floorName === selectedFloor)
+      : rooms;
+    setRoomByFloor(filtered);
+  }, [rooms, selectedFloor]);
 
   const handleDetailsRoom = (id) => {
     setOpenDetailsRoom(true);
@@ -112,7 +158,7 @@ function RoomManagementPage() {
     },
   ];
 
-  const rows = rooms.map((room) => {
+  const rows = roomsByFloor ? roomsByFloor.map((room) => {
     const status = room.status === 1 ? "Đang hoạt động" : "Ngừng hoạt động";
     return {
       id: room.roomId,
@@ -130,8 +176,7 @@ function RoomManagementPage() {
         : 0,
       status: status,
     };
-  });
-
+  }) : [];
   const newCateRoomHandler = () => {
     setOpenNewCateRoomModal(true);
   };
@@ -143,9 +188,112 @@ function RoomManagementPage() {
   const deleteRoomsHandler = () => {
     setOpenDeleteRoomsModal(true);
   };
-
   return (
-    <>
+
+    <div className="flex flex-row">
+      <div className="mt-10 mx-5">
+        <div className="flex pt-1 mt-10">
+          <div className="w-10/12 text-1xl ">
+            <p className="text-lg font-bold">Khu vực</p>
+          </div>
+          <div className="w-2/12">
+            <button
+              type="button"
+              className="text-2xl text-gray-500"
+              onClick={() => setOpenNewAreaModal(true)}
+            >
+              <i className="fa-solid fa-plus "></i>
+            </button>
+            {openNewAreaModal && (
+              <NewArea
+                open={openNewAreaModal}
+                onClose={() => setOpenNewAreaModal(false)}
+              />
+            )}
+          </div>
+        </div>
+        <div className="">
+          <input
+            type="text"
+            placeholder="Tìm kiếm khu vực"
+            className="w-full p-2 border border-gray-300 rounded"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+          />
+        </div>
+        <div className="pt-2">
+          <button
+            type="button"
+            className="w-full p-1 border border-gray-300 rounded bg-gray-200"
+            onClick={handleSelectAllFloors}
+          >
+            Tất cả khu vực
+          </button>
+          <div className="overflow-y-auto h-40">
+            {filteredFloors.map((floor, index) => (
+              <div className=""
+                key={index}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  backgroundColor:
+                    selectedFloorName === floor.floorName
+                      ? "lightgray"
+                      : "transparent",
+                }}
+                onMouseEnter={() => setHoveredFloor(floor.floorName)}
+                onMouseLeave={() => setHoveredFloor(null)}
+                onClick={() => handleFloorSelection(floor.floorName)}
+              >
+                <div
+                  className="pt-1 "
+                  style={{
+                    width: "80%",
+                    backgroundColor:
+                      selectedFloorName === floor.floorName
+                        ? "lightgray"
+                        : "transparent",
+                  }}
+                >
+                  {floor.floorName}
+                </div>
+                {hoveredFloor === floor.floorName && (
+                  <button
+                    type="button"
+                    className="w-1/12 mx-2 text-1xl text-gray-500"
+                    onClick={() => handleEditArea(floor.floorId)}
+                  >
+                    <i className="fa-solid fa-pen-to-square edit-action"></i>
+                  </button>
+                )}
+                {hoveredFloor === floor.floorName && (
+                  <button
+                    type="button"
+                    className="w-1/12 mx-2 text-1xl text-gray-500"
+                    onClick={() => handleDeleteArea(floor.floorId)}
+                  >
+                    <i className="fa-solid fa-trash edit-action"></i>
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+          {openEditAreaModal && (
+            <EditArea
+              open={openEditAreaModal}
+              onClose={() => setOpenEditAreaModal(false)}
+              floorId={selectedFloorId}
+            />
+          )}
+          {openDeleteAreaModal && (
+            <DeleteArea
+              open={openDeleteAreaModal}
+              onClose={() => setOpenDeleteAreaModal(false)}
+              floorId={selectedFloorId}
+            />
+          )}
+        </div>
+      </div>
       <Box className="h-full w-10/12 mx-auto mt-10">
         <div className="flex">
           <h1 className="text-4xl">Hạng phòng & Phòng</h1>
@@ -263,7 +411,8 @@ function RoomManagementPage() {
       <Tooltip anchorSelect=".inactive-action" place="top">
         Ngừng hoạt động
       </Tooltip>
-    </>
+    </div>
+
   );
 }
 
@@ -330,6 +479,7 @@ export async function loader() {
 
 export async function action({ request }) {
   const method = request.method;
+  console.log(method);
   const data = await request.formData();
   const formData = new FormData();
   if (data.get("roomCategoryName")) {
@@ -394,6 +544,42 @@ export async function action({ request }) {
     });
     return redirect("/manager/roomManagement");
   }
+  if (data.get("isEditFloor") && method==="PUT") {
+    const formData = new FormData();
+    console.log("start");
+    formData.append("floorName", data.get("floorNameEdit"));
+    const response = await axiosPrivate
+      .put("Floor/" + data.get("floorId"), formData)
+      .catch((e) => {
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: "Thêm khu vực thất bại",
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      });
+    console.log(response);
+
+    if (response.status == 200) {
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: response.data,
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    } else {
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        title: response.data,
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    }
+    return redirect("/manager/roomManagement");
+  }
   if (data.get("status")) {
     formData.append("status", data.get("status"));
     if (method === "PUT") {
@@ -425,6 +611,7 @@ export async function action({ request }) {
       return redirect("/manager/roomManagement");
     }
   }
+
   formData.append("roomName", data.get("roomName"));
   formData.append("roomCategoryId", data.get("roomCategoryId"));
   formData.append("floorId", data.get("floorId"));
@@ -487,6 +674,29 @@ export async function action({ request }) {
           timer: 1500,
         });
       });
+    return redirect("/manager/roomManagement");
+  }
+  if (method === "DELETE") {
+    const dataArray = data.get("floorId");
+    await axiosPrivate
+    .delete("Floor/" + dataArray)
+    .then((response) => {
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: "Xóa khu vực thành công",
+        showConfirmButton: false,
+      });
+    })
+    .catch((e) => {
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        title: "Xóa khu vực thất bại",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    });
     return redirect("/manager/roomManagement");
   }
   if (method === "DELETE") {

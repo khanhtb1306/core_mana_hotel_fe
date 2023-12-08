@@ -56,7 +56,7 @@ function ManagerNavigation() {
           ]}
         />
         <ButtonHeader
-            name="Danh mục"
+          name="Danh mục"
           icon="fa-solid fa-box"
           isActive={
             location.pathname === "/manager/productManagement" ||
@@ -78,45 +78,45 @@ function ManagerNavigation() {
           ]}
         />
         <ButtonHeader
-            name="Giao dịch"
-            icon="fa-solid fa-box"
-            isActive={
-                location.pathname === "/manager/transactionManagement" ||
-                location.pathname === "/manager/stocktakeManagement"
-            }
-            list={[
-              {
-                name: "Hóa đơn",
-                icon: "fas fa-money-check pr-3",
-                link: "/manager/transactionManagement",
-                isActive: location.pathname === "/manager/productManagement",
-              },
-              {
-                name: "Nhập hàng",
-                icon: "fa-solid fa-warehouse",
-                link: "/manager/importManagement",
-                isActive: location.pathname === "/manager/stocktakeManagement",
-              },
-            ]}
+          name="Giao dịch"
+          icon="fa-solid fa-box"
+          isActive={
+            location.pathname === "/manager/transactionManagement" ||
+            location.pathname === "/manager/stocktakeManagement"
+          }
+          list={[
+            {
+              name: "Hóa đơn",
+              icon: "fas fa-money-check pr-3",
+              link: "/manager/transactionManagement",
+              isActive: location.pathname === "/manager/productManagement",
+            },
+            {
+              name: "Nhập hàng",
+              icon: "fa-solid fa-warehouse",
+              link: "/manager/importManagement",
+              isActive: location.pathname === "/manager/stocktakeManagement",
+            },
+          ]}
 
         />
+
         <div
-        className={`${
-          location.pathname === "/manager/transactionManagement"
+          className={`${location.pathname === "/manager/fundBookManagement"
               ? "bg-blue-800"
               : "hover:bg-blue-800"
-        }`}
+            }`}
         >
-        <li className="pt-2">
-          <NavLink to="/manager/fundBookManagement" className="text-white p-4">
-            <i className="fas fa-money-check pr-3"></i>
-            Sổ quỹ
-          </NavLink>
-        </li>
-      </div>
+          <li className="pt-2">
+            <NavLink to="/manager/fundBookManagement" className="text-white p-4">
+              <i className="fas fa-money-check pr-3"></i>
+              Sổ quỹ
+            </NavLink>
+          </li>
+        </div>
         <ButtonHeader
-            name="Đối tác"
-            icon="fa-solid fa-user-tie"
+          name="Đối tác"
+          icon="fa-solid fa-user-tie"
           isActive={
             location.pathname === "/manager/customerManagement" ||
             location.pathname === "/manager/supplierManagement"

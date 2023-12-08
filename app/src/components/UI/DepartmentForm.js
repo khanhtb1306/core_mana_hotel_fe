@@ -21,7 +21,7 @@ function DepartmentForm(props) {
                   />
                 </td>
               </tr>
-              <tr>
+              {/* <tr>
                 <td className="w-3/12">
                   <h2>Tình trạng</h2>
                 </td>
@@ -32,7 +32,7 @@ function DepartmentForm(props) {
                     name="status"
                   />
                 </td>
-              </tr>
+              </tr> */}
             </tbody>
           </table>
         </div>

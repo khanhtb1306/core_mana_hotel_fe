@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import Chart from 'chart.js/auto';
 
-const LineChart = ({ labels, dataset }) => {
+const LineChart = ({data}) => {
     const chartRef = useRef(null);
     const chartInstance = useRef(null);
 
@@ -17,10 +17,7 @@ const LineChart = ({ labels, dataset }) => {
             // Create a new chart instance
             chartInstance.current = new Chart(ctx, {
                 type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [dataset], // Use the generated dataset
-                },
+                data: data,
                 options: {
                     scales: {
                         x: {
@@ -47,7 +44,7 @@ const LineChart = ({ labels, dataset }) => {
                 chartInstance.current.destroy();
             }
         };
-    }, [labels, dataset]);
+    }, [data]);
 
     return <canvas ref={chartRef} style={{ width: '100%', height: '100px' }} />;
 };

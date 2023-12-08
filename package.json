@@ -1,5 +1,12 @@
 {
   "dependencies": {
+    "@fullcalendar/core": "^6.1.10",
+    "@fullcalendar/daygrid": "^6.1.10",
+    "@fullcalendar/interaction": "^6.1.10",
+    "@fullcalendar/react": "^6.1.10",
+    "@fullcalendar/resource": "^6.1.10",
+    "@fullcalendar/resource-timeline": "^6.1.10",
+    "@fullcalendar/timegrid": "^6.1.10",
     "axios": "^1.6.2",
     "chart.js": "^4.4.0",
     "jwt-decode": "^4.0.0",
