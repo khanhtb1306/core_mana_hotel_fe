@@ -9,8 +9,6 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { axiosPrivate } from "../../utils/axiosConfig";
 import { DatePicker } from "@mui/x-date-pickers";
-import lineChart from "../../components/Overview/LineChart";
-import horizontalBarChart from "../../components/Overview/HorizontalBarChart";
 
 const OverviewPage = () => {
   const { recentActivity } = useLoaderData();
@@ -58,34 +56,6 @@ const OverviewPage = () => {
     return colors;
   };
 
-
-  //
-  // const horizontalBarChartData = {
-  //     labels: labels,
-  //     datasets: [{
-  //         label: 'Mana Hotel',
-  //         data: [65, 59, 80, 81, 56, 55, 40],
-  //         backgroundColor: [
-  //             'rgba(255, 99, 132, 0.2)',
-  //             'rgba(255, 159, 64, 0.2)',
-  //             'rgba(255, 205, 86, 0.2)',
-  //             'rgba(75, 192, 192, 0.2)',
-  //             'rgba(54, 162, 235, 0.2)',
-  //             'rgba(153, 102, 255, 0.2)',
-  //             'rgba(201, 203, 207, 0.2)'
-  //         ],
-  //         borderColor: [
-  //             'rgb(255, 99, 132)',
-  //             'rgb(255, 159, 64)',
-  //             'rgb(255, 205, 86)',
-  //             'rgb(75, 192, 192)',
-  //             'rgb(54, 162, 235)',
-  //             'rgb(153, 102, 255)',
-  //             'rgb(201, 203, 207)'
-  //         ],
-  //         borderWidth: 1
-  //     }]
-  // };
   const [viewByMonth, setViewByMonth] = useState(null);
   const [viewMonthOrDay, setViewMonthOrDay] = useState(null);
   const [viewDayOfWeek, setViewDayOfWeek] = useState(null);
@@ -250,8 +220,8 @@ const OverviewPage = () => {
               "/overview/report_revenue_by_many_years?startYear=" + yearBarChart.year());
           setReportRoomCapacityBarChart(response.data.result);
           setViewByMonthBarChart('THEO THÁNG CÁC NĂM ');
-          setViewMonthOrDay("");
-          setViewDayOfWeek("");
+            setViewMonthOrDayBarChart("");
+            setViewDayOfWeekBarChart("");
         }
       } catch (error) {
         console.log(error);
@@ -276,53 +246,115 @@ const OverviewPage = () => {
   const [monthHorizontalBarChartData, setMonthHorizontalBarChartData] = useState(dayjs());
   const [yearHorizontalBarChartData, setYearHorizontalBarChartData] = useState(dayjs());
   const [reportTopRoomClassHorizontalBarChartData, setReportTopRoomClassHorizontalBarChartData] = useState(null);
+  const [selectedQuarterData, setSelectedQuarterData] = useState('1'); //
+  const [selectedQuarter1, setSelectedQuarter1] = useState(null);
+  const [selectedQuarter2, setSelectedQuarter2] = useState(null);
+  const [selectedQuarter3, setSelectedQuarter3] = useState(null);
+  const [selectedQuarter4, setSelectedQuarter4] = useState(null);
 
-  const HorizontalBarChartDataOptions = [
-    { value: 1, name: "Tuần Hiện Tại" },
-    { value: 2, name: "Theo tháng trong năm" },
-    { value: 3, name: "Theo từng năm" }
-  ];
-  // useEffect(() => {
-  //   async function fetchListHorizontalBarChartDataInvoices() {
-  //     try {
-  //       if (selectedValueHorizontalBarChartData1 === "1") {
-  //         // Gọi api month
-  //           const response = await axiosPrivate.get(
-  //               "/overview/get_top_room_class_by_month_or_year?datestring=" + monthHorizontalBarChartData.format('YYYY/MM/DD').toString()+ "&isMonth=" + true +"&isTotalRevenues=" + false
-  //           );
-  //         setReportTopRoomClassHorizontalBarChartData(response.data.result);
-  //
-  //       } else if (selectedValueHorizontalBarChartData1 === "2") {
-  //         // Gọi api year
-  //           const response = await axiosPrivate.get(
-  //               "/overview/get_top_room_class_by_month_or_year?datestring=" + monthHorizontalBarChartData.format('YYYY/MM/DD').toString()+ "&isMonth=" + true +"&isTotalRevenues=" + false
-  //           );
-  //         setReportTopRoomClassHorizontalBarChartData(response.data.result);
-  //       } else if (selectedValueHorizontalBarChartData1 === "3"){
-  //         const response = await axiosPrivate.get(
-  //             "/overview/get_top_room_class_by_month_or_year?datestring=" + monthHorizontalBarChartData.format('YYYY/MM/DD').toString()+ "&isMonth=" + true +"&isTotalRevenues=" + false
-  //         );
-  //         setReportTopRoomClassHorizontalBarChartData(response.data.result);
-  //       }
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   }
-  //   fetchListHorizontalBarChartDataInvoices();
-  // }, [monthHorizontalBarChartData, yearHorizontalBarChartData, selectedValueHorizontalBarChartData1]);
+    const handleQuarterTypeChange = (value) => { setSelectedQuarterData(value);};
 
-  // const horizontalBarChartData = reportTopRoomClassHorizontalBarChartData ? {
-  //   labels: reportTopRoomClassHorizontalBarChartData.label,
-  //   datasets: [{
-  //     label: 'Top',
-  //     data: reportTopRoomClassHorizontalBarChartData.data,
-  //     backgroundColor: generateRandomColors(reportTopRoomClassHorizontalBarChartData.data.length).map(color => `${color}1A`), // Adding alpha for transparency
-  //     borderColor: generateRandomColors(reportTopRoomClassHorizontalBarChartData.data.length),
-  //     borderWidth: 1
-  //   }]
-  // }: {};
+    const HorizontalBarChartDataOptions = [
+      { value: 1, name: "Theo tháng trong năm" },
+        { value: 2, name: "Theo quý trong năm" },
+        { value: 3, name: "Theo từng năm" }
+    ];
+
+    const [selectedDataType, setSelectedDataType] = useState('1'); //
+    const selectedDataTypeOptions = [
+        { value: 1, name: "THEO DOANH THU" },
+        { value: 2, name: "THEO SỐ LƯỢNG" },
+    ];
+
+    useEffect(() => {
+      async function fetchListHorizontalBarChartDataInvoices() {
+          try {
+              if (selectedValueHorizontalBarChartData1 === "1") {
+                  setSelectedQuarter1("");
+                  setSelectedQuarter2("");
+                  setSelectedQuarter3("");
+                  setSelectedQuarter4("");
+                  // Gọi api month
+                  if(selectedDataType === "1"){
+                      const response = await axiosPrivate.get(
+                          "/overview/get_top_room_class_by_month_or_year?datestring=" + monthHorizontalBarChartData.format('YYYY/MM/DD').toString() + "&isMonth=" + true + "&isTotalRevenues=" + false
+                      );
+                      setReportTopRoomClassHorizontalBarChartData(response.data.result);
+                  }else if(selectedDataType === "2") {
+                      const response = await axiosPrivate.get(
+                          "/overview/get_top_room_class_by_month_or_year?datestring=" + monthHorizontalBarChartData.format('YYYY/MM/DD').toString() + "&isMonth=" + true + "&isTotalRevenues=" + true
+                      );
+                      setReportTopRoomClassHorizontalBarChartData(response.data.result);
+                  }
+              }
+              else if (selectedValueHorizontalBarChartData1 === "2") {
+                  setSelectedQuarter1("Quý 1");
+                  setSelectedQuarter2("Quý 2");
+                  setSelectedQuarter3("Quý 3");
+                  setSelectedQuarter4("Quý 4");
+                  if(selectedQuarterData === "1"){
+                      const response = await axiosPrivate.get(
+                          "/overview/get_top_room_class_by_quarter?year=" + monthHorizontalBarChartData.year() + "&quarter=1&isTotalRevenues=" + (selectedDataType === "2" ? true : false)
+                      );
+                      setReportTopRoomClassHorizontalBarChartData(response.data.result);
+                  }else if(selectedQuarterData ==="2"){
+                      const response = await axiosPrivate.get(
+                          "/overview/get_top_room_class_by_quarter?year=" + monthHorizontalBarChartData.year() + "&quarter=2&isTotalRevenues=" + (selectedDataType === "2" ? true : false)
+                      );
+                      setReportTopRoomClassHorizontalBarChartData(response.data.result);
+                  }else if(selectedQuarterData ==="3"){
+                      const response = await axiosPrivate.get(
+                          "/overview/get_top_room_class_by_quarter?year=" + monthHorizontalBarChartData.year() + "&quarter=3&isTotalRevenues=" + (selectedDataType === "2" ? true : false)
+                      );
+                      setReportTopRoomClassHorizontalBarChartData(response.data.result);
+                  }else if(selectedQuarterData ==="4"){
+                      const response = await axiosPrivate.get(
+                          "/overview/get_top_room_class_by_quarter?year=" + monthHorizontalBarChartData.year() + "&quarter=4&isTotalRevenues=" + (selectedDataType === "2" ? true : false)
+                      );
+                      setReportTopRoomClassHorizontalBarChartData(response.data.result);
+                  }
+              } else if (selectedValueHorizontalBarChartData1 === "3") {
+                  setSelectedQuarter1("");
+                  setSelectedQuarter2("");
+                  setSelectedQuarter3("");
+                  setSelectedQuarter4("");
+                  // Gọi api year
+                  if(selectedDataType === "1"){
+                      const response = await axiosPrivate.get(
+                          "/overview/get_top_room_class_by_month_or_year?datestring=" + monthHorizontalBarChartData.format('YYYY/MM/DD').toString() + "&isMonth=" + false + "&isTotalRevenues=" + false
+                      );
+                      setReportTopRoomClassHorizontalBarChartData(response.data.result);
+                  }else if(setSelectedDataType === "2") {
+                      const response = await axiosPrivate.get(
+                          "/overview/get_top_room_class_by_month_or_year?datestring=" + monthHorizontalBarChartData.format('YYYY/MM/DD').toString() + "&isMonth=" + false + "&isTotalRevenues=" + true
+                      );
+                      setReportTopRoomClassHorizontalBarChartData(response.data.result);
+                  }
+              }
+          } catch (error) {
+              console.log(error);
+          }
+      }
+      fetchListHorizontalBarChartDataInvoices();
+    }, [monthHorizontalBarChartData, yearHorizontalBarChartData, selectedValueHorizontalBarChartData1, selectedQuarterData]);
+
+
+    const horizontalBarChartData = reportTopRoomClassHorizontalBarChartData ? {
+        labels: reportTopRoomClassHorizontalBarChartData.label,
+        datasets: [{
+            label: 'Top',
+            data: reportTopRoomClassHorizontalBarChartData.data,
+            backgroundColor: generateRandomColors(reportTopRoomClassHorizontalBarChartData.data.length).map(color => `${color}1A`), // Adding alpha for transparency
+            borderColor: generateRandomColors(reportTopRoomClassHorizontalBarChartData.data.length),
+            borderWidth: 1
+        }]
+    }: {};
+
   const handleHorizontalBarChartDataTypeChange = (event) => {
     setSelectedValueHorizontalBarChartData1(event.target.value);
+  };
+  const HorizontalSelectedDataType = (event) =>{
+    setSelectedDataType(event.target.value);
   };
 
   const handleDropdownChange = (event) => {
@@ -676,70 +708,123 @@ const OverviewPage = () => {
               </div>
             </div>
           </div>
-          <div className="bg-white p-4 mr-4 my-4 rounded">
-            <div className="flex">
-                  <div className="w-8/12">
-                    <p className="text-lg"> TOP 10 HẠNG PHÒNG TUẦN NÀY </p>
-                  </div>
-                  <div className="w-4/12 flex">
-                    <div className="w-6/12">
-                              {/*<LocalizationProvider*/}
-                              {/*    dateAdapter={AdapterDayjs}*/}
-                              {/*    adapterLocale="vi-VN"*/}
-                              {/*>*/}
-                              {/*  {selectedValueHorizontalBarChartData1 === "1" ?(*/}
-                              {/*      <DatePicker*/}
-                              {/*          sx={{ ".MuiInputBase-input": { padding: 1, width: 100 } }}*/}
-                              {/*          value={monthHorizontalBarChartData}*/}
-                              {/*          onChange={(e) => {*/}
-                              {/*            setMonthHorizontalBarChartData(e);*/}
-                              {/*          }}*/}
-                              {/*          format="MMM YYYY"*/}
-                              {/*          views={["month", "year"]}*/}
-                              {/*      />*/}
-                              {/*  ) : selectedValueHorizontalBarChartData1 === "2" ? (*/}
-                              {/*      <DatePicker*/}
-                              {/*          sx={{ ".MuiInputBase-input": { padding: 1, width: 100 } }}*/}
-                              {/*          value={monthHorizontalBarChartData}*/}
-                              {/*          onChange={(e) => {*/}
-                              {/*            setMonthHorizontalBarChartData(e);*/}
-                              {/*          }}*/}
-                              {/*          format="MMM YYYY"*/}
-                              {/*          views={["month", "year"]}*/}
-                              {/*      />*/}
-                              {/*  ) :(*/}
-                              {/*      <DatePicker*/}
-                              {/*          sx={{ ".MuiInputBase-input": { padding: 1, width: 100 } }}*/}
-                              {/*          value={yearHorizontalBarChartData}*/}
-                              {/*          onChange={(e) => {*/}
-                              {/*            setYearHorizontalBarChartData(e);*/}
-                              {/*          }}*/}
-                              {/*          format="YYYY"*/}
-                              {/*          views={["year"]}*/}
-                              {/*      />*/}
-                              {/*  )}*/}
-                              {/*</LocalizationProvider>*/}
+            <div className="bg-white p-4 mr-4 my-4 rounded">
+                <div className="flex">
+                    <div className="w-8/12 flex">
+                            <div className="pr-5">
+                                <p className="text-lg"> TOP 10 HẠNG PHÒNG TUẦN NÀY </p>
+                            </div>
+                            <div className="w-4/12 flex items-center">
+                                <select
+                                    value={selectedDataType}
+                                    onChange={(event) => HorizontalSelectedDataType(event)}
+                                >
+                                    {selectedDataTypeOptions.map((option, index) => (
+                                        <option key={index} value={option.value}>
+                                            {option.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                     </div>
-                    <div className="w-6/12">
-                              {/*<select*/}
-                              {/*    value={selectedValueHorizontalBarChartData1}*/}
-                              {/*    onChange={(event) => handleHorizontalBarChartDataTypeChange(event)}*/}
-                              {/*>*/}
-                              {/*  {HorizontalBarChartDataOptions.map((option, index) => (*/}
-                              {/*      <option key={index} value={option.value}>*/}
-                              {/*        {option.name}*/}
-                              {/*      </option>*/}
-                              {/*  ))}*/}
-                              {/*</select>*/}
+                    <div className="w-4/12 flex">
+                        <div className="w-6/12">
+                            <LocalizationProvider
+                                dateAdapter={AdapterDayjs}
+                                adapterLocale="vi-VN"
+                            >
+                                {selectedValueHorizontalBarChartData1 === "1" ?(
+                                    <DatePicker
+                                        sx={{ ".MuiInputBase-input": { padding: 1, width: 100 } }}
+                                        value={monthHorizontalBarChartData}
+                                        onChange={(e) => {
+                                            setMonthHorizontalBarChartData(e);
+                                        }}
+                                        format="MMM YYYY"
+                                        views={["month", "year"]}
+                                    />
+                                ) : selectedValueHorizontalBarChartData1 === "2" ? (
+                                    <DatePicker
+                                        sx={{ ".MuiInputBase-input": { padding: 1, width: 100 } }}
+                                        value={monthHorizontalBarChartData}
+                                        onChange={(e) => {
+                                            setMonthHorizontalBarChartData(e);
+                                        }}
+                                        format="YYYY"
+                                        views={["year"]}
+                                    />
+                                ) :(
+                                    <DatePicker
+                                        sx={{ ".MuiInputBase-input": { padding: 1, width: 100 } }}
+                                        value={yearHorizontalBarChartData}
+                                        onChange={(e) => {
+                                            setYearHorizontalBarChartData(e);
+                                        }}
+                                        format="YYYY"
+                                        views={["year"]}
+                                    />
+                                )}
+                            </LocalizationProvider>
+                        </div>
+                        <div className="w-6/12">
+                            <select
+                                value={selectedValueHorizontalBarChartData1}
+                                onChange={(event) => handleHorizontalBarChartDataTypeChange(event)}
+                            >
+                                {HorizontalBarChartDataOptions.map((option, index) => (
+                                    <option key={index} value={option.value}>
+                                        {option.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
-
-
-                  </div>
+                </div>
+                <div style={{width: "auto", height: "500px"}}>
+                    <div>
+                        <ul className="flex chart-type-options">
+                            <li  onClick={() => handleQuarterTypeChange('1')}
+                                 style={{
+                                     cursor: 'pointer',
+                                     textDecoration:
+                                         selectedQuarterData === '1' ? 'underline solid blue' : 'none',
+                                 }}>
+                                {selectedQuarter1}
+                            </li>
+                            <span style={{ margin: '0 10px' }}></span>
+                            <li  onClick={() => handleQuarterTypeChange('2')}
+                                style={{
+                                    cursor: 'pointer',
+                                    textDecoration:
+                                        selectedQuarterData === '2' ? 'underline solid blue' : 'none',
+                                }}>
+                                {selectedQuarter2}
+                            </li>
+                            <span style={{ margin: '0 10px' }}></span>
+                            <li  onClick={() => handleQuarterTypeChange('3')}
+                                 style={{
+                                     cursor: 'pointer',
+                                     textDecoration:
+                                         selectedQuarterData === '3' ? 'underline solid blue' : 'none',
+                                 }}>
+                                {selectedQuarter3}
+                            </li>
+                            <span style={{ margin: '0 10px' }}></span>
+                            <li  onClick={() => handleQuarterTypeChange('4')}
+                                 style={{
+                                     cursor: 'pointer',
+                                     textDecoration:
+                                         selectedQuarterData === '4' ? 'underline solid blue' : 'none',
+                                 }}>
+                                {selectedQuarter4}
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <HorizontalBarChart data={horizontalBarChartData} />
+                    </div>
+                </div>
             </div>
-            <div>
-              {/*<HorizontalBarChart data={horizontalBarChartData} />*/}
-            </div>
-          </div>
         </div>
       </div>
     </div>

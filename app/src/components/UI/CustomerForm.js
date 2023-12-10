@@ -143,6 +143,8 @@ function CustomerForm({ name, open, onClose, method, customer }) {
                           className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                           type="text"
                           name="phoneNumber"
+                          minLength="1"
+                          maxLength="255"
                           defaultValue={
                             customer.phoneNumber ? customer.phoneNumber : ""
                           }
@@ -175,7 +177,7 @@ function CustomerForm({ name, open, onClose, method, customer }) {
                       <td className="w-9/12">
                         <input
                           className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
-                          type="text"
+                          type="email"
                           name="email"
                           defaultValue={customer.email ? customer.email : ""}
                           required

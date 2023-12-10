@@ -63,7 +63,7 @@ function TransactionManagementPage() {
         },
     ];
 
-    const rows = Array.isArray(transactions) ? transactions.map((transaction) => {
+    const rows = Array.isArray(transactions) ? transactions.filter((transaction) => transaction.invoiceId !== "HD000000").map((transaction) => {
         const dateNow = new Date(transaction.createdDate);
         const year = dateNow.getFullYear();
         const month = String(dateNow.getMonth() + 1).padStart(2, "0");
