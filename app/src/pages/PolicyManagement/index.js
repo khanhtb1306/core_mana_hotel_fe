@@ -556,7 +556,6 @@ export async function action({ request }) {
             timer: 2000,
           });
         });
-      console.log(response);
       if (response.data.success) {
         Swal.fire({
           position: "center",
@@ -712,35 +711,20 @@ export async function action({ request }) {
   if (data.get("isDeposit")) {
     const formData = new FormData();
     const policyId = data.get("policyId");
-    const numberCate = data.get("numberCate");
-    for (let i = 0; i < numberCate; i++) {
-      formData.append(`policyDetailDTO[${i}].policyId`, policyId);
-      if (data.get(`policyDetailId${i}`)) {
-        formData.append(
-          `policyDetailDTO[${i}].policyDetailId`,
-          data.get(`policyDetailId${i}`)
-        );
-      }
+    formData.append(`policyDetailDTO[0].policyId`, policyId);
+    if (data.get(`policyDetailId`)) {
       formData.append(
-        `policyDetailDTO[${i}].roomCategoryId`,
-        data.get(`roomCategoryId${i}`)
-      );
-      formData.append(`policyDetailDTO[${i}].customerGroupId`, "NK000000");
-      formData.append(
-        `policyDetailDTO[${i}].policyValue`,
-        data.get(`policyValue${i}`)
+        `policyDetailDTO[0].policyDetailId`,
+        data.get(`policyDetailId`)
       );
     }
+    formData.append(`policyDetailDTO[0].customerGroupId`, "NK000000");
+    formData.append(`policyDetailDTO[0].roomCategoryId`, "HP000000");
+    formData.append(`policyDetailDTO[0].policyValue`, data.get(`policyValue`));
     const response = await axiosPrivate.post("policy", formData).catch((e) => {
-      Swal.fire({
-        position: "center",
-        icon: "error",
-        title: "Cập nhật giá tiền cọc thất bại",
-        showConfirmButton: false,
-        timer: 2000,
-      });
+      console.log(e);
     });
-    if (response.data.success) {
+    if (response && response.data.success) {
       Swal.fire({
         position: "center",
         icon: "success",
@@ -826,15 +810,9 @@ export async function action({ request }) {
     formData.append("policyDetailDTO[0].limitValue", data.get("limitValue"));
     formData.append("policyDetailDTO[0].policyValue", data.get("policyValue"));
     const response = await axiosPrivate.post("policy", formData).catch((e) => {
-      Swal.fire({
-        position: "center",
-        icon: "error",
-        title: "Cập nhật khuyến mãi thất bại",
-        showConfirmButton: false,
-        timer: 2000,
-      });
+      console.log(e);
     });
-    if (response.data.success) {
+    if (response && response.data.success) {
       Swal.fire({
         position: "center",
         icon: "success",
@@ -868,13 +846,7 @@ export async function action({ request }) {
     formData.append("policyDetailDTO[0].limitValue", data.get("limitValue"));
     formData.append("policyDetailDTO[0].policyValue", data.get("policyValue"));
     const response = await axiosPrivate.post("policy", formData).catch((e) => {
-      Swal.fire({
-        position: "center",
-        icon: "error",
-        title: "Cập nhật tích điểm thất bại",
-        showConfirmButton: false,
-        timer: 2000,
-      });
+      console.log(e);
     });
     if (response.data.success) {
       Swal.fire({

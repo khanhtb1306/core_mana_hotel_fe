@@ -1,5 +1,5 @@
-import { Form } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { Form, useLoaderData } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import ViewInvoice from "./ViewInvoice";
 import OtherFeeModal from "./OtherFeeModal";
@@ -11,30 +11,90 @@ import {
   Select,
 } from "@mui/material";
 import NewAccBankModal from "./NewAccBankModal";
+import FuncBooksModal from "./FundBooksModal";
+import Swal from "sweetalert2";
+import { useReactToPrint } from "react-to-print";
 
 function CreateInvoiceRoomModal(props) {
-  const otherFees = props.otherFees;
-  const listQR = props.listQR;
+  const { listQR, otherFees, listSurchage, points, listFunds } =
+    useLoaderData();
+  if (points.LIST_PROMOTION_POLICY_DETAIL.length === 0) {
+    points = {
+      ...points,
+      LIST_PROMOTION_POLICY_DETAIL: [{ limitValue: 1, policyValue: 1 }],
+    };
+  }
+  const printQRRef = useRef();
+  const reservationId = props.reservationId;
   const banks = props.banks;
-  const listSurchage = props.listSurchage;
-  const totalDeposit = props.reservation.reservation.totalDeposit;
-  // console.log(listSurchage);
+  const transactionCode =
+    listFunds.length > 0
+      ? "MGD" +
+        reservationId +
+        "HD" +
+        (listFunds.filter((fund) =>
+          fund.transactionCode.includes("MGD" + reservationId + "HD")
+        ).length +
+          1)
+      : "MGD" + reservationId + "HD1";
+  const historyListFunds = [];
+  let total = 0;
+  for (let i = listFunds.length - 1; i >= 0; i--) {
+    if (listFunds[i].fundBookId.includes("TTDP") && listFunds[i].value > 0) {
+      total += listFunds[i].value;
+      historyListFunds.push(listFunds[i]);
+    }
+    if (listFunds[i].fundBookId.includes("TTHD")) {
+      if (listFunds[i].value > 0) {
+        historyListFunds.push({
+          ...listFunds[i],
+          fundBookId: "(Tiền tạm ứng)",
+          value: -total,
+        });
+        total = 0;
+      } else {
+        total += listFunds[i].value;
+        historyListFunds.push({
+          ...listFunds[i],
+          fundBookId: "(Tiền tạm ứng)",
+        });
+      }
+    }
+  }
+  const totalDeposit = historyListFunds.reduce((e, c) => {
+    return e + c.value;
+  }, 0);
+  const customer = props.customer;
+  const point =
+    (customer.point / points.LIST_PROMOTION_POLICY_DETAIL[0].limitValue) *
+    points.LIST_PROMOTION_POLICY_DETAIL[0].policyValue;
+  // console.log(customer);
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [openDetailsInvoiceModal, setOpenDetailsInvoiceModal] = useState(false);
   const [priceAll, setPriceAll] = useState(0);
   const [openOtherFeeModal, setOpenOtherFeeModal] = useState(false);
+  const [usePoint, setUsePoint] = useState(0);
   const [otherFeePrice, setOtherFeePrice] = useState(0);
-  const [discountPrice, setDiscountPrice] = useState(0);
   const [payPrice, setPayPrice] = useState(0);
-  const [depositPrice, setDepositPrice] = useState(0);
-  const [payType, setPayType] = useState(1);
+  const [payType, setPayType] = useState("2");
   const [selectedAcc, setSelectedAcc] = useState(
     listQR.length > 0 ? listQR[0].bankAccountId : 0
   );
   const [openNewAccBankModal, setOpenNewAccBankModal] = useState(false);
+  const [openFundBooksModal, setOpenFundBooksModal] = useState(false);
+  const [listFeeIds, setListFeeIds] = useState(
+    otherFees.LIST_OTHER_REVENUE_DETAIL.length > 0
+      ? otherFees.LIST_OTHER_REVENUE_DETAIL.filter(
+          (fee) => fee.autoAddToInvoice
+        ).map((e) => e.policyDetailId)
+      : []
+  );
   const listCheckout = props.listCheckout;
   const invoices = props.invoices;
+  let discountPrice =
+    (usePoint / points.LIST_PROMOTION_POLICY_DETAIL[0].limitValue) *
+    points.LIST_PROMOTION_POLICY_DETAIL[0].policyValue;
   const columns = [
     {
       field: "infoRoom",
@@ -205,16 +265,51 @@ function CreateInvoiceRoomModal(props) {
     });
 
     setPriceAll(price);
+    setOtherFeePrice(
+      otherFees
+        ? otherFees.LIST_OTHER_REVENUE_DETAIL.reduce((sum, fee) => {
+            if (fee.autoAddToInvoice) {
+              if (fee.typeValue === "%") {
+                return sum + (price * fee.policyValue) / 100;
+              } else {
+                return sum + fee.policyValue;
+              }
+            } else {
+              return sum;
+            }
+          }, 0)
+        : 0
+    );
+    setListFeeIds(
+      otherFees
+        ? otherFees.LIST_OTHER_REVENUE_DETAIL.filter(
+            (fee) => fee.autoAddToInvoice
+          ).map((e) => e.policyDetailId)
+        : []
+    );
     if (rowSelectionModel.length <= 0) {
-      setDiscountPrice(0);
+      setUsePoint(0);
       setPayPrice(0);
       setOtherFeePrice(0);
-      setDepositPrice(0);
     }
   }, [rowSelectionModel]);
-  const handleOtherFeeChange = (price) => {
+  const handleOtherFeeChange = (selectedFeeId, price) => {
+    setListFeeIds(selectedFeeId);
     setOtherFeePrice(price);
   };
+  const [imageUrl, setImageUrl] = useState("");
+  const account = listQR.find((acc) => acc.bankAccountId === selectedAcc);
+  useEffect(() => {
+    if (payPrice > 0) {
+      setImageUrl(
+        `https://img.vietqr.io/image/${account.bankId}-${account.bankAccountNumber}-print.jpg?amount=${payPrice}&addInfo=${transactionCode}`
+      );
+    }
+  }, [account, payPrice]);
+
+  const handleQRPrint = useReactToPrint({
+    content: () => printQRRef.current,
+  });
   return (
     <>
       <Form method="POST" onSubmit={() => props.onCloseAll()}>
@@ -248,7 +343,14 @@ function CreateInvoiceRoomModal(props) {
                 >
                   <i className="fa-solid fa-arrow-left"></i>
                 </button>
-                Toạ hoá đơn mới
+                Toạ hoá đơn mới {" - "}
+                {customer ? customer.customerName : "Khách lẻ"}
+                {customer.point > 0 && (
+                  <span className="text-sm font-normal">
+                    ({customer.point + " điểm"}
+                    {point > 0 && " = " + point.toLocaleString() + " VND"})
+                  </span>
+                )}
                 <input
                   type="hidden"
                   name="isCreateInvoiceRoom"
@@ -280,6 +382,12 @@ function CreateInvoiceRoomModal(props) {
                 />
                 <input
                   type="hidden"
+                  name="prePail"
+                  value={totalDeposit}
+                  onChange={() => console.log()}
+                />
+                <input
+                  type="hidden"
                   name="priceOther"
                   value={otherFeePrice}
                   onChange={() => console.log()}
@@ -290,9 +398,27 @@ function CreateInvoiceRoomModal(props) {
                   value={payType}
                   onChange={() => console.log()}
                 />
+                <input
+                  type="hidden"
+                  name="customerId"
+                  value={customer.customerId}
+                  onChange={() => console.log()}
+                />
+                <input
+                  type="hidden"
+                  name="transactionCode"
+                  value={transactionCode}
+                  onChange={() => console.log()}
+                />
+                <input
+                  type="hidden"
+                  name="usePoint"
+                  value={usePoint}
+                  onChange={() => console.log()}
+                />
               </h1>
               <div className="w-full flex text-sm">
-                <div className="w-9/12 pr-4 border-r-2 border-gray-500 border-dotted">
+                <div className="w-8/12 pr-4 border-r-2 border-gray-500 border-dotted">
                   <DataGrid
                     className="bg-white"
                     columns={columns}
@@ -331,32 +457,42 @@ function CreateInvoiceRoomModal(props) {
                     rowSelectionModel={rowSelectionModel}
                   />
                 </div>
-                <div className="w-3/12 ml-4">
+                <div className="w-4/12 ml-4">
                   <div className="flex mt-2">
                     <div className="mr-auto">Tổng tiền</div>
                     <div className="ml-auto">{priceAll.toLocaleString()}</div>
                   </div>
-                  <div className="flex mt-2">
-                    <div className="my-auto w-6/12">Giảm giá</div>
-                    <input
-                      className="p-0 text-sm border-0 border-b border-gray-500 text-right w-6/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                      type="text"
-                      name="discountPrice"
-                      readOnly={rowSelectionModel.length > 0 ? false : true}
-                      defaultValue={0}
-                      onChange={(e) => {
-                        if (e.target.value === "") {
-                          e.target.value = 0;
-                        }
-                        let num = e.target.value.replace(/[^\d]/g, "");
-                        if (num > priceAll) {
-                          num = 0;
-                        }
-                        setDiscountPrice(num);
-                        e.target.value = parseInt(num, 10).toLocaleString();
-                      }}
-                    />
-                  </div>
+                  {priceAll - discountPrice - totalDeposit + otherFeePrice >
+                    0 && (
+                    <>
+                      <div className="flex mt-2">
+                        <div className="my-auto w-6/12">Sử dụng điểm</div>
+                        <input
+                          className="p-0 text-sm border-0 border-b border-gray-500 text-right w-6/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                          type="number"
+                          name="discountPrice"
+                          readOnly={rowSelectionModel.length > 0 ? false : true}
+                          value={usePoint}
+                          onChange={(e) => {
+                            if (
+                              e.target.value > 0 &&
+                              e.target.value <= customer.point
+                            ) {
+                              setUsePoint(e.target.value);
+                            } else {
+                              setUsePoint(0);
+                            }
+                          }}
+                        />
+                      </div>
+                      <div className="flex mt-2">
+                        <div className="my-auto w-6/12">Giảm giá</div>
+                        <div className="text-right w-6/12">
+                          {discountPrice.toLocaleString()}
+                        </div>
+                      </div>
+                    </>
+                  )}
                   <div className="flex mt-2">
                     <div className="w-6/12">Phí khác</div>
                     <button
@@ -371,65 +507,70 @@ function CreateInvoiceRoomModal(props) {
                       {otherFeePrice.toLocaleString()}
                     </button>
                   </div>
-                  <div className="flex mt-2">
-                    <div className="mr-auto">Khách đã trả</div>
-                    <div className="ml-auto">
-                      {totalDeposit.toLocaleString()}
-                    </div>
-                  </div>
-                  <div className="flex mt-2">
-                    <div className="mr-auto">Sử dùng tiền cọc</div>
-                    <input
-                      className="p-0 text-sm border-0 border-b border-gray-500 text-right w-6/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                      type="text"
-                      name="bankAccountNumber"
-                      readOnly={rowSelectionModel.length > 0 ? false : true}
-                      defaultValue={0}
-                      onChange={(e) => {
-                        if (e.target.value === "") {
-                          e.target.value = 0;
-                        }
-                        let num = e.target.value.replace(/[^\d]/g, "");
-                        if (num > totalDeposit) {
-                          num = 0;
-                        }
-                        setDepositPrice(num);
-                        e.target.value = parseInt(num, 10).toLocaleString();
-                      }}
-                    />
-                  </div>
-                  <div className="flex mt-4">
+                  {totalDeposit > 0 && (
+                    <>
+                      <div className="flex mt-2">
+                        <div className="w-6/12">Tiền cọc</div>
+                        <button
+                          type="button"
+                          className="text-right w-6/12"
+                          onClick={() => setOpenFundBooksModal(true)}
+                        >
+                          {totalDeposit.toLocaleString()}
+                        </button>
+                      </div>
+                    </>
+                  )}
+                  <div className="flex mt-4 font-bold">
                     <div className="mr-auto">Khách cần trả</div>
-                    <div className="ml-auto">
-                      {(
-                        priceAll -
-                        discountPrice -
-                        depositPrice +
-                        otherFeePrice
-                      ).toLocaleString()}
+                    <div className="ml-auto text-green-500">
+                      {priceAll - discountPrice - totalDeposit + otherFeePrice >
+                      0
+                        ? (
+                            priceAll -
+                            discountPrice -
+                            totalDeposit +
+                            otherFeePrice
+                          ).toLocaleString()
+                        : 0}
                     </div>
                   </div>
-                  <div className="flex mt-2">
-                    <div className="mr-auto my-auto">Khách thanh toán</div>
-                    <input
-                      className="p-0 text-sm border-0 border-b border-gray-500 text-right w-6/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                      type="text"
-                      name="bankAccountNumber"
-                      readOnly={rowSelectionModel.length > 0 ? false : true}
-                      defaultValue={0}
-                      onChange={(e) => {
-                        if (e.target.value === "") {
-                          e.target.value = 0;
-                        }
-                        const num = e.target.value.replace(/[^\d]/g, "");
-                        setPayPrice(num);
-                        e.target.value = num
-                          ? parseInt(num, 10).toLocaleString()
-                          : "";
-                      }}
-                    />
-                  </div>
-                  {payPrice - (priceAll + otherFeePrice - discountPrice) > 0 &&
+                  {rowSelectionModel.length > 0 &&
+                    (priceAll - discountPrice - totalDeposit + otherFeePrice >
+                    0 ? (
+                      <div className="flex mt-2">
+                        <div className="mr-auto my-auto">Khách thanh toán</div>
+                        <input
+                          className="p-0 text-sm border-0 border-b border-gray-500 text-right w-6/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                          type="text"
+                          name="bankAccountNumber"
+                          readOnly={rowSelectionModel.length > 0 ? false : true}
+                          defaultValue={0}
+                          onChange={(e) => {
+                            if (e.target.value === "") {
+                              e.target.value = 0;
+                            }
+                            const num = e.target.value.replace(/[^\d]/g, "");
+                            setPayPrice(num);
+                            e.target.value = num
+                              ? parseInt(num, 10).toLocaleString()
+                              : "";
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="rounded bg-gray-200 py-1 px-2 text-xs mt-2 text-center">
+                        Số dư tạm ứng đặt phòng còn lại:{" "}
+                        {(
+                          totalDeposit -
+                          (priceAll - discountPrice + otherFeePrice)
+                        ).toLocaleString()}
+                      </div>
+                    ))}
+
+                  {payPrice !== 0 &&
+                    payPrice >
+                      priceAll + otherFeePrice - totalDeposit - discountPrice &&
                     rowSelectionModel.length > 0 && (
                       <div className="flex mt-2">
                         <div className="mr-auto my-auto">
@@ -441,7 +582,7 @@ function CreateInvoiceRoomModal(props) {
                             (priceAll +
                               otherFeePrice -
                               discountPrice -
-                              depositPrice)
+                              totalDeposit)
                           ).toLocaleString()}
                         </div>
                       </div>
@@ -482,39 +623,65 @@ function CreateInvoiceRoomModal(props) {
                       </RadioGroup>
                     </div>
                     {payType === "2" && (
-                      <div className="mt-2">
-                        <Select
-                          sx={{ width: 265, height: 40 }}
-                          value={selectedAcc}
-                          onChange={(e) => {
-                            setSelectedAcc(e.target.value);
-                          }}
-                        >
-                          {listQR.length > 0 &&
-                            listQR.map((qr, index) => {
-                              const nameBank = banks.find(
-                                (bank) => bank.bin == qr.bankId
-                              ).code;
-                              return (
-                                <MenuItem key={index} value={qr.bankAccountId}>
-                                  {nameBank +
-                                    " - " +
-                                    qr.bankAccountName +
-                                    " - " +
-                                    qr.bankAccountNumber}
-                                </MenuItem>
-                              );
-                            })}
-                        </Select>
-                        <button
-                          type="button"
-                          className="rounded border border-green-500 py-2 mt-2 w-full text-green-500 hover:bg-green-100"
-                          onClick={() => {
-                            setOpenNewAccBankModal(true);
-                          }}
-                        >
-                          Thêm tài khoản
-                        </button>
+                      <div className="mt-2 flex">
+                        <div className="w-1/3">
+                          {payPrice > 0 && (
+                            <div ref={printQRRef} className="flex">
+                              <img
+                                src={imageUrl}
+                                className="mx-auto"
+                                alt="QR-CODE"
+                              />
+                            </div>
+                          )}
+                        </div>
+                        <div className="w-1/2">
+                          <Select
+                            sx={{ width: 230, height: 40 }}
+                            value={selectedAcc}
+                            onChange={(e) => {
+                              setSelectedAcc(e.target.value);
+                            }}
+                          >
+                            {listQR.length > 0 &&
+                              listQR.map((qr, index) => {
+                                const nameBank = banks.find(
+                                  (bank) => bank.bin == qr.bankId
+                                );
+                                return (
+                                  <MenuItem
+                                    key={index}
+                                    value={qr.bankAccountId}
+                                  >
+                                    {nameBank &&
+                                      nameBank.code +
+                                        " - " +
+                                        qr.bankAccountName +
+                                        " - " +
+                                        qr.bankAccountNumber}
+                                  </MenuItem>
+                                );
+                              })}
+                          </Select>
+                          <button
+                            type="button"
+                            className="rounded border h-10 border-green-500 mt-2 w-56 text-green-500 hover:bg-green-100"
+                            onClick={() => {
+                              setOpenNewAccBankModal(true);
+                            }}
+                          >
+                            Thêm tài khoản
+                          </button>
+                          {payPrice > 0 && (
+                            <button
+                              type="button"
+                              onClick={handleQRPrint}
+                              className="rounded border border-black p-1 mt-2"
+                            >
+                              In mã QR
+                            </button>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -524,7 +691,31 @@ function CreateInvoiceRoomModal(props) {
             {rowSelectionModel.length > 0 && (
               <div className="flex pt-5 absolute bottom-0 right-0">
                 <div className="mr-10 mb-10 ml-auto">
-                  <button className="bg-green-500 text-white py-2 px-6 rounded hover:bg-green-600">
+                  <button
+                    type={
+                      priceAll - discountPrice - totalDeposit + otherFeePrice >
+                        payPrice && `button`
+                    }
+                    className="bg-green-500 text-white py-2 px-6 rounded hover:bg-green-600"
+                    onClick={() => {
+                      if (
+                        priceAll -
+                          discountPrice -
+                          totalDeposit +
+                          otherFeePrice >
+                        payPrice
+                      ) {
+                        Swal.fire({
+                          position: "bottom",
+                          html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Khách phải thanh toán đủ tiền!</button>`,
+                          showConfirmButton: false,
+                          background: "transparent",
+                          backdrop: "none",
+                          timer: 2500,
+                        });
+                      }
+                    }}
+                  >
                     Hoàn thành
                   </button>
                 </div>
@@ -545,6 +736,7 @@ function CreateInvoiceRoomModal(props) {
           open={openOtherFeeModal}
           onClose={() => setOpenOtherFeeModal(false)}
           otherFees={otherFees}
+          listFeeIds={listFeeIds}
           invoicePrice={priceAll}
           changePrice={handleOtherFeeChange}
         />
@@ -554,6 +746,14 @@ function CreateInvoiceRoomModal(props) {
           open={openNewAccBankModal}
           onClose={() => setOpenNewAccBankModal(false)}
           banks={banks}
+        />
+      )}
+      {openFundBooksModal && (
+        <FuncBooksModal
+          open={openFundBooksModal}
+          onClose={() => setOpenFundBooksModal(false)}
+          name={"Tiền đặt cọc hiện có - " + reservationId}
+          listFunds={historyListFunds.reverse()}
         />
       )}
     </>

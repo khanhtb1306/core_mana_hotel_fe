@@ -14,7 +14,6 @@ function StaffForm({ name, open, onClose, method, staff, departments }) {
   });
 
   let formattedDate = null;
-  // console.log(staff);
   if (staff.dob) {
     const dateNow = new Date(staff.dob);
     const year = dateNow.getFullYear();
@@ -23,7 +22,6 @@ function StaffForm({ name, open, onClose, method, staff, departments }) {
     formattedDate = `${year}-${month}-${day}`;
   }
   return (
-      <>
         <Form method={method} onSubmit={onClose} encType="multipart/form-data">
           <Modal open={open} onClose={onClose} size="w-8/12 h-.5/6">
             <div className="p-2 w-full">
@@ -182,22 +180,7 @@ function StaffForm({ name, open, onClose, method, staff, departments }) {
                       />
                     </td>
                   </tr>
-                  {/* <tr>
-                    <td className="w-3/12">
-                      <h2>Mã số thuế</h2>
-                    </td>
-                    <td className="w-9/12">
-                      <input
-                        className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
-                        type="text"
-                        name="taxCode"
-                        minLength="1"
-                        maxLength="255"
-                        defaultValue={staff.taxCode ? staff.taxCode : ""}
-                        required
-                      />
-                    </td>
-                  </tr> */}
+                 
                   <tr>
                     <td className="w-3/12">
                       <h2>Phòng ban</h2>
@@ -210,13 +193,6 @@ function StaffForm({ name, open, onClose, method, staff, departments }) {
                       >
                         {optionDeparment}
                       </select>
-                      <button
-                          type="button"
-                          className="w-1/12 text-2xl text-gray-500"
-                          onClick={() => setOpenNewDepartmentModal(true)}
-                      >
-                        <i className="fa-solid fa-plus"></i>
-                      </button>
                     </td>
                   </tr>
                   <tr>
@@ -273,13 +249,7 @@ function StaffForm({ name, open, onClose, method, staff, departments }) {
             </div>
           </Modal>
         </Form>
-        {openNewDeparmentModal && (
-            <DepartmentForm
-                open={openNewDeparmentModal}
-                onClose={() => setOpenNewDepartmentModal(false)}
-            />
-        )}
-      </>
+      
   );
 }
 

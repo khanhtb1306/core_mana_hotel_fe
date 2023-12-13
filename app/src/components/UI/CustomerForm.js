@@ -111,10 +111,12 @@ function CustomerForm({ name, open, onClose, method, customer }) {
                           className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                           type="text"
                           name="identity"
+                          minLength="1"
+                          maxLength="255"
                           defaultValue={
                             customer.identity ? customer.identity : ""
                           }
-                          required
+                          
                         />
                       </td>
                     </tr>
@@ -126,6 +128,8 @@ function CustomerForm({ name, open, onClose, method, customer }) {
                         <input
                           className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                           type="text"
+                          minLength="1"
+                          maxLength="255"
                           name="address"
                           defaultValue={
                             customer.address ? customer.address : ""
@@ -148,7 +152,7 @@ function CustomerForm({ name, open, onClose, method, customer }) {
                           defaultValue={
                             customer.phoneNumber ? customer.phoneNumber : ""
                           }
-                          required
+                          
                         />
                       </td>
                     </tr>
@@ -179,8 +183,11 @@ function CustomerForm({ name, open, onClose, method, customer }) {
                           className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                           type="email"
                           name="email"
+                          minLength="1"
+                          maxLength="255"
+                          pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$"
                           defaultValue={customer.email ? customer.email : ""}
-                          required
+                          
                         />
                       </td>
                     </tr>
@@ -213,7 +220,7 @@ function CustomerForm({ name, open, onClose, method, customer }) {
                           defaultValue={
                             customer.taxCode ? customer.taxCode : ""
                           }
-                          required
+                          
                         />
                       </td>
                     </tr>

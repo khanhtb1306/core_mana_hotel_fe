@@ -4,11 +4,12 @@ import {
   FormControlLabel,
   MenuItem,
   Select,
+  TextField,
   colors,
 } from "@mui/material";
 import { orange, green, grey } from "@mui/material/colors";
 import ReservationLayout from "../ReservationLayout";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import "dayjs/locale/vi";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -24,491 +25,72 @@ import { DataGrid, GridActionsCellItem, GridToolbar } from "@mui/x-data-grid";
 // require("dayjs/locale/vi");
 
 function ListReservationPage() {
-  const { reservations } = useLoaderData();
+  const [listReservations, setListReservations] = useState([]);
   // console.log(reservations);
   const [type, setType] = useState(1);
-  const [listReservations, setListReservations] = useState(
-    reservations.filter(
-      (res) =>
-        (dayjs(res.reservation.durationStart).isSame(dayjs(), "day") ||
-          dayjs(res.reservation.durationEnd).isSame(dayjs(), "day")) &&
-        (dayjs(res.reservation.durationStart).isSame(dayjs(), "month") ||
-          dayjs(res.reservation.durationEnd).isSame(dayjs(), "month")) &&
-        (dayjs(res.reservation.durationStart).isSame(dayjs(), "year") ||
-          dayjs(res.reservation.durationEnd).isSame(dayjs(), "year"))
-    )
-  );
   const [isChecked1, setIsChecked1] = useState(false);
   const [isChecked2, setIsChecked2] = useState(false);
   const [isChecked3, setIsChecked3] = useState(false);
+  const [findCus, setFindCus] = useState("");
 
   const [day, setDay] = useState(dayjs());
-  const [week, setWeek] = useState(dayjs());
-  const [month, setMonth] = useState(dayjs().startOf("M"));
+
+  useEffect(() => {
+    async function listReservations() {
+      if (type === 1) {
+        const response = await axiosPrivate(
+          `reservation?start=${day
+            .startOf("date")
+            .format("YYYY-MM-DD HH:mm:ss")}&end=${day
+            .endOf("date")
+            .format("YYYY-MM-DD HH:mm:ss")}`
+        );
+        if (response && response.data.success) {
+          setListReservations(response.data.result);
+        }
+      } else if (type === 2) {
+        const response = await axiosPrivate.get(
+          "reservation?start=" +
+            day.startOf("week").format("YYYY-MM-DD HH:mm:ss") +
+            "&end=" +
+            day.endOf("week").format("YYYY-MM-DD HH:mm:ss")
+        );
+        if (response && response.data.success) {
+          setListReservations(response.data.result);
+        }
+      } else {
+        const response = await axiosPrivate.get(
+          "reservation?start=" +
+            day.startOf("M").format("YYYY-MM-DD HH:mm:ss") +
+            "&end=" +
+            day.endOf("M").format("YYYY-MM-DD HH:mm:ss")
+        );
+        if (response && response.data.success) {
+          setListReservations(response.data.result);
+        }
+      }
+    }
+    listReservations();
+  }, [type, day]);
 
   const handleCheckboxChange1 = (event) => {
     const check1 = event.target.checked;
     setIsChecked1(check1);
-    if (
-      (check1 && isChecked2 && isChecked3) ||
-      (!check1 && !isChecked2 && !isChecked3)
-    ) {
-      setListReservations(
-        reservations.filter(
-          (res) =>
-            (type === 1 &&
-              (dayjs(res.reservation.durationStart).isSame(day, "day") ||
-                dayjs(res.reservation.durationEnd).isSame(day, "day")) &&
-              (dayjs(res.reservation.durationStart).isSame(day, "month") ||
-                dayjs(res.reservation.durationEnd).isSame(day, "month")) &&
-              (dayjs(res.reservation.durationStart).isSame(day, "year") ||
-                dayjs(res.reservation.durationEnd).isSame(day, "year"))) ||
-            (type === 2 &&
-              ((dayjs(res.reservation.durationStart).isAfter(
-                week.add(-1, "day")
-              ) &&
-                dayjs(res.reservation.durationEnd).isBefore(
-                  week.add(6, "day")
-                )) ||
-                (week
-                  .add(-1, "day")
-                  .isAfter(dayjs(res.reservation.durationStart)) &&
-                  week
-                    .add(-1, "day")
-                    .isBefore(dayjs(res.reservation.durationEnd))) ||
-                (week
-                  .add(6, "day")
-                  .isAfter(dayjs(res.reservation.durationStart)) &&
-                  week
-                    .add(6, "day")
-                    .isBefore(dayjs(res.reservation.durationEnd)))) &&
-              (dayjs(res.reservation.durationStart).isSame(week, "year") ||
-                dayjs(res.reservation.durationEnd).isSame(week, "year"))) ||
-            (type === 3 &&
-              (dayjs(res.reservation.durationStart).isSame(month, "month") ||
-                dayjs(res.reservation.durationEnd).isSame(month, "month")) &&
-              (dayjs(res.reservation.durationStart).isSame(month, "year") ||
-                dayjs(res.reservation.durationEnd).isSame(month, "year")))
-        )
-      );
-    } else {
-      setListReservations(
-        reservations.filter(
-          (res) =>
-            ((check1 &&
-              res.listReservationDetails
-                .map((details) => details.status)
-                .includes("BOOKING")) ||
-              (isChecked2 &&
-                res.listReservationDetails
-                  .map((details) => details.status)
-                  .includes("CHECK_IN")) ||
-              (isChecked3 &&
-                res.listReservationDetails
-                  .map((details) => details.status)
-                  .includes("CHECK_OUT"))) &&
-            ((type === 1 &&
-              (dayjs(res.reservation.durationStart).isSame(day, "day") ||
-                dayjs(res.reservation.durationEnd).isSame(day, "day")) &&
-              (dayjs(res.reservation.durationStart).isSame(day, "month") ||
-                dayjs(res.reservation.durationEnd).isSame(day, "month")) &&
-              (dayjs(res.reservation.durationStart).isSame(day, "year") ||
-                dayjs(res.reservation.durationEnd).isSame(day, "year"))) ||
-              (type === 2 &&
-                ((dayjs(res.reservation.durationStart).isAfter(
-                  week.add(-1, "day")
-                ) &&
-                  dayjs(res.reservation.durationEnd).isBefore(
-                    week.add(6, "day")
-                  )) ||
-                  (week
-                    .add(-1, "day")
-                    .isAfter(dayjs(res.reservation.durationStart)) &&
-                    week
-                      .add(-1, "day")
-                      .isBefore(dayjs(res.reservation.durationEnd))) ||
-                  (week
-                    .add(6, "day")
-                    .isAfter(dayjs(res.reservation.durationStart)) &&
-                    week
-                      .add(6, "day")
-                      .isBefore(dayjs(res.reservation.durationEnd)))) &&
-                (dayjs(res.reservation.durationStart).isSame(week, "year") ||
-                  dayjs(res.reservation.durationEnd).isSame(week, "year"))) ||
-              (type === 3 &&
-                (dayjs(res.reservation.durationStart).isSame(month, "month") ||
-                  dayjs(res.reservation.durationEnd).isSame(month, "month")) &&
-                (dayjs(res.reservation.durationStart).isSame(month, "year") ||
-                  dayjs(res.reservation.durationEnd).isSame(month, "year"))))
-        )
-      );
-    }
   };
 
   const handleCheckboxChange2 = (event) => {
     const check2 = event.target.checked;
     setIsChecked2(check2);
-    if (
-      (isChecked1 && check2 && isChecked3) ||
-      (!isChecked1 && !check2 && !isChecked3)
-    ) {
-      setListReservations(
-        reservations.filter(
-          (res) =>
-            (type === 1 &&
-              (dayjs(res.reservation.durationStart).isSame(day, "day") ||
-                dayjs(res.reservation.durationEnd).isSame(day, "day")) &&
-              (dayjs(res.reservation.durationStart).isSame(day, "month") ||
-                dayjs(res.reservation.durationEnd).isSame(day, "month")) &&
-              (dayjs(res.reservation.durationStart).isSame(day, "year") ||
-                dayjs(res.reservation.durationEnd).isSame(day, "year"))) ||
-            (type === 2 &&
-              ((dayjs(res.reservation.durationStart).isAfter(
-                week.add(-1, "day")
-              ) &&
-                dayjs(res.reservation.durationEnd).isBefore(
-                  week.add(6, "day")
-                )) ||
-                (week
-                  .add(-1, "day")
-                  .isAfter(dayjs(res.reservation.durationStart)) &&
-                  week
-                    .add(-1, "day")
-                    .isBefore(dayjs(res.reservation.durationEnd))) ||
-                (week
-                  .add(6, "day")
-                  .isAfter(dayjs(res.reservation.durationStart)) &&
-                  week
-                    .add(6, "day")
-                    .isBefore(dayjs(res.reservation.durationEnd)))) &&
-              (dayjs(res.reservation.durationStart).isSame(week, "year") ||
-                dayjs(res.reservation.durationEnd).isSame(week, "year"))) ||
-            (type === 3 &&
-              (dayjs(res.reservation.durationStart).isSame(month, "month") ||
-                dayjs(res.reservation.durationEnd).isSame(month, "month")) &&
-              (dayjs(res.reservation.durationStart).isSame(month, "year") ||
-                dayjs(res.reservation.durationEnd).isSame(month, "year")))
-        )
-      );
-    } else {
-      setListReservations(
-        reservations.filter(
-          (res) =>
-            ((isChecked1 &&
-              res.listReservationDetails
-                .map((details) => details.status)
-                .includes("BOOKING")) ||
-              (check2 &&
-                res.listReservationDetails
-                  .map((details) => details.status)
-                  .includes("CHECK_IN")) ||
-              (isChecked3 &&
-                res.listReservationDetails
-                  .map((details) => details.status)
-                  .includes("CHECK_OUT"))) &&
-            ((type === 1 &&
-              (dayjs(res.reservation.durationStart).isSame(day, "day") ||
-                dayjs(res.reservation.durationEnd).isSame(day, "day")) &&
-              (dayjs(res.reservation.durationStart).isSame(day, "month") ||
-                dayjs(res.reservation.durationEnd).isSame(day, "month")) &&
-              (dayjs(res.reservation.durationStart).isSame(day, "year") ||
-                dayjs(res.reservation.durationEnd).isSame(day, "year"))) ||
-              (type === 2 &&
-                ((dayjs(res.reservation.durationStart).isAfter(
-                  week.add(-1, "day")
-                ) &&
-                  dayjs(res.reservation.durationEnd).isBefore(
-                    week.add(6, "day")
-                  )) ||
-                  (week
-                    .add(-1, "day")
-                    .isAfter(dayjs(res.reservation.durationStart)) &&
-                    week
-                      .add(-1, "day")
-                      .isBefore(dayjs(res.reservation.durationEnd))) ||
-                  (week
-                    .add(6, "day")
-                    .isAfter(dayjs(res.reservation.durationStart)) &&
-                    week
-                      .add(6, "day")
-                      .isBefore(dayjs(res.reservation.durationEnd)))) &&
-                (dayjs(res.reservation.durationStart).isSame(week, "year") ||
-                  dayjs(res.reservation.durationEnd).isSame(week, "year"))) ||
-              (type === 3 &&
-                (dayjs(res.reservation.durationStart).isSame(month, "month") ||
-                  dayjs(res.reservation.durationEnd).isSame(month, "month")) &&
-                (dayjs(res.reservation.durationStart).isSame(month, "year") ||
-                  dayjs(res.reservation.durationEnd).isSame(month, "year"))))
-        )
-      );
-    }
   };
 
   const handleCheckboxChange3 = (event) => {
     const check3 = event.target.checked;
     setIsChecked3(check3);
-    if (
-      (isChecked1 && isChecked2 && check3) ||
-      (!isChecked1 && !isChecked2 && !check3)
-    ) {
-      setListReservations(
-        reservations.filter(
-          (res) =>
-            (type === 1 &&
-              (dayjs(res.reservation.durationStart).isSame(day, "day") ||
-                dayjs(res.reservation.durationEnd).isSame(day, "day")) &&
-              (dayjs(res.reservation.durationStart).isSame(day, "month") ||
-                dayjs(res.reservation.durationEnd).isSame(day, "month")) &&
-              (dayjs(res.reservation.durationStart).isSame(day, "year") ||
-                dayjs(res.reservation.durationEnd).isSame(day, "year"))) ||
-            (type === 2 &&
-              ((dayjs(res.reservation.durationStart).isAfter(
-                week.add(-1, "day")
-              ) &&
-                dayjs(res.reservation.durationEnd).isBefore(
-                  week.add(6, "day")
-                )) ||
-                (week
-                  .add(-1, "day")
-                  .isAfter(dayjs(res.reservation.durationStart)) &&
-                  week
-                    .add(-1, "day")
-                    .isBefore(dayjs(res.reservation.durationEnd))) ||
-                (week
-                  .add(6, "day")
-                  .isAfter(dayjs(res.reservation.durationStart)) &&
-                  week
-                    .add(6, "day")
-                    .isBefore(dayjs(res.reservation.durationEnd)))) &&
-              (dayjs(res.reservation.durationStart).isSame(week, "year") ||
-                dayjs(res.reservation.durationEnd).isSame(week, "year"))) ||
-            (type === 3 &&
-              (dayjs(res.reservation.durationStart).isSame(month, "month") ||
-                dayjs(res.reservation.durationEnd).isSame(month, "month")) &&
-              (dayjs(res.reservation.durationStart).isSame(month, "year") ||
-                dayjs(res.reservation.durationEnd).isSame(month, "year")))
-        )
-      );
-    } else {
-      setListReservations(
-        reservations.filter(
-          (res) =>
-            ((isChecked1 &&
-              res.listReservationDetails
-                .map((details) => details.status)
-                .includes("BOOKING")) ||
-              (isChecked2 &&
-                res.listReservationDetails
-                  .map((details) => details.status)
-                  .includes("CHECK_IN")) ||
-              (check3 &&
-                res.listReservationDetails
-                  .map((details) => details.status)
-                  .includes("CHECK_OUT"))) &&
-            ((type === 1 &&
-              (dayjs(res.reservation.durationStart).isSame(day, "day") ||
-                dayjs(res.reservation.durationEnd).isSame(day, "day")) &&
-              (dayjs(res.reservation.durationStart).isSame(day, "month") ||
-                dayjs(res.reservation.durationEnd).isSame(day, "month")) &&
-              (dayjs(res.reservation.durationStart).isSame(day, "year") ||
-                dayjs(res.reservation.durationEnd).isSame(day, "year"))) ||
-              (type === 2 &&
-                ((dayjs(res.reservation.durationStart).isAfter(
-                  week.add(-1, "day")
-                ) &&
-                  dayjs(res.reservation.durationEnd).isBefore(
-                    week.add(6, "day")
-                  )) ||
-                  (week
-                    .add(-1, "day")
-                    .isAfter(dayjs(res.reservation.durationStart)) &&
-                    week
-                      .add(-1, "day")
-                      .isBefore(dayjs(res.reservation.durationEnd))) ||
-                  (week
-                    .add(6, "day")
-                    .isAfter(dayjs(res.reservation.durationStart)) &&
-                    week
-                      .add(6, "day")
-                      .isBefore(dayjs(res.reservation.durationEnd)))) &&
-                (dayjs(res.reservation.durationStart).isSame(week, "year") ||
-                  dayjs(res.reservation.durationEnd).isSame(week, "year"))) ||
-              (type === 3 &&
-                (dayjs(res.reservation.durationStart).isSame(month, "month") ||
-                  dayjs(res.reservation.durationEnd).isSame(month, "month")) &&
-                (dayjs(res.reservation.durationStart).isSame(month, "year") ||
-                  dayjs(res.reservation.durationEnd).isSame(month, "year"))))
-        )
-      );
-    }
   };
 
   const handleChange = (event) => {
-    const { value } = event.target;
-    if (value === 1) {
-      setDay(dayjs());
-      handleDayChange(dayjs());
-    } else if (value === 2) {
-      setWeek(dayjs());
-      handeWeekChange(dayjs());
-    } else if (value === 3) {
-      setWeek(dayjs().startOf("M"));
-      handeMonthChange(dayjs().startOf("M"));
-    }
+    const value = event.target.value;
     setType(value);
-  };
-
-  const handleDayChange = (value) => {
-    if (
-      (isChecked1 && isChecked2 && isChecked3) ||
-      (!isChecked1 && !isChecked2 && !isChecked3)
-    ) {
-      setListReservations(
-        reservations.filter(
-          (res) =>
-            (dayjs(res.reservation.durationStart).isSame(value, "day") ||
-              dayjs(res.reservation.durationEnd).isSame(value, "day")) &&
-            (dayjs(res.reservation.durationStart).isSame(value, "month") ||
-              dayjs(res.reservation.durationEnd).isSame(value, "month")) &&
-            (dayjs(res.reservation.durationStart).isSame(value, "year") ||
-              dayjs(res.reservation.durationEnd).isSame(value, "year"))
-        )
-      );
-    } else {
-      setListReservations(
-        reservations.filter(
-          (res) =>
-            ((isChecked1 &&
-              res.listReservationDetails
-                .map((details) => details.status)
-                .includes("BOOKING")) ||
-              (isChecked2 &&
-                res.listReservationDetails
-                  .map((details) => details.status)
-                  .includes("CHECK_IN")) ||
-              (isChecked3 &&
-                res.listReservationDetails
-                  .map((details) => details.status)
-                  .includes("CHECK_OUT"))) &&
-            (dayjs(res.reservation.durationStart).isSame(value, "day") ||
-              dayjs(res.reservation.durationEnd).isSame(value, "day")) &&
-            (dayjs(res.reservation.durationStart).isSame(value, "month") ||
-              dayjs(res.reservation.durationEnd).isSame(value, "month")) &&
-            (dayjs(res.reservation.durationStart).isSame(value, "year") ||
-              dayjs(res.reservation.durationEnd).isSame(value, "year"))
-        )
-      );
-    }
-  };
-
-  const handeWeekChange = (value) => {
-    if (
-      (isChecked1 && isChecked2 && isChecked3) ||
-      (!isChecked1 && !isChecked2 && !isChecked3)
-    ) {
-      setListReservations(
-        reservations.filter(
-          (res) =>
-            ((dayjs(res.reservation.durationStart).isAfter(
-              value.add(-1, "day")
-            ) &&
-              dayjs(res.reservation.durationEnd).isBefore(
-                value.add(6, "day")
-              )) ||
-              (value
-                .add(-1, "day")
-                .isAfter(dayjs(res.reservation.durationStart)) &&
-                value
-                  .add(-1, "day")
-                  .isBefore(dayjs(res.reservation.durationEnd))) ||
-              (value
-                .add(6, "day")
-                .isAfter(dayjs(res.reservation.durationStart)) &&
-                value
-                  .add(6, "day")
-                  .isBefore(dayjs(res.reservation.durationEnd)))) &&
-            (dayjs(res.reservation.durationStart).isSame(value, "year") ||
-              dayjs(res.reservation.durationEnd).isSame(value, "year"))
-        )
-      );
-    } else {
-      setListReservations(
-        reservations.filter(
-          (res) =>
-            ((isChecked1 &&
-              res.listReservationDetails
-                .map((details) => details.status)
-                .includes("BOOKING")) ||
-              (isChecked2 &&
-                res.listReservationDetails
-                  .map((details) => details.status)
-                  .includes("CHECK_IN")) ||
-              (isChecked3 &&
-                res.listReservationDetails
-                  .map((details) => details.status)
-                  .includes("CHECK_OUT"))) &&
-            ((dayjs(res.reservation.durationStart).isAfter(
-              value.add(-1, "day")
-            ) &&
-              dayjs(res.reservation.durationEnd).isBefore(
-                value.add(6, "day")
-              )) ||
-              (value
-                .add(-1, "day")
-                .isAfter(dayjs(res.reservation.durationStart)) &&
-                value
-                  .add(-1, "day")
-                  .isBefore(dayjs(res.reservation.durationEnd))) ||
-              (value
-                .add(6, "day")
-                .isAfter(dayjs(res.reservation.durationStart)) &&
-                value
-                  .add(6, "day")
-                  .isBefore(dayjs(res.reservation.durationEnd)))) &&
-            (dayjs(res.reservation.durationStart).isSame(value, "year") ||
-              dayjs(res.reservation.durationEnd).isSame(value, "year"))
-        )
-      );
-    }
-  };
-
-  const handeMonthChange = (value) => {
-    if (
-      (isChecked1 && isChecked2 && isChecked3) ||
-      (!isChecked1 && !isChecked2 && !isChecked3)
-    ) {
-      setListReservations(
-        reservations.filter(
-          (res) =>
-            (dayjs(res.reservation.durationStart).isSame(value, "month") ||
-              dayjs(res.reservation.durationEnd).isSame(value, "month")) &&
-            (dayjs(res.reservation.durationStart).isSame(value, "year") ||
-              dayjs(res.reservation.durationEnd).isSame(value, "year"))
-        )
-      );
-    } else {
-      setListReservations(
-        reservations.filter(
-          (res) =>
-            ((isChecked1 &&
-              res.listReservationDetails
-                .map((details) => details.status)
-                .includes("BOOKING")) ||
-              (isChecked2 &&
-                res.listReservationDetails
-                  .map((details) => details.status)
-                  .includes("CHECK_IN")) ||
-              (isChecked3 &&
-                res.listReservationDetails
-                  .map((details) => details.status)
-                  .includes("CHECK_OUT"))) &&
-            (dayjs(res.reservation.durationStart).isSame(value, "month") ||
-              dayjs(res.reservation.durationEnd).isSame(value, "month")) &&
-            (dayjs(res.reservation.durationStart).isSame(value, "year") ||
-              dayjs(res.reservation.durationEnd).isSame(value, "year"))
-        )
-      );
-    }
   };
 
   const columns = [
@@ -584,6 +166,18 @@ function ListReservationPage() {
                       type="button"
                       className="text-medium text-green-600"
                     >
+                      <Link to={`/editReservation/${row.reservationId}`}>
+                        <i className="fa-solid fa-pen-to-square"></i>
+                      </Link>
+                    </button>
+                  }
+                />
+                <GridActionsCellItem
+                  icon={
+                    <button
+                      type="button"
+                      className="text-medium text-green-600"
+                    >
                       <i className="fa-solid fa-eye"></i>
                     </button>
                   }
@@ -597,42 +191,127 @@ function ListReservationPage() {
     },
   ];
 
-  const rows = listReservations.map((res, index) => {
-    const date =
-      dayjs(res.reservation.durationStart).format("DD-MM, hh:mm") +
-      " - " +
-      dayjs(res.reservation.durationEnd).format("DD-MM, hh:mm");
-    const listRoom = res.listReservationDetails.map((resDetails) => {
-      let color = "";
-      if (resDetails.status === "CHECK_OUT") {
-        color = "gray";
-      } else if (resDetails.status === "BOOKING") {
-        color = "orange";
-      } else if (resDetails.status === "CHECK_IN") {
-        color = "green";
-      }
+  let rows = [];
+
+  if (
+    (isChecked1 && isChecked1 && isChecked1 && findCus === "") ||
+    (!isChecked1 && !isChecked1 && !isChecked1 && findCus === "")
+  ) {
+    rows = listReservations.map((res, index) => {
+      const date =
+        dayjs(res.reservation.durationStart).format("DD-MM, hh:mm") +
+        " - " +
+        dayjs(res.reservation.durationEnd).format("DD-MM, hh:mm");
+      const listRoom = res.listReservationDetails.map((resDetails) => {
+        let color = "";
+        if (resDetails.status === "CHECK_OUT") {
+          color = "gray";
+        } else if (resDetails.status === "BOOKING") {
+          color = "orange";
+        } else if (resDetails.status === "CHECK_IN") {
+          color = "green";
+        }
+        return {
+          roomName: resDetails.room.roomName,
+          color: color,
+          bookingStatus: resDetails.status,
+        };
+      });
       return {
-        roomName: resDetails.room.roomName,
-        color: color,
-        bookingStatus: resDetails.status,
+        id: res.reservation.reservationId,
+        number: index + 1,
+        reservationId: res.reservation.reservationId,
+        customer: res.reservation.customer.customerName,
+        date: date,
+        status: listRoom,
+        totalPrice: res.reservation.totalPrice,
+        totalDeposit: res.reservation.totalDeposit,
       };
     });
-    return {
-      id: res.reservation.reservationId,
-      number: index + 1,
-      reservationId: res.reservation.reservationId,
-      customer: res.reservation.customer.customerName,
-      date: date,
-      status: listRoom,
-      totalPrice: res.reservation.totalPrice,
-      totalDeposit: res.reservation.totalDeposit,
-    };
-  });
+  } else {
+    rows = listReservations
+      .filter((res) => {
+        if (isChecked1) {
+          return res.listReservationDetails.some(
+            (detail) => detail.status === "BOOKING"
+          );
+        }
+        if (isChecked2) {
+          return res.listReservationDetails.some(
+            (detail) => detail.status === "CHECK_IN"
+          );
+        }
+        if (isChecked3) {
+          return res.listReservationDetails.some(
+            (detail) => detail.status === "CHECK_OUT"
+          );
+        }
+        if (findCus !== "") {
+          const cus = res.reservation.customer;
+          return (
+            (cus.customerName &&
+              cus.customerName.toLowerCase().includes(findCus.toLowerCase())) ||
+            (cus.identity &&
+              cus.identity.toLowerCase().includes(findCus.toLowerCase())) ||
+            (cus.email &&
+              cus.email.toLowerCase().includes(findCus.toLowerCase())) ||
+            (cus.phoneNumber &&
+              cus.phoneNumber.toLowerCase().includes(findCus.toLowerCase()))
+          );
+        }
+      })
+      .map((res, index) => {
+        const date =
+          dayjs(res.reservation.durationStart).format("DD-MM, hh:mm") +
+          " - " +
+          dayjs(res.reservation.durationEnd).format("DD-MM, hh:mm");
+        const listRoom = res.listReservationDetails.map((resDetails) => {
+          let color = "";
+          if (resDetails.status === "CHECK_OUT") {
+            color = "gray";
+          } else if (resDetails.status === "BOOKING") {
+            color = "orange";
+          } else if (resDetails.status === "CHECK_IN") {
+            color = "green";
+          }
+          return {
+            roomName: resDetails.room.roomName,
+            color: color,
+            bookingStatus: resDetails.status,
+          };
+        });
+        return {
+          id: res.reservation.reservationId,
+          number: index + 1,
+          reservationId: res.reservation.reservationId,
+          customer: res.reservation.customer.customerName,
+          date: date,
+          status: listRoom,
+          totalPrice: res.reservation.totalPrice,
+          totalDeposit: res.reservation.totalDeposit,
+        };
+      });
+  }
 
   return (
     <div className="h-full px-4 mx-auto mt-2">
       <div className="flex">
         <div>
+          <TextField
+            label="Tìm kiếm theo khách hàng"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            sx={{
+              width: 200,
+              marginRight: 2,
+            }}
+            value={findCus}
+            onChange={(e) => {
+              setFindCus(e.target.value);
+            }}
+            size="small"
+          />
           <FormControlLabel
             value="end"
             control={
@@ -706,7 +385,6 @@ function ListReservationPage() {
                   type="button"
                   className="px-4 py-2 bg-white rounded-tl rounded-bl"
                   onClick={() => {
-                    handleDayChange(day.add(-1, "day"));
                     setDay(day.add(-1, "day"));
                   }}
                 >
@@ -723,7 +401,6 @@ function ListReservationPage() {
                   }}
                   value={day}
                   onChange={(value) => {
-                    handleDayChange(value);
                     setDay(value);
                   }}
                   size="small"
@@ -733,7 +410,6 @@ function ListReservationPage() {
                   type="button"
                   className="px-4 py-2 bg-white rounded-tr rounded-br"
                   onClick={() => {
-                    handleDayChange(day.add(1, "day"));
                     setDay(day.add(1, "day"));
                   }}
                 >
@@ -747,8 +423,7 @@ function ListReservationPage() {
                   type="button"
                   className="px-4 py-2 bg-white rounded-tl rounded-bl"
                   onClick={() => {
-                    handeWeekChange(week.add(-1, "week"));
-                    setWeek(week.add(-1, "week"));
+                    setDay(day.add(-1, "week"));
                   }}
                 >
                   <i className="fa-solid fa-chevron-left"></i>
@@ -762,22 +437,20 @@ function ListReservationPage() {
                       background: "white",
                     },
                   }}
-                  value={week}
+                  value={day}
                   onChange={(value) => {
-                    handeWeekChange(value);
-                    setWeek(value);
+                    setDay(value);
                   }}
                   size="small"
-                  format={`DD/MM/YYYY - ${week
-                    .add(6, "day")
-                    .format("DD/MM/YYYY")}`}
+                  format={`${day.startOf("week").format("DD/MM/YYYY")} - ${day
+                    .endOf("week")
+                    .format("DD/MM/YYYY")}     HH`}
                 />
                 <button
                   type="button"
                   className="px-4 py-2 bg-white rounded-tr rounded-br"
                   onClick={() => {
-                    handeWeekChange(week.add(1, "week"));
-                    setWeek(week.add(1, "week"));
+                    setDay(day.add(1, "week"));
                   }}
                 >
                   <i className="fa-solid fa-chevron-right"></i>
@@ -790,8 +463,7 @@ function ListReservationPage() {
                   type="button"
                   className="px-4 py-2 bg-white rounded-tl rounded-bl"
                   onClick={() => {
-                    handeMonthChange(month.add(-1, "M"));
-                    setMonth(month.add(-1, "M"));
+                    setDay(day.add(-1, "M"));
                   }}
                 >
                   <i className="fa-solid fa-chevron-left"></i>
@@ -806,10 +478,9 @@ function ListReservationPage() {
                     },
                   }}
                   views={["month", "year"]}
-                  value={month}
+                  value={day}
                   onChange={(value) => {
-                    handeMonthChange(value);
-                    setMonth(value);
+                    setDay(value);
                   }}
                   size="small"
                   format="MM/YYYY"
@@ -818,8 +489,7 @@ function ListReservationPage() {
                   type="button"
                   className="px-4 py-2 bg-white rounded-tr rounded-br"
                   onClick={() => {
-                    handeMonthChange(month.add(1, "M"));
-                    setMonth(month.add(1, "M"));
+                    setDay(day.add(1, "M"));
                   }}
                 >
                   <i className="fa-solid fa-chevron-right"></i>
@@ -850,17 +520,17 @@ function ListReservationPage() {
 
 export default ListReservationPage;
 
-async function loadReservations() {
-  const response = await axiosPrivate.get("reservation");
-  if (response.data.success) {
-    return response.data.result;
-  } else {
-    redirect("login");
-  }
-}
+// async function loadReservations() {
+//   const response = await axiosPrivate.get("reservation");
+//   if (response.data.success) {
+//     return response.data.result;
+//   } else {
+//     redirect("login");
+//   }
+// }
 
 export async function loader() {
   return defer({
-    reservations: await loadReservations(),
+    // reservations: await loadReservations(),
   });
 }

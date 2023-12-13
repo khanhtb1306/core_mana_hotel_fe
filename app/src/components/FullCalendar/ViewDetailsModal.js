@@ -2,7 +2,11 @@ import dayjs from "dayjs";
 import Modal from "../UI/Modal";
 import { Form, useLoaderData } from "react-router-dom";
 import Swal from "sweetalert2";
-import { getTimePrice } from "../../utils/getTimePrice";
+import {
+  getSoonCheckin,
+  getTimePrice,
+  getlateCheckout,
+} from "../../utils/getTimePrice";
 import { useState } from "react";
 import ChangeRoomModal from "../Reservation/ChangeRoomModal";
 import ReceiveRoomModal from "../Reservation/ReceiveRoomModal";
@@ -140,6 +144,52 @@ function ViewDetailsModal(props) {
     fromDate = dayjs(reservationDetail.checkInActual);
     toDate = dayjs(reservationDetail.checkOutActual);
   }
+
+  let timeUse = "";
+  if (type === 1) {
+    if (dayjs().diff(fromDate, "hour") > 0) {
+      timeUse += dayjs().diff(fromDate, "hour") + " giờ";
+      timeUse += " ";
+    }
+    timeUse +=
+      dayjs().diff(fromDate, "minute") -
+      dayjs().diff(fromDate, "hour") * 60 +
+      " phút";
+  } else if (type === 2) {
+    if (dayjs().diff(fromDate, "day") > 0) {
+      timeUse += dayjs().diff(fromDate, "day") + " ngày";
+      if (
+        getlateCheckout(type, fromDate, dayjs(), timeUsing) +
+          getSoonCheckin(type, fromDate, timeUsing) >
+        0
+      ) {
+        timeUse += " ";
+        timeUse +=
+          getlateCheckout(type, fromDate, dayjs(), timeUsing) +
+          getSoonCheckin(type, fromDate, timeUsing) +
+          "  giờ";
+      }
+    } else {
+      timeUse += dayjs().diff(fromDate, "hour") + " giờ";
+    }
+  } else {
+    if (dayjs().diff(fromDate, "day") > 0) {
+      timeUse += 1 + " đêm";
+      if (
+        getlateCheckout(type, fromDate, dayjs(), timeUsing) +
+          getSoonCheckin(type, fromDate, timeUsing) >
+        0
+      ) {
+        timeUse += " ";
+        timeUse +=
+          getlateCheckout(type, fromDate, dayjs(), timeUsing) +
+          getSoonCheckin(type, fromDate, timeUsing) +
+          "  giờ";
+      }
+    } else {
+      timeUse += dayjs().diff(fromDate, "hour") + " giờ";
+    }
+  }
   return (
     <>
       <Form method="PUT" onSubmit={props.onClose}>
@@ -240,44 +290,7 @@ function ViewDetailsModal(props) {
                         </div>
                         <div>
                           Dùng đến hiện tại:{" "}
-                          <span className="text-green-500">
-                            {type === 1
-                              ? `${dayjs().diff(fromDate, "hour")} giờ ${
-                                  dayjs().diff(fromDate, "minute") -
-                                  dayjs().diff(fromDate, "hour") * 60
-                                } phút`
-                              : type === 2
-                              ? `${dayjs().diff(
-                                  fromDate.hour(priceDayStart),
-                                  "day"
-                                )} ngày ${dayjs().diff(
-                                  fromDate.add(
-                                    dayjs().diff(
-                                      fromDate.hour(priceDayStart),
-                                      "day"
-                                    ),
-                                    "day"
-                                  ),
-                                  "hour"
-                                )} giờ`
-                              : dayjs().diff(
-                                  fromDate.add(1, "day").hour(priceNightEnd),
-                                  "hour"
-                                ) > 0
-                              ? `${
-                                  getTimePrice(
-                                    type,
-                                    fromDate,
-                                    dayjs(),
-                                    timeUsing,
-                                    []
-                                  ).time
-                                } đêm ${dayjs().diff(
-                                  fromDate.add(1, "day").hour(priceNightEnd),
-                                  "hour"
-                                )} giờ`
-                              : `${dayjs().diff(fromDate, "hour")} giờ`}
-                          </span>
+                          <span className="text-green-500">{timeUse}</span>
                         </div>
                       </>
                     )}

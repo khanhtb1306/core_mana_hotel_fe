@@ -467,7 +467,7 @@ export async function action({ request }) {
         Swal.fire({
           position: "center",
           icon: "success",
-          title: "Thêm khách hàng thành công",
+          title: response.data.message,
           showConfirmButton: false,
           timer: 1500,
         });
@@ -477,11 +477,12 @@ export async function action({ request }) {
         Swal.fire({
           position: "center",
           icon: "error",
-          title: "Thêm khách hàng thất bại",
+          title: e.response.data.message,
           showConfirmButton: false,
           timer: 1500,
         });
       });
+      console.log(response);
     return redirect("/manager/customerManagement");
   }
   if (method === "PUT") {
@@ -495,7 +496,7 @@ export async function action({ request }) {
         Swal.fire({
           position: "center",
           icon: "success",
-          title: response.data,
+          title: response.data.message,
           showConfirmButton: false,
           timer: 1500,
         });
@@ -505,7 +506,7 @@ export async function action({ request }) {
         Swal.fire({
           position: "center",
           icon: "error",
-          title: e.response.data,
+          title: e.response.data.message,
           showConfirmButton: false,
           timer: 1500,
         });
@@ -556,7 +557,7 @@ export async function action({ request }) {
         Swal.fire({
           position: "center",
           icon: "error",
-          title: e.response.data,
+          title: e.response.data.message,
           showConfirmButton: false,
           timer: 1500,
         });

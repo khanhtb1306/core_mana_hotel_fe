@@ -3,9 +3,10 @@ import { useEffect, useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 
 function OtherFeeModal(props) {
-  const [rowSelectionModel, setRowSelectionModel] = useState([]);
+  const [rowSelectionModel, setRowSelectionModel] = useState(props.listFeeIds);
   const otherFees = props.otherFees.LIST_OTHER_REVENUE_DETAIL;
   const invoicePrice = props.invoicePrice;
+  console.log(rowSelectionModel);
   const columns = [
     { field: "idFee", headerName: "Mã thu khác", width: 150 },
     { field: "typeFee", headerName: "Loại thu", width: 200 },
@@ -39,7 +40,7 @@ function OtherFeeModal(props) {
         price += fee.policyValue;
       }
     });
-    props.changePrice(price);
+    props.changePrice(rowSelectionModel, price);
   }, [rowSelectionModel]);
   return (
     <Modal

@@ -1,6 +1,6 @@
-import { Form, useLoaderData } from "react-router-dom";
+import { Form, NavLink, useLoaderData } from "react-router-dom";
 import Modal from "../UI/Modal";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CreateInvoiceRoomModal from "./CreateInvoiceRoomModal";
 import ViewInvoice from "./ViewInvoice";
 import Swal from "sweetalert2";
@@ -14,27 +14,124 @@ import {
 import NewAccBankModal from "./NewAccBankModal";
 import OtherFeeModal from "./OtherFeeModal";
 import dayjs from "dayjs";
+import { useReactToPrint } from "react-to-print";
+import { axiosPrivate } from "../../utils/axiosConfig";
+import FuncBooksModal from "./FundBooksModal";
 
 function PaymentModal(props) {
-  const { listQR, otherFees, listSurchage, invoiceReservation } =
-    useLoaderData();
-  // console.log(listSurchage);
-  // console.log(otherFees);
+  const {
+    listQR,
+    otherFees,
+    listSurchage,
+    listFunds,
+    deposit,
+    invoiceReservation,
+    points,
+  } = useLoaderData();
+  if (points.LIST_PROMOTION_POLICY_DETAIL.length === 0) {
+    points = {
+      ...points,
+      LIST_PROMOTION_POLICY_DETAIL: [{ limitValue: 1, policyValue: 1 }],
+    };
+  }
+  const printQRRef = useRef();
+  const printInvoiceRef = useRef();
   const reservation = props.reservation;
+  const reservationId = reservation.reservation.reservationId;
   const invoices = props.invoices;
+  let priceAll = 0;
+  let priceCheckout = 0;
+  reservation.listReservationDetails.map((reservationDetail, index) => {
+    let priceRoom = reservationDetail.price;
+    if (reservationDetail.status === "CHECK_OUT") {
+      priceCheckout += reservationDetail.price;
+    }
+    const surcharge = listSurchage[index];
+    if (surcharge.length > 0) {
+      surcharge.map((sur) => {
+        if (reservationDetail.status === "CHECK_OUT") {
+          priceCheckout += sur.value;
+        }
+        priceRoom += sur.value;
+      });
+    }
+    const invoiceByDetails = invoices.find(
+      (invoice) =>
+        invoice.ReservationDetailId === reservationDetail.reservationDetailId
+    );
+    if (invoiceByDetails) {
+      invoiceByDetails.listOrderByReservationDetailId.map((invoice) => {
+        if (invoice.order.status === "CONFIRMED") {
+          if (reservationDetail.status === "CHECK_OUT") {
+            priceCheckout += invoice.order.totalPay;
+          }
+          priceRoom += invoice.order.totalPay;
+        }
+      });
+    }
+    priceAll += priceRoom;
+  });
+  const listCheckout = reservation.listReservationDetails.filter(
+    (details) => details.status === "CHECK_OUT"
+  );
+  const listNotCheckOut = reservation.listReservationDetails.filter(
+    (details) => details.status === "CHECK_IN" || details.status === "BOOKING"
+  );
+  const isDone = reservation.listReservationDetails.every(
+    (details) => details.status === "DONE"
+  );
+  // console.log(priceAll);
+  const requireDeposit =
+    deposit.LIST_SETUP_DEPOSIT_DETAIL.length > 0
+      ? deposit.LIST_SETUP_DEPOSIT_DETAIL[0].policyValue
+      : 0;
+  // console.log(deposit);
+  // console.log(invoiceReservation);
+  // console.log(points);
+  // console.log(otherFees);
   // console.log(reservation);
   // console.log(invoices);
   const [openCreateInvoice, setOpenCreateInvoice] = useState(false);
   const [openDetailsInvoiceModal, setOpenDetailsInvoiceModal] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
-  const [payType, setPayType] = useState(1);
+  const [selectedInvoiceReservationId, setSelectedInvoiceReservationId] =
+    useState(null);
+  // console.log(selectedInvoiceReservationId);
+  const [payType, setPayType] = useState("2");
   const [openNewAccBankModal, setOpenNewAccBankModal] = useState(false);
   const [openOtherFeeModal, setOpenOtherFeeModal] = useState(false);
+  const [openFundBooksModal, setOpenFundBooksModal] = useState(false);
+
   const [selectedAcc, setSelectedAcc] = useState(
     listQR.length > 0 ? listQR[0].bankAccountId : 0
   );
-  const [otherFeePrice, setOtherFeePrice] = useState(0);
-  const [discountPrice, setDiscountPrice] = useState(0);
+  // console.log(listQR);
+  const account = listQR.find((acc) => acc.bankAccountId === selectedAcc);
+  // console.log(account);
+
+  const [otherFeePrice, setOtherFeePrice] = useState(
+    otherFees
+      ? otherFees.LIST_OTHER_REVENUE_DETAIL.reduce((sum, fee) => {
+          if (fee.autoAddToInvoice) {
+            if (fee.typeValue === "%") {
+              return sum + (priceAll * fee.policyValue) / 100;
+            } else {
+              return sum + fee.policyValue;
+            }
+          } else {
+            return sum;
+          }
+        }, 0)
+      : 0
+  );
+  const [listFeeIds, setListFeeIds] = useState(
+    otherFees
+      ? otherFees.LIST_OTHER_REVENUE_DETAIL.filter(
+          (fee) => fee.autoAddToInvoice
+        ).map((e) => e.policyDetailId)
+      : []
+  );
+  const [usePoint, setUsePoint] = useState(0);
   const [payPrice, setPayPrice] = useState(0);
   const [banks, setBanks] = useState([]);
   useEffect(() => {
@@ -45,20 +142,98 @@ function PaymentModal(props) {
       })
       .catch((error) => console.error(error));
   }, []);
-  let priceAll = 0;
-  const listCheckout = reservation.listReservationDetails.filter(
-    (details) => details.status === "CHECK_OUT"
-  );
-  const listNotCheckOut = reservation.listReservationDetails.filter(
-    (details) => details.status === "CHECK_IN" || details.status === "BOOKING"
-  );
+  let transactionCode = "";
+  if (listNotCheckOut.length > 0) {
+    transactionCode =
+      listFunds.length > 0
+        ? "MGD" +
+          reservationId +
+          "DC" +
+          (listFunds.filter((fund) =>
+            fund.transactionCode.includes("MGD" + reservationId + "DC")
+          ).length +
+            1)
+        : "MGD" + reservationId + "DC1";
+  } else {
+    transactionCode =
+      listFunds.length > 0
+        ? "MGD" +
+          reservationId +
+          "HD" +
+          (listFunds.filter((fund) =>
+            fund.transactionCode.includes("MGD" + reservationId + "HD")
+          ).length +
+            1)
+        : "MGD" + reservationId + "HD1";
+  }
+  const depositPrice = listFunds.reduce((e, c) => {
+    if (c.value > 0) {
+      return e + c.value;
+    } else {
+      return e;
+    }
+  }, 0);
+  const historyListFunds = [];
+  let total = 0;
+  for (let i = listFunds.length - 1; i >= 0; i--) {
+    if (listFunds[i].fundBookId.includes("TTDP") && listFunds[i].value > 0) {
+      total += listFunds[i].value;
+      historyListFunds.push(listFunds[i]);
+    }
+    if (listFunds[i].fundBookId.includes("TTHD")) {
+      if (listFunds[i].value > 0) {
+        historyListFunds.push({
+          ...listFunds[i],
+          fundBookId: "(Tiền tạm ứng)",
+          value: -total,
+        });
+        total = 0;
+      } else {
+        total += listFunds[i].value;
+        historyListFunds.push({
+          ...listFunds[i],
+          fundBookId: "(Tiền tạm ứng)",
+        });
+      }
+    }
+  }
+  const prePail = historyListFunds.reduce((e, c) => {
+    return e + c.value;
+  }, 0);
+  const point =
+    (reservation.reservation.customer.point /
+      points.LIST_PROMOTION_POLICY_DETAIL[0].limitValue) *
+    points.LIST_PROMOTION_POLICY_DETAIL[0].policyValue;
+  const discountPrice =
+    (usePoint / points.LIST_PROMOTION_POLICY_DETAIL[0].limitValue) *
+    points.LIST_PROMOTION_POLICY_DETAIL[0].policyValue;
 
-  const handleOtherFeeChange = (price) => {
+  const [imageUrl, setImageUrl] = useState("");
+
+  useEffect(() => {
+    if (payPrice > 0) {
+      setImageUrl(
+        `https://img.vietqr.io/image/${account.bankId}-${account.bankAccountNumber}-print.jpg?amount=${payPrice}&addInfo=${transactionCode}`
+      );
+    }
+  }, [account, payPrice]);
+
+  const handleOtherFeeChange = (selectedFeeId, price) => {
+    setListFeeIds(selectedFeeId);
     setOtherFeePrice(price);
   };
+
+  const handleInvoicePrint = useReactToPrint({
+    content: () => printInvoiceRef.current,
+  });
+
+  const handleQRPrint = useReactToPrint({
+    content: () => printQRRef.current,
+  });
+
   return (
     <>
-      <Form onSubmit={() => props.onClose()} className="print:hidden">
+      <Form method="POST" onSubmit={() => props.onClose()}>
         <div
           onClick={props.onClose}
           className={`fixed inset-0 flex justify-center items-center transition-colors overflow-auto z-10 ${
@@ -81,23 +256,32 @@ function PaymentModal(props) {
               <i className="fa-solid fa-x"></i>
             </button>
             <div className="p-2 w-full">
-              <h1 className="text-lg pb-10 font-bold">
+              <h1 className="text-lg pb-5 font-bold">
                 Thanh toán{" "}
                 {reservation.reservation.reservationId +
                   " - " +
                   reservation.reservation.customer.customerName}
-                {listCheckout.length !== 0 && (
-                  <button
-                    type="button"
-                    className="ml-4 rounded px-1 text-sm bg-white border border-green-500 text-green-500 font-normal hover:bg-green-200"
-                    onClick={() => setOpenCreateInvoice(true)}
-                  >
-                    Tạo hoá đơn một phần
-                  </button>
+                {listNotCheckOut.length === 0 &&
+                  reservation.reservation.customer.point > 0 && (
+                    <span className="text-sm font-normal">
+                      ({reservation.reservation.customer.point + " điểm"}
+                      {point > 0 && " = " + point.toLocaleString() + " VND"})
+                    </span>
+                  )}
+                {listCheckout.length !== 0 && listNotCheckOut.length !== 0 && (
+                  <span>
+                    <button
+                      type="button"
+                      className="ml-4 rounded px-1 text-sm bg-white border border-green-500 text-green-500 font-normal hover:bg-green-200"
+                      onClick={() => setOpenCreateInvoice(true)}
+                    >
+                      Tạo hoá đơn một phần
+                    </button>
+                  </span>
                 )}
               </h1>
               <div className="w-full flex text-sm">
-                <div className="w-9/12 pr-4 border-r-2 border-gray-500 border-dotted overflow-y-auto h-[41.5rem]">
+                <div className="w-8/12 pr-4 border-r-2 border-gray-500 border-dotted overflow-y-auto h-[41.5rem]">
                   <table className="text-left min-w-full divide-y divide-gray-300">
                     <thead className="bg-green-200">
                       <tr className="border border-black">
@@ -110,7 +294,6 @@ function PaymentModal(props) {
                     <tbody>
                       {reservation.listReservationDetails.map(
                         (details, index) => {
-                          // console.log(details);
                           let priceRoom = details.price;
                           const invoiceByDetails = invoices.find(
                             (invoice) =>
@@ -141,27 +324,32 @@ function PaymentModal(props) {
                                   >
                                     {details.room.roomName}
                                   </div>
-                                  <div
-                                    className={`ml-2 px-2 rounded ${
-                                      details.status === "BOOKING" &&
-                                      "bg-orange-200 text-orange-500"
-                                    } ${
-                                      details.status === "CHECK_IN" &&
-                                      "bg-green-200 text-green-500"
-                                    } ${
-                                      (details.status === "CHECK_OUT" ||
-                                        details.status === "DONE") &&
-                                      "bg-gray-200"
-                                    }`}
-                                  >
-                                    {details.status === "BOOKING" &&
-                                      "Đã đặt trước"}
-                                    {details.status === "CHECK_IN" &&
-                                      "Đang sử dụng"}
-                                    {(details.status === "CHECK_OUT" ||
-                                      details.status === "DONE") &&
-                                      "Đã trả"}
-                                  </div>
+                                  {details.status === "DONE" ? (
+                                    <div className="ml-2 px-2 rounded bg-blue-200 text-blue-500">
+                                      Hoàn thành
+                                    </div>
+                                  ) : (
+                                    <div
+                                      className={`ml-2 px-2 rounded ${
+                                        details.status === "BOOKING" &&
+                                        "bg-orange-200 text-orange-500"
+                                      } ${
+                                        details.status === "CHECK_IN" &&
+                                        "bg-green-200 text-green-500"
+                                      } ${
+                                        details.status === "CHECK_OUT" &&
+                                        "bg-gray-200"
+                                      }`}
+                                    >
+                                      {details.status === "BOOKING" &&
+                                        "Đã đặt trước"}
+                                      {details.status === "CHECK_IN" &&
+                                        "Đang sử dụng"}
+                                      {details.status === "CHECK_OUT" &&
+                                        "Đã trả"}
+                                    </div>
+                                  )}
+
                                   <div className="ml-auto mr-10">
                                     {details.price.toLocaleString() + " VND"}
                                   </div>
@@ -182,80 +370,86 @@ function PaymentModal(props) {
                                     })}
                                   </div>
                                 )}
-                                {invoiceByDetails && (
-                                  <div className="mt-2">
-                                    <h3 className="ml-2 font-medium mb-1">
-                                      Hoá đơn mua hàng
-                                    </h3>
-                                    <div className="flex b">
-                                      <div className="w-1/4">Mã hoá đơn</div>
-                                      <div className="w-1/4">Trạng thái</div>
-                                      <div className="w-1/4">Tiền</div>
-                                      <div className="w-1/4"></div>
-                                    </div>
-                                    {invoiceByDetails.listOrderByReservationDetailId.map(
-                                      (invoice) => {
-                                        // console.log(invoice);
-                                        if (
-                                          invoice.order.status === "PAID" ||
-                                          invoice.order.status === "CONFIRMED"
-                                        ) {
+                                {invoiceByDetails &&
+                                  invoiceByDetails.listOrderByReservationDetailId.filter(
+                                    (invoice) =>
+                                      invoice.order.status === "PAID" ||
+                                      invoice.order.status === "CONFIRMED"
+                                  ) && (
+                                    <div className="mt-2">
+                                      <h3 className="ml-2 font-medium mb-1">
+                                        Hoá đơn mua hàng
+                                      </h3>
+                                      <div className="flex b">
+                                        <div className="w-3/12">Mã hoá đơn</div>
+                                        <div className="w-4/12">Trạng thái</div>
+                                        <div className="w-4/12">Tiền</div>
+                                        <div className="w-1/12"></div>
+                                      </div>
+                                      {invoiceByDetails.listOrderByReservationDetailId.map(
+                                        (invoice) => {
+                                          // console.log(invoice);
                                           if (
+                                            invoice.order.status === "PAID" ||
                                             invoice.order.status === "CONFIRMED"
                                           ) {
-                                            priceRoom += invoice.order.totalPay;
-                                          }
-                                          return (
-                                            <div className="flex mt-1">
-                                              <div className="w-1/4">
-                                                {invoice.order.orderId}
-                                              </div>
-                                              <div
-                                                className={`w-1/4 ${
-                                                  invoice.order.status ===
-                                                    "PAID" && "text-green-500"
-                                                } ${
-                                                  invoice.order.status ===
-                                                    "CONFIRMED" &&
-                                                  "text-blue-500"
-                                                }`}
-                                              >
-                                                {invoice.order.status ===
-                                                  "PAID" && "Đã trả"}
-                                                {invoice.order.status ===
-                                                  "CONFIRMED" && "Xác nhận"}
-                                              </div>
-                                              <div className="w-1/4">
-                                                {invoice.order.totalPay.toLocaleString() +
-                                                  " VND"}
-                                              </div>
-                                              <div className="w-1/4">
-                                                <button
-                                                  type="button"
-                                                  onClick={() => {
-                                                    setSelectedInvoice(invoice);
-                                                    setOpenDetailsInvoiceModal(
-                                                      true
-                                                    );
-                                                  }}
+                                            if (
+                                              invoice.order.status ===
+                                              "CONFIRMED"
+                                            ) {
+                                              priceRoom +=
+                                                invoice.order.totalPay;
+                                            }
+                                            return (
+                                              <div className="flex mt-1">
+                                                <div className="w-3/12">
+                                                  {invoice.order.orderId}
+                                                </div>
+                                                <div
+                                                  className={`w-4/12 ${
+                                                    invoice.order.status ===
+                                                      "PAID" && "text-green-500"
+                                                  } ${
+                                                    invoice.order.status ===
+                                                      "CONFIRMED" &&
+                                                    "text-blue-500"
+                                                  }`}
                                                 >
-                                                  <i className="fa-solid fa-eye"></i>
-                                                </button>
+                                                  {invoice.order.status ===
+                                                    "PAID" && "Đã thanh toán"}
+                                                  {invoice.order.status ===
+                                                    "CONFIRMED" && "Xác nhận"}
+                                                </div>
+                                                <div className="w-4/12">
+                                                  {invoice.order.totalPay.toLocaleString() +
+                                                    " VND"}
+                                                </div>
+                                                <div className="w-1/12">
+                                                  <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                      setSelectedInvoice(
+                                                        invoice
+                                                      );
+                                                      setOpenDetailsInvoiceModal(
+                                                        true
+                                                      );
+                                                    }}
+                                                  >
+                                                    <i className="fa-solid fa-eye"></i>
+                                                  </button>
+                                                </div>
                                               </div>
-                                            </div>
-                                          );
+                                            );
+                                          }
                                         }
-                                      }
-                                    )}
-                                  </div>
-                                )}
+                                      )}
+                                    </div>
+                                  )}
                               </td>
                               <td className="px-2 py-1 font-bold">
                                 {priceRoom.toLocaleString()}
                               </td>
-                              <div className="hidden">
-                                {(priceAll += priceRoom)}
-                              </div>
                             </tr>
                           );
                         }
@@ -263,32 +457,138 @@ function PaymentModal(props) {
                     </tbody>
                   </table>
                 </div>
-                <div className="w-3/12 ml-4">
+                <div className="w-4/12 ml-4">
+                  <input
+                    type="hidden"
+                    name="reservationId"
+                    value={reservation.reservation.reservationId}
+                    onChange={() => console.log()}
+                  />
+                  <input
+                    type="hidden"
+                    name="listReservationDetails"
+                    value={listCheckout.map(
+                      (checkout) => checkout.reservationDetailId
+                    )}
+                    onChange={() => console.log()}
+                  />
+                  <input
+                    type="hidden"
+                    name="customerId"
+                    value={reservation.reservation.customer.customerId}
+                    onChange={() => console.log()}
+                  />
+                  <input
+                    type="hidden"
+                    name="priceCheckout"
+                    value={priceCheckout}
+                    onChange={() => console.log()}
+                  />
+                  <input
+                    type="hidden"
+                    name="discount"
+                    value={discountPrice}
+                    onChange={() => console.log()}
+                  />
+                  <input
+                    type="hidden"
+                    name="priceOther"
+                    value={otherFeePrice}
+                    onChange={() => console.log()}
+                  />
+                  <input
+                    type="hidden"
+                    name="depositPrice"
+                    value={depositPrice}
+                    onChange={() => console.log()}
+                  />
+                  <input
+                    type="hidden"
+                    name="prePail"
+                    value={prePail}
+                    onChange={() => console.log()}
+                  />
+                  <input
+                    type="hidden"
+                    name="payType"
+                    value={payType}
+                    onChange={() => console.log()}
+                  />
+                  <input
+                    type="hidden"
+                    name="payPrice"
+                    value={payPrice}
+                    onChange={() => console.log()}
+                  />
+                  <input
+                    type="hidden"
+                    name="transactionCode"
+                    value={transactionCode}
+                    onChange={() => console.log()}
+                  />
+                  <input
+                    type="hidden"
+                    name="usePoint"
+                    value={usePoint}
+                    onChange={() => console.log()}
+                  />
+                  <input
+                    type="hidden"
+                    name="priceAll"
+                    value={priceAll}
+                    onChange={() => console.log()}
+                  />
+                  {Math.floor((priceAll * requireDeposit) / 100) >
+                    depositPrice && (
+                    <div className="flex mt-2 text-red-500">
+                      <div className="mr-auto">Tiền đặt cọc tối thiểu</div>
+                      <div className="ml-auto">
+                        {Math.floor(
+                          (priceAll * requireDeposit) / 100
+                        ).toLocaleString()}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex mt-2">
                     <div className="mr-auto">Tổng tiền</div>
                     <div className="ml-auto">{priceAll.toLocaleString()}</div>
                   </div>
                   {listNotCheckOut.length === 0 && (
                     <>
+                      {!isDone && (
+                        <div className="flex mt-2">
+                          <div className="my-auto w-6/12">Sử dụng điểm</div>
+                          <input
+                            className="p-0 text-sm border-0 border-b border-gray-500 text-right w-6/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                            type="number"
+                            name="discountPrice"
+                            value={usePoint}
+                            onChange={(e) => {
+                              if (
+                                e.target.value > 0 &&
+                                e.target.value <=
+                                  reservation.reservation.customer.point
+                              ) {
+                                setUsePoint(e.target.value);
+                              } else {
+                                setUsePoint(0);
+                              }
+                            }}
+                          />
+                        </div>
+                      )}
                       <div className="flex mt-2">
                         <div className="my-auto w-6/12">Giảm giá</div>
-                        <input
-                          className="p-0 text-sm border-0 border-b border-gray-500 text-right w-6/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                          type="text"
-                          name="discountPrice"
-                          defaultValue={0}
-                          onChange={(e) => {
-                            if (e.target.value === "") {
-                              e.target.value = 0;
-                            }
-                            let num = e.target.value.replace(/[^\d]/g, "");
-                            if (num > priceAll) {
-                              num = 0;
-                            }
-                            setDiscountPrice(num);
-                            e.target.value = parseInt(num, 10).toLocaleString();
-                          }}
-                        />
+                        <div className="text-right w-6/12">
+                          {isDone
+                            ? invoiceReservation
+                                .reduce((sum, inv) => {
+                                  return (sum += inv.discount);
+                                }, 0)
+                                .toLocaleString()
+                            : discountPrice.toLocaleString()}
+                        </div>
                       </div>
                       <div className="flex mt-2">
                         <div className="w-6/12">Phí khác</div>
@@ -296,171 +596,339 @@ function PaymentModal(props) {
                           type="button"
                           className="w-6/12 text-right"
                           onClick={() => {
-                            setOpenOtherFeeModal(true);
+                            if (!isDone) {
+                              setOpenOtherFeeModal(true);
+                            }
                           }}
                         >
-                          {otherFeePrice.toLocaleString()}
+                          {isDone
+                            ? invoiceReservation
+                                .reduce((sum, inv) => {
+                                  return (sum += inv.priceOther);
+                                }, 0)
+                                .toLocaleString()
+                            : otherFeePrice.toLocaleString()}
                         </button>
                       </div>
                     </>
                   )}
-                  <div className="flex mt-2">
-                    <div className="mr-auto">Khách đã trả</div>
-                    <div className="ml-auto">
-                      {reservation.reservation.totalDeposit.toLocaleString()}
+                  {!isDone && (
+                    <div className="flex mt-2">
+                      <div className="w-6/12">Khách đã trả</div>
+                      <button
+                        type="button"
+                        className="text-right w-6/12"
+                        onClick={() => setOpenFundBooksModal(true)}
+                      >
+                        {depositPrice.toLocaleString()}
+                      </button>
                     </div>
-                  </div>
+                  )}
                   <div className="flex mt-4 font-bold">
                     <div className="mr-auto">Khách cần trả</div>
                     <div className="ml-auto text-green-500">
-                      {(
-                        priceAll -
-                        reservation.reservation.totalDeposit +
-                        otherFeePrice -
-                        discountPrice
-                      ).toLocaleString()}
+                      {isDone
+                        ? depositPrice.toLocaleString()
+                        : (
+                            priceAll +
+                            otherFeePrice -
+                            depositPrice -
+                            discountPrice
+                          ).toLocaleString()}
                     </div>
                   </div>
-                  <div className="flex mt-2">
-                    <div className="mr-auto my-auto">Khách thanh toán</div>
-                    <input
-                      className="p-0 text-sm border-0 border-b border-gray-500 text-right w-6/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                      type="text"
-                      name="bankAccountNumber"
-                      defaultValue={0}
-                      onChange={(e) => {
-                        if (e.target.value === "") {
-                          e.target.value = 0;
-                        }
-                        const num = e.target.value.replace(/[^\d]/g, "");
-                        setPayPrice(num);
-                        e.target.value = num
-                          ? parseInt(num, 10).toLocaleString()
-                          : "";
-                      }}
-                      // onBlur={(e) => {
-                      //   e.target.setCustomValidity("");
-                      // }}
-                    />
-                  </div>
-                  {payPrice -
-                    (priceAll -
-                      reservation.reservation.totalDeposit +
-                      otherFeePrice -
-                      discountPrice) >
-                    0 && (
+                  {isDone && (
                     <div className="flex mt-2">
-                      <div className="mr-auto my-auto">Tiền thừa trả khách</div>
-                      <div className="ml-auto">
-                        {(
-                          payPrice -
-                          (priceAll -
-                            reservation.reservation.totalDeposit +
-                            otherFeePrice -
-                            discountPrice)
-                        ).toLocaleString()}
+                      <div className="mr-auto my-auto">Khách thanh toán</div>
+                      <div className="ml-auto my-auto">
+                        {depositPrice.toLocaleString()}
                       </div>
                     </div>
                   )}
-                  <div className="mt-4">
-                    <div className="flex">
-                      <RadioGroup
-                        value={payType}
+                  {priceAll > depositPrice && (
+                    <div className="flex mt-2">
+                      <div className="mr-auto my-auto">Khách thanh toán</div>
+                      <input
+                        className="p-0 text-sm border-0 border-b border-gray-500 text-right w-6/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                        type="text"
+                        name=""
+                        defaultValue={0}
                         onChange={(e) => {
-                          setPayType(e.target.value);
+                          if (e.target.value === "") {
+                            e.target.value = 0;
+                          }
+                          const num = e.target.value.replace(/[^\d]/g, "");
+                          setPayPrice(num);
+                          e.target.value = num
+                            ? parseInt(num, 10).toLocaleString()
+                            : "";
                         }}
-                        name="radio-buttons-group"
-                        sx={{
-                          display: "flex",
-                          flexDirection: "row",
-                        }}
-                      >
-                        <FormControlLabel
-                          value={1}
-                          control={<Radio />}
-                          label="Tiền mặt"
-                          sx={{
-                            "& .MuiFormControlLabel-label": {
-                              fontSize: "0.875rem",
-                            },
-                          }}
-                        />
-                        <FormControlLabel
-                          value={2}
-                          control={<Radio />}
-                          label="Chuyển khoản"
-                          sx={{
-                            "& .MuiFormControlLabel-label": {
-                              fontSize: "0.875rem",
-                            },
-                          }}
-                        />
-                      </RadioGroup>
+                      />
                     </div>
-                    {payType === "2" && (
-                      <div className="mt-2">
-                        <Select
-                          sx={{ width: 265, height: 40 }}
-                          value={selectedAcc}
-                          onChange={(e) => {
-                            setSelectedAcc(e.target.value);
-                          }}
-                        >
-                          {listQR.length > 0 &&
-                            listQR.map((qr, index) => {
-                              const nameBank = banks.find(
-                                (bank) => bank.bin == qr.bankId
-                              ).code;
-                              return (
-                                <MenuItem key={index} value={qr.bankAccountId}>
-                                  {nameBank +
-                                    " - " +
-                                    qr.bankAccountName +
-                                    " - " +
-                                    qr.bankAccountNumber}
-                                </MenuItem>
-                              );
-                            })}
-                        </Select>
-                        <button
-                          type="button"
-                          className="rounded border border-green-500 py-2 mt-2 w-full text-green-500 hover:bg-green-100"
-                          onClick={() => {
-                            setOpenNewAccBankModal(true);
-                          }}
-                        >
-                          Thêm tài khoản
-                        </button>
+                  )}
+
+                  {!isDone &&
+                    payPrice -
+                      (priceAll +
+                        otherFeePrice -
+                        depositPrice -
+                        discountPrice) >
+                      0 && (
+                      <div className="flex mt-2">
+                        <div className="mr-auto my-auto">
+                          Tiền thừa trả khách
+                        </div>
+                        <div className="ml-auto">
+                          {(
+                            payPrice -
+                            (priceAll +
+                              otherFeePrice -
+                              depositPrice -
+                              discountPrice)
+                          ).toLocaleString()}
+                        </div>
                       </div>
                     )}
-                  </div>
+                  {!isDone && (
+                    <div className="mt-4">
+                      <div className="flex">
+                        <RadioGroup
+                          value={payType}
+                          onChange={(e) => {
+                            setPayType(e.target.value);
+                          }}
+                          name="radio-buttons-group"
+                          sx={{
+                            display: "flex",
+                            flexDirection: "row",
+                          }}
+                        >
+                          <FormControlLabel
+                            value={1}
+                            control={<Radio />}
+                            label="Tiền mặt"
+                            sx={{
+                              "& .MuiFormControlLabel-label": {
+                                fontSize: "0.875rem",
+                              },
+                            }}
+                          />
+                          <FormControlLabel
+                            value={2}
+                            control={<Radio />}
+                            label="Chuyển khoản"
+                            sx={{
+                              "& .MuiFormControlLabel-label": {
+                                fontSize: "0.875rem",
+                              },
+                            }}
+                          />
+                        </RadioGroup>
+                      </div>
+                      {payType === "2" && (
+                        <div className="mt-2 flex">
+                          <div className="w-1/3">
+                            {payPrice > 0 && (
+                              <div ref={printQRRef} className="flex">
+                                <img
+                                  src={imageUrl}
+                                  className="mx-auto"
+                                  alt="QR-CODE"
+                                />
+                              </div>
+                            )}
+                          </div>
+                          <div className="w-1/2">
+                            <Select
+                              sx={{ width: 230, height: 40 }}
+                              value={selectedAcc}
+                              onChange={(e) => {
+                                setSelectedAcc(e.target.value);
+                              }}
+                            >
+                              {listQR.length > 0 &&
+                                listQR.map((qr, index) => {
+                                  const nameBank = banks.find(
+                                    (bank) => bank.bin == qr.bankId
+                                  );
+                                  return (
+                                    <MenuItem
+                                      key={index}
+                                      value={qr.bankAccountId}
+                                    >
+                                      {nameBank &&
+                                        nameBank.code +
+                                          " - " +
+                                          qr.bankAccountName +
+                                          " - " +
+                                          qr.bankAccountNumber}
+                                    </MenuItem>
+                                  );
+                                })}
+                            </Select>
+                            <button
+                              type="button"
+                              className="rounded border h-10 border-green-500 mt-2 w-56 text-green-500 hover:bg-green-100"
+                              onClick={() => {
+                                setOpenNewAccBankModal(true);
+                              }}
+                            >
+                              Thêm tài khoản
+                            </button>
+                            {payPrice > 0 && (
+                              <button
+                                type="button"
+                                onClick={handleQRPrint}
+                                className="rounded border border-black p-1 mt-2"
+                              >
+                                In mã QR
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {invoiceReservation.length > 0 && (
                     <div className="mt-4 border-t-2 border-gray-500 border-dotted">
                       <div className="flex mt-4">
                         <div className="mr-auto">Lịch sử hoá đơn</div>
                       </div>
-                      <div className="mt-2 mx-2 rounded p-2 border border-gray-300 border-dotted flex">
-                        <div className="mr-auto">HD000001</div>
-                        <div className="ml-auto">1,000,000</div>
-                      </div>
+                      {invoiceReservation.map((invoice) => {
+                        return (
+                          <div className="mt-2 mx-1 rounded py-1 px-2 border border-gray-300 border-dotted flex">
+                            <div className="mr-auto">
+                              {invoice.invoiceId}
+                              <div className="text-xs">
+                                {dayjs(invoice.createdDate).format(
+                                  "DD/MM/YYYY HH:mm"
+                                )}
+                              </div>
+                            </div>
+                            <div className="ml-auto font-bold">
+                              {(
+                                invoice.total + invoice.priceOther
+                              ).toLocaleString()}
+                              <div className="text-right">
+                                <button
+                                  type="button"
+                                  className="ml-auto hover:text-green-500"
+                                  onMouseOver={() =>
+                                    setSelectedInvoiceReservationId(
+                                      invoice.invoiceId
+                                    )
+                                  }
+                                  onMouseLeave={() =>
+                                    setSelectedInvoiceReservationId(null)
+                                  }
+                                  onClick={handleInvoicePrint}
+                                >
+                                  <i className="fa-solid fa-print"></i>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
               </div>
             </div>
-            {listNotCheckOut.length > 0 ? (
+            {listNotCheckOut.length > 0
+              ? !isDone && (
+                  <div className="flex pt-5 absolute bottom-0 right-0">
+                    <div className="mr-10 mb-10 ml-auto">
+                      <input
+                        type="hidden"
+                        name="addDeposit"
+                        defaultValue={true}
+                      />
+                      <button
+                        type={payPrice > 0 ? "" : "button"}
+                        className="bg-white border border-green-500 text-green-500 py-2 px-6 rounded hover:bg-green-200"
+                        onClick={() => {
+                          if (priceAll <= depositPrice) {
+                            props.onClose();
+                          }
+                          if (priceAll > depositPrice && payPrice <= 0) {
+                            Swal.fire({
+                              position: "bottom",
+                              html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Xin hãy nhập tiền cọc!</button>`,
+                              showConfirmButton: false,
+                              background: "transparent",
+                              backdrop: "none",
+                              timer: 2500,
+                            });
+                          }
+                        }}
+                      >
+                        Lưu
+                      </button>
+                      <button
+                        type="button"
+                        className="text-white ml-5 border border-red-500 bg-red-500 py-2 px-6 rounded hover:bg-red-600"
+                        onClick={() => props.onClose()}
+                      >
+                        Huỷ bỏ
+                      </button>
+                    </div>
+                  </div>
+                )
+              : !isDone && (
+                  <div className="flex pt-5 absolute bottom-0 right-0">
+                    <div className="mr-10 mb-10 ml-auto">
+                      <input
+                        type="hidden"
+                        name="addDoneReservation"
+                        defaultValue={true}
+                      />
+                      <button
+                        type={
+                          payPrice >
+                          priceAll +
+                            otherFeePrice -
+                            depositPrice -
+                            discountPrice
+                            ? ""
+                            : "button"
+                        }
+                        className="bg-green-500 text-white py-2 px-6 rounded hover:bg-green-600"
+                        onClick={() => {
+                          if (priceAll > depositPrice && payPrice <= 0) {
+                            Swal.fire({
+                              position: "bottom",
+                              html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Xin hãy nhập đủ tiền thanh toán!</button>`,
+                              showConfirmButton: false,
+                              background: "transparent",
+                              backdrop: "none",
+                              timer: 2500,
+                            });
+                          }
+                        }}
+                      >
+                        Hoàn thành
+                      </button>
+                      <button
+                        type="button"
+                        className="text-white ml-5 border border-red-500 bg-red-500 py-2 px-6 rounded hover:bg-red-600"
+                        onClick={() => props.onClose()}
+                      >
+                        Huỷ bỏ
+                      </button>
+                    </div>
+                  </div>
+                )}
+            {isDone && (
               <div className="flex pt-5 absolute bottom-0 right-0">
                 <div className="mr-10 mb-10 ml-auto">
-                  <button className="bg-white border border-green-500 text-green-500 py-2 px-6 rounded hover:bg-green-200">
-                    Lưu
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex pt-5 absolute bottom-0 right-0">
-                <div className="mr-10 mb-10 ml-auto">
-                  <button className="bg-green-500 text-white py-2 px-6 rounded hover:bg-green-600">
-                    Hoàn thành
+                  <button
+                    type="button"
+                    className="text-white ml-5 border border-gray-500 bg-gray-500 py-2 px-6 rounded hover:bg-gray-600"
+                    onClick={() => props.onClose()}
+                  >
+                    Đóng
                   </button>
                 </div>
               </div>
@@ -476,12 +944,11 @@ function PaymentModal(props) {
             props.onClose();
           }}
           onClose={() => setOpenCreateInvoice(false)}
-          reservation={reservation}
+          customer={reservation.reservation.customer}
           listCheckout={listCheckout}
-          otherFees={otherFees}
+          reservationId={reservation.reservation.reservationId}
+          depositPrice={depositPrice}
           invoices={invoices}
-          listSurchage={listSurchage}
-          listQR={listQR}
           banks={banks}
         />
       )}
@@ -499,13 +966,81 @@ function PaymentModal(props) {
           banks={banks}
         />
       )}
+      {invoiceReservation.length > 0 && (
+        <div className="hidden">
+          <div ref={printInvoiceRef}>
+            {invoiceReservation.map((invoice) => {
+              return (
+                <div
+                  className={`${
+                    invoice.invoiceId === selectedInvoiceReservationId
+                      ? ""
+                      : "hidden"
+                  } m-10`}
+                >
+                  <p>Tên khách sạn: Khách sạn Văn Lâm</p>
+                  <p>Điện thoại: 0981987625</p>
+                  <div className="mt-4 border-t border-black border-dotted">
+                    Ngày xuất phiếu: {dayjs().format("DD/MM/YYYY HH:mm")}
+                  </div>
+                  <div className="mt-4">
+                    <div className="font-bold text-center">
+                      <h2>HOÁ ĐƠN BÁN HÀNG</h2>
+                      <p className="text-sm">{invoice.invoiceId}</p>
+                    </div>
+                    <div>
+                      <p>
+                        Khách hàng:{" "}
+                        {reservation.reservation.customer
+                          ? reservation.reservation.customer.customerName
+                          : "Khách lẻ"}
+                      </p>
+                      <p>
+                        Mã đặt phòng: {reservation.reservation.reservationId}
+                      </p>
+                      <p>Thu ngân: </p>
+                    </div>
+                    <div className="flex mt-4">
+                      <div className="ml-auto mr-10">Tổng tiền hàng: </div>
+                      <div className="w-32 text-right"></div>
+                    </div>
+                    <div className="flex">
+                      <div className="ml-auto mr-10">Chiếu khấu: </div>
+                      <div className="w-32 text-right">0</div>
+                    </div>
+                    <div className="flex">
+                      <div className="ml-auto mr-10">Tổng cộng: </div>
+                      <div className="w-32 text-right"></div>
+                    </div>
+                  </div>
+                  <div className="text-center mt-10 text-sm">
+                    Cảm ơn và hẹn gặp lại
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
       {openOtherFeeModal && (
         <OtherFeeModal
           open={openOtherFeeModal}
           onClose={() => setOpenOtherFeeModal(false)}
           otherFees={otherFees}
+          listFeeIds={listFeeIds}
           invoicePrice={priceAll}
           changePrice={handleOtherFeeChange}
+        />
+      )}
+      {openFundBooksModal && (
+        <FuncBooksModal
+          open={openFundBooksModal}
+          onClose={() => setOpenFundBooksModal(false)}
+          name={
+            "Đã thanh toán cho đặt phòng - " +
+            reservation.reservation.reservationId
+          }
+          listFunds={listFunds.filter((fund) => fund.value > 0)}
         />
       )}
     </>

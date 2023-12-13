@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Tooltip } from "react-tooltip";
 import NewCustomer from "../Customer/NewCustomer";
 import EditCustomerModal from "../Customer/EditMoreInfoCustomer";
 
@@ -126,12 +125,6 @@ function SearchCustomer(props) {
           customer={props.customer}
         />
       )}
-      <Tooltip anchorSelect=".add-customer" place="right">
-        Thêm khách hàng
-      </Tooltip>
-      <Tooltip anchorSelect=".remove-customer" place="right">
-        Xoá khách hàng
-      </Tooltip>
     </div>
   );
 }

@@ -33,6 +33,19 @@ async function loadCategories() {
   return response.data;
 }
 
+async function loadListFundsById(id) {
+  const response = await axiosPrivate.get(
+    "reservation/get_fund_book_by_reservation?reservationId=" + id
+  );
+  if (response.data.success) {
+    return response.data.result;
+  } else {
+    Swal.close();
+    window.location.href = "/error";
+    return;
+  }
+}
+
 async function loadReservationById(id) {
   const response = await axiosPrivate.get("reservation/" + id);
   if (response.data.success) {
@@ -104,6 +117,19 @@ async function loadOtherRevenue() {
   }
 }
 
+async function loadDeposit() {
+  const response = await axiosPrivate.get("policy/SETUP_DEPOSIT").catch((e) => {
+    console.log(e);
+  });
+  if (response.data.success) {
+    return response.data.result;
+  } else {
+    Swal.close();
+    window.location.href = "/error";
+    return;
+  }
+}
+
 async function loadInvoiceReservation(id) {
   const response = await axiosPrivate.get("invoice/reservation/" + id);
   if (response.data.success) {
@@ -128,6 +154,19 @@ async function loadListSurchage(id) {
   }
 }
 
+async function loadPoints() {
+  const response = await axiosPrivate
+    .get("policy/PROMOTION_POLICY")
+    .catch((e) => {
+      console.log(e);
+    });
+  if (response.data.success) {
+    return response.data.result;
+  } else {
+    return redirect("/login");
+  }
+}
+
 export async function loader({ request, params }) {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -147,6 +186,7 @@ export async function loader({ request, params }) {
   });
   try {
     const timeUsing = await loadTimeUsing();
+    const points = await loadPoints();
     const customerGroups = await loadCustomerGroup();
     const goodsUnit = await loadGoodsUnit();
     const categories = await loadCategories();
@@ -155,12 +195,15 @@ export async function loader({ request, params }) {
     const customers = await loadCustomers();
     const listQR = await loadListQR();
     const otherFees = await loadOtherRevenue();
+    const deposit = await loadDeposit();
+    const listFunds = await loadListFundsById(id);
     const invoiceReservation = await loadInvoiceReservation(id);
     const listSurchage = await loadListSurchage(id);
     const reservation = await loadReservationById(id);
     return defer(
       {
         timeUsing,
+        points,
         customerGroups,
         goodsUnit,
         categories,
@@ -169,6 +212,8 @@ export async function loader({ request, params }) {
         customers,
         listQR,
         otherFees,
+        deposit,
+        listFunds,
         invoiceReservation,
         listSurchage,
         reservation,
@@ -198,12 +243,11 @@ export async function action({ request }) {
   const reservationId = data.get("reservationId");
   let listRoom = [];
   if (data.get("isReservation")) {
-    const formReser = new FormData();
-    if (data.get("customerId")) {
-      formReser.append("customerId", data.get("customerId"));
-    } else {
-      formReser.append("customerId", "C000000");
+    if (data.get("customerId") === null) {
+      return { success: true, isNotCustomer: true };
     }
+    const formReser = new FormData();
+    formReser.append("customerId", data.get("customerId"));
     if (data.get("priceListId")) {
       if (data.get("priceListId") === "0") {
         formReser.append("priceListId", "BG000000");
@@ -286,25 +330,10 @@ export async function action({ request }) {
           "Content-Type": "multipart/form-data",
         },
       })
-      .then((response) => {
-        Swal.fire({
-          position: "center",
-          icon: "success",
-          title: "Thêm khách hàng thành công",
-          showConfirmButton: false,
-          timer: 1500,
-        });
-      })
       .catch((e) => {
-        Swal.fire({
-          position: "center",
-          icon: "error",
-          title: "Thêm khách hàng thất bại",
-          showConfirmButton: false,
-          timer: 1500,
-        });
+        console.log(e);
       });
-    return { success: true };
+    return { success: true, addCustomer: response.data };
   }
   if (data.get("editMainCustomer")) {
     const formData = new FormData();
@@ -325,25 +354,10 @@ export async function action({ request }) {
           "Content-Type": "multipart/form-data",
         },
       })
-      .then((response) => {
-        Swal.fire({
-          position: "center",
-          icon: "success",
-          title: "Chỉnh sửa khách hàng thành công",
-          showConfirmButton: false,
-          timer: 1500,
-        });
-      })
       .catch((e) => {
-        Swal.fire({
-          position: "center",
-          icon: "error",
-          title: "Chỉnh sửa khách hàng thất bại",
-          showConfirmButton: false,
-          timer: 1500,
-        });
+        console.log(e);
       });
-    return { success: true };
+    return { success: true, editCustomer: response.data };
   }
   if (data.get("isVisitor")) {
     //Add visitor in reservation details
@@ -538,10 +552,14 @@ export async function action({ request }) {
           `orderDetailDTOList[${i}].goodsId`,
           data.get("goodsId" + i)
         );
+        console.log(data.get("goodsId" + i));
         formData.append(
           `orderDetailDTOList[${i}].goodsUnitId`,
           data.get("goodsUnitId" + i)
         );
+        console.log(data.get("goodsUnitId" + i));
+        console.log(data.get("price" + i));
+        console.log(data.get("number" + i));
         formData.append(
           `orderDetailDTOList[${i}].price`,
           data.get("price" + i)
@@ -551,6 +569,7 @@ export async function action({ request }) {
           data.get("number" + i)
         );
       }
+      // return { success: true };
       const response = await axiosPrivate
         .put("order/" + data.get("orderId"), formData)
         .catch((e) => {
@@ -694,7 +713,7 @@ export async function action({ request }) {
     return { success: true };
   }
 
-  //Change status room to checkout
+  //Add account bank
   if (data.get("isAddAccountBank")) {
     const formAccount = new FormData();
     formAccount.append("bankId", data.get("bankId"));
@@ -725,20 +744,58 @@ export async function action({ request }) {
     }
     formInvoice.append("invoiceDTO.total", data.get("total"));
     formInvoice.append("invoiceDTO.discount", data.get("discount"));
-    formInvoice.append("invoiceDTO.priceOther", data.get("priceOther"));
+    formInvoice.append("invoiceDTO.prePail", data.get("prePail"));
     formInvoice.append(
       "invoiceDTO.paidMethod",
       data.get("paidMethod") === "1" ? "CASH" : "TRANSFER"
     );
-    // const response = await axiosPrivate
-    //   .post("invoice/reservation", formInvoice)
-    //   .catch((e) => {
-    //     console.log(e);
-    //   });
-
-    window.print();
+    formInvoice.append("invoiceDTO.priceOther", data.get("priceOther"));
+    formInvoice.append("invoiceDTO.customerId", data.get("customerId"));
+    formInvoice.append(
+      "invoiceDTO.transactionCode",
+      data.get("transactionCode")
+    );
+    formInvoice.append("invoiceDTO.usePoint", data.get("usePoint"));
+    // console.log(data.get("total"));
+    // console.log(data.get("discount"));
+    // console.log(data.get("prePail"));
+    // console.log(data.get("paidMethod"));
+    // console.log(data.get("priceOther"));
+    // console.log(data.get("customerId"));
+    // console.log(data.get("transactionCode"));
+    // console.log(data.get("usePoint"));
+    const response = await axiosPrivate
+      .post("invoice/reservation", formInvoice)
+      .catch((e) => {
+        console.log(e);
+      });
+    console.log(response);
     return { success: true, isCreateInvoiceRoom: true };
     return redirect("/listReservation");
+  }
+  //Add deposit
+  if (data.get("addDeposit")) {
+    let payPrice = Number(data.get("payPrice"));
+    let depositPrice = Number(data.get("depositPrice"));
+    const formDeposit = new FormData();
+    const priceAll = Number(data.get("priceAll"));
+    if (payPrice > priceAll - depositPrice) {
+      payPrice = priceAll - depositPrice;
+    }
+    formDeposit.append("reservationId", data.get("reservationId"));
+    formDeposit.append("money", payPrice);
+    formDeposit.append(
+      "paidMethod",
+      data.get("payType") === "1" ? "CASH" : "TRANSFER"
+    );
+    formDeposit.append("transactionCode", data.get("transactionCode"));
+    const response = await axiosPrivate
+      .post("fund-book/create_fund_book_by_deposit", formDeposit)
+      .catch((e) => {
+        console.log(e);
+        Swal.close();
+      });
+    return { success: true, addDeposit: response };
   }
 
   return { success: true };

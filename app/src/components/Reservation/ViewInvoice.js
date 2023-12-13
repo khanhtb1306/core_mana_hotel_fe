@@ -43,7 +43,7 @@ function ViewInvoice(props) {
             >
               {invoice.order.status === "UNCONFIRMED" && "Chưa xác nhận"}
               {invoice.order.status === "CONFIRMED" && "Xác nhận"}
-              {invoice.order.status === "PAID" && "Đã trả"}
+              {invoice.order.status === "PAID" && "Đã thanh toán"}
               {invoice.order.status === "CANCEL_ORDER" && "Huỷ hoá đơn"}
             </span>
           </div>

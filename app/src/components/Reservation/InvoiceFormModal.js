@@ -8,8 +8,8 @@ function InvoiceFormModal(props) {
   const [isGoods, setIsGoods] = useState(true);
   const invoice = props.invoice;
   const reservationDetail = props.reservationDetail;
-  console.log(reservationDetail);
-  console.log(invoice);
+  // console.log(reservationDetail);
+  // console.log(invoice);
   // console.log(goodsUnit);
   const productUnit = goodsUnit.filter((unit) => unit.goods.goodsCategory);
   const service = goodsUnit.filter((unit) => !unit.goods.goodsCategory);
@@ -18,6 +18,7 @@ function InvoiceFormModal(props) {
     array = goodsUnit
       .filter((unit) => {
         for (const stock of invoice.listOrderDetailByOrder) {
+          // console.log(stock);
           if (stock.orderDetail.goodsUnit.goodsUnitId === unit.goodsUnitId) {
             return true;
           }
@@ -27,9 +28,12 @@ function InvoiceFormModal(props) {
       .map((unit, index) => {
         return {
           ...unit,
-          number: invoice.listOrderDetailByOrder[index].orderDetail.quantity,
+          number: invoice.listOrderDetailByOrder.find(
+            (good) => (good.orderDetail.goodsUnit.goodsUnitId === unit.goodsUnitId)
+          ).orderDetail.quantity,
         };
       });
+    // console.log(array);
   }
   const [products, setProducts] = useState(array);
   // console.log(products);

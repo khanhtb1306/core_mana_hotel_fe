@@ -34,7 +34,10 @@ import AddReservationPage, {
   loader as loadNewReservation,
   action as actionNewReservation,
 } from "./pages/Reservation/addReservation";
-import AddInvoicePage from "./pages/Invoice/addInvoice";
+import AddInvoicePage, {
+  loader as loadInvoice,
+  action as actionInvoice,
+} from "./pages/Invoice/addInvoice";
 import ForgetPasswordPage, {
   action as actionSendEmail,
 } from "./pages/Authentication/forgetPassword";
@@ -64,7 +67,7 @@ import OverviewManagementPage, {
   loader as loadOverview,
 } from "./pages/OverviewManagementPage";
 import TransactionManagementPage, {
-  loader as loadTransaction
+  loader as loadTransaction,
 } from "./pages/TransactionManagement";
 import ImportManagementPage, {
 } from "./pages/ImportManagement";
@@ -121,7 +124,6 @@ const routesForManager = [
     path: "transactionManagement",
     element: <TransactionManagementPage />,
     loader: loadTransaction,
-
   },
   {
     path: "importManagement",
@@ -198,6 +200,8 @@ const routesForReceptionist = [
   {
     path: "addInvoice",
     element: <AddInvoicePage />,
+    loader: loadInvoice,
+    action: actionInvoice,
   },
   {
     path: "account",

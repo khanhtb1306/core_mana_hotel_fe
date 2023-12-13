@@ -332,6 +332,52 @@ function SelectRoom(props) {
     fetchLateSurchange();
   }, [lateCheckout, isPaidLateCheckout]);
 
+  let timeUse = "";
+  if (typeTime === 1) {
+    if (dayjs().diff(fromTime, "hour") > 0) {
+      timeUse += dayjs().diff(fromTime, "hour") + " giờ";
+      timeUse += " ";
+    }
+    timeUse +=
+      dayjs().diff(fromTime, "minute") -
+      dayjs().diff(fromTime, "hour") * 60 +
+      " phút";
+  } else if (typeTime === 2) {
+    if (dayjs().diff(fromTime, "day") > 0) {
+      timeUse += dayjs().diff(fromTime, "day") + " ngày";
+      if (
+        getlateCheckout(typeTime, fromTime, dayjs(), timeUsing) +
+          getSoonCheckin(typeTime, fromTime, timeUsing) >
+        0
+      ) {
+        timeUse += " ";
+        timeUse +=
+          getlateCheckout(typeTime, fromTime, dayjs(), timeUsing) +
+          getSoonCheckin(typeTime, fromTime, timeUsing) +
+          "  giờ";
+      }
+    } else {
+      timeUse += dayjs().diff(fromTime, "hour") + " giờ";
+    }
+  } else {
+    if (dayjs().diff(fromTime, "day") > 0) {
+      timeUse += 1 + " đêm";
+      if (
+        getlateCheckout(typeTime, fromTime, dayjs(), timeUsing) +
+          getSoonCheckin(typeTime, fromTime, timeUsing) >
+        0
+      ) {
+        timeUse += " ";
+        timeUse +=
+          getlateCheckout(typeTime, fromTime, dayjs(), timeUsing) +
+          getSoonCheckin(typeTime, fromTime, timeUsing) +
+          "  giờ";
+      }
+    } else {
+      timeUse += dayjs().diff(fromTime, "hour") + " giờ";
+    }
+  }
+
   return (
     <div className="bg-white shadow-md rounded-lg border p-4">
       <div>
@@ -577,47 +623,13 @@ function SelectRoom(props) {
                   <p className="text-gray-500 my-auto mr-2">
                     Dùng đến hiện tại:{" "}
                   </p>
-                  <p className="text-green-500 my-auto">
-                    {typeTime === 1
-                      ? `${dayjs().diff(fromTime, "hour")} giờ ${
-                          dayjs().diff(fromTime, "minute") -
-                          dayjs().diff(fromTime, "hour") * 60
-                        } phút`
-                      : typeTime === 2
-                      ? `${dayjs().diff(
-                          fromTime.hour(priceDayStart),
-                          "day"
-                        )} ngày ${dayjs().diff(
-                          fromTime.add(
-                            dayjs().diff(fromTime.hour(priceDayStart), "day"),
-                            "day"
-                          ),
-                          "hour"
-                        )} giờ`
-                      : dayjs().diff(
-                          fromTime.add(1, "day").hour(priceNightEnd),
-                          "hour"
-                        ) > 0
-                      ? `${
-                          getTimePrice(
-                            typeTime,
-                            fromTime,
-                            dayjs(),
-                            timeUsing,
-                            props.price
-                          ).time
-                        } đêm ${dayjs().diff(
-                          fromTime.add(1, "day").hour(priceNightEnd),
-                          "hour"
-                        )} giờ`
-                      : `${dayjs().diff(fromTime, "hour")} giờ`}
-                  </p>
+                  <p className="text-green-500 my-auto">{timeUse}</p>
                 </div>
               </>
             )}
             {(room.status === "CHECK_OUT" || room.status === "DONE") && (
               <div className="flex">
-                <p className="text-gray-500 my-auto mr-2">Thức tế:</p>
+                <p className="text-gray-500 my-auto mr-2">Thực tế:</p>
                 <div className="pr-2">
                   <DateTimePicker
                     ampm={false}
@@ -641,7 +653,8 @@ function SelectRoom(props) {
                   {valueTime +
                     " " +
                     (typeTime === 1 ? "Giờ" : typeTime === 2 ? "Ngày" : "Đêm")}
-                  {(lateCheckout > 0 || soonCheckin > 0) &&
+                  {toTime.diff(fromTime, "day") > 0 &&
+                    (lateCheckout > 0 || soonCheckin > 0) &&
                     " " + (lateCheckout + soonCheckin) + " Giờ"}
                 </div>
               </div>

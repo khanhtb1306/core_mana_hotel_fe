@@ -4,7 +4,7 @@ import { Form } from "react-router-dom";
 function PointModal(props) {
   const points = props.points;
   const details = points.LIST_SETUP_POINT_SYSTEM_DETAIL;
-//   console.log(points);
+  //   console.log(points);
   return (
     <Form method="put" onSubmit={props.onClose}>
       <Modal open={props.open} onClose={props.onClose} size="w-4/12 h-.5/6">
@@ -26,7 +26,7 @@ function PointModal(props) {
                 defaultValue={details[0].policyDetailId}
               />
             )}
-            Điểm thưởng{" "}
+            Hoá đơn đủ{" "}
             <input
               className="border-0 border-b border-gray-500 w-40 focus:border-b-2 focus:border-green-500 focus:ring-0"
               type="number"
