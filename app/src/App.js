@@ -6,24 +6,6 @@ import { viVN } from "@mui/x-date-pickers/locales";
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyC9L9FyaVE1CNELEF78ovUo55ZCbypvwS0",
-  authDomain: "manahotel-g41.firebaseapp.com",
-  projectId: "manahotel-g41",
-  storageBucket: "manahotel-g41.appspot.com",
-  messagingSenderId: "686275453200",
-  appId: "1:686275453200:web:05528a5433a9828c3b0595",
-  measurementId: "G-LDRFDCHEHF"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 import RootLayout from "./pages/RootLayout";
 import ErrorPage from "./pages/Error";
 import LoginPage, { action as loginAction } from "./pages/Authentication/login";
@@ -108,6 +90,24 @@ import InforManagementPage, {
   action as actionInforManagement,
 } from "./pages/InforManagement";
 
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyC9L9FyaVE1CNELEF78ovUo55ZCbypvwS0",
+  authDomain: "manahotel-g41.firebaseapp.com",
+  projectId: "manahotel-g41",
+  storageBucket: "manahotel-g41.appspot.com",
+  messagingSenderId: "686275453200",
+  appId: "1:686275453200:web:05528a5433a9828c3b0595",
+  measurementId: "G-LDRFDCHEHF"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 const routesForManager = [
   {
     index: true,
