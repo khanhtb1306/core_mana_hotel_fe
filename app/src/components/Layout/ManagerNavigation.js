@@ -82,7 +82,7 @@ function ManagerNavigation() {
             icon="fa-solid fa-box"
             isActive={
                 location.pathname === "/manager/transactionManagement" ||
-                location.pathname === "/manager/stocktakeManagement"
+                location.pathname === "/manager/importManagement"
             }
             list={[
               {
@@ -95,7 +95,7 @@ function ManagerNavigation() {
                 name: "Nhập hàng",
                 icon: "fa-solid fa-warehouse",
                 link: "/manager/importManagement",
-                isActive: location.pathname === "/manager/stocktakeManagement",
+                isActive: location.pathname === "/manager/importManagement",
               },
             ]}
 

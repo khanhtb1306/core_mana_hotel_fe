@@ -45,7 +45,6 @@ function FundBookManagementPage() {
   ];
 
 
-  console.log(dataSummary);
 
   useEffect(() => {
     async function fetchListInvoices() {

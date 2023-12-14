@@ -712,7 +712,7 @@ const OverviewPage = () => {
                 <div className="flex">
                     <div className="w-8/12 flex">
                             <div className="pr-5">
-                                <p className="text-lg"> TOP 10 HẠNG PHÒNG TUẦN NÀY </p>
+                                <p className="text-lg"> TOP 10 HẠNG PHÒNG </p>
                             </div>
                             <div className="w-4/12 flex items-center">
                                 <select
