@@ -2,21 +2,20 @@ import { Form, useLoaderData } from "react-router-dom";
 import Modal from "../UI/Modal";
 import ImageInput from "../UI/ImageInput";
 import { useState } from "react";
-import NewGroupCustomer from "../NewGroupCustomer";
 import dayjs from "dayjs";
+import Swal from "sweetalert2";
 
 function AddOrEditVisitor(props) {
   const { customerGroups } = useLoaderData();
+  const canAddAdult = props.canAddAdult;
+  const canAddChildren = props.canAddChildren;
   const visitor = props.visitor;
   const reservationDetail = props.reservationDetail;
   // console.log(visitor);
   const [dob, setDob] = useState(
-    visitor ? dayjs(visitor.dob).format("YYYY-MM-DD") : null
+    visitor ? dayjs(visitor.dob).format("YYYY-MM-DD") : dayjs()
   );
-  const [age, setAge] = useState(
-    visitor ? dayjs().diff(dayjs(visitor.dob), "year") : null
-  );
-  const [openNewGroupCusModal, setOpenNewGroupCusModal] = useState(false);
+  let age = dayjs().diff(dob, "year");
   return (
     <>
       <Form
@@ -24,7 +23,12 @@ function AddOrEditVisitor(props) {
         onSubmit={props.onClose}
         encType="multipart/form-data"
       >
-        <Modal open={props.open} onClose={props.onClose} size="w-8/12 h-.5/6">
+        <Modal
+          open={props.open}
+          onClose={props.onClose}
+          button={true}
+          size="w-8/12 h-.5/6"
+        >
           <div className="p-2 w-full">
             <div>
               <h1 className="text-lg pb-5 font-bold">{props.name}</h1>
@@ -65,8 +69,8 @@ function AddOrEditVisitor(props) {
                     visitor
                       ? visitor.image
                         ? `data:image/png;base64,${visitor.image}`
-                        : ""
-                      : ""
+                        : null
+                      : null
                   }
                 />
               </div>
@@ -108,7 +112,7 @@ function AddOrEditVisitor(props) {
                     </td>
                     <td className="w-9/12">
                       <select
-                        className="border-0 border-b border-gray-500 w-11/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                        className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                         name="customerGroupId"
                         defaultValue={
                           visitor
@@ -126,13 +130,6 @@ function AddOrEditVisitor(props) {
                           );
                         })}
                       </select>
-                      <button
-                        type="button"
-                        className="w-1/12 text-2xl text-gray-500"
-                        onClick={() => setOpenNewGroupCusModal(true)}
-                      >
-                        <i className="fa-solid fa-plus"></i>
-                      </button>
                     </td>
                   </tr>
                   <tr>
@@ -185,7 +182,6 @@ function AddOrEditVisitor(props) {
                         name="dob"
                         value={dob}
                         onChange={(e) => {
-                          setAge(dayjs().diff(dayjs(e.target.value), "year"));
                           setDob(e.target.value);
                         }}
                         required
@@ -286,14 +282,56 @@ function AddOrEditVisitor(props) {
               </table>
             </div>
           </div>
+          <div className="flex pt-5">
+            <div className="ml-auto">
+              <button
+                type={
+                  (canAddAdult && age >= 16 && age < 100) ||
+                  (canAddChildren && age < 16 && age > 0)
+                    ? ""
+                    : "button"
+                }
+                className="bg-green-500 mr-2 py-2 px-6 text-white rounded hover:bg-green-600"
+                onClick={() => {
+                  if (
+                    (canAddAdult && age >= 16) ||
+                    (canAddChildren && age < 16)
+                  ) {
+                  } else {
+                    let mes = "";
+                    if (!canAddAdult) {
+                      mes = "Người lớn trong phòng đã đạt tối đa!";
+                    }
+                    if (!canAddChildren) {
+                      mes = "Trẻ em trong phòng đã đạt tối đa!";
+                    }
+                    if (age >= 100 || age <= 0) {
+                      mes = "Xin hãy nhập đúng tuổi!";
+                    }
+                    Swal.fire({
+                      position: "bottom",
+                      html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">${mes}</button>`,
+                      showConfirmButton: false,
+                      background: "transparent",
+                      backdrop: "none",
+                      timer: 2500,
+                    });
+                  }
+                }}
+              >
+                Xong
+              </button>
+              <button
+                type="button"
+                className="bg-gray-400 py-2 px-6 text-white rounded hover:bg-gray-500"
+                onClick={() => props.onClose()}
+              >
+                Bỏ qua
+              </button>
+            </div>
+          </div>
         </Modal>
       </Form>
-      {openNewGroupCusModal && (
-        <NewGroupCustomer
-          open={openNewGroupCusModal}
-          onClose={() => setOpenNewGroupCusModal(false)}
-        />
-      )}
     </>
   );
 }

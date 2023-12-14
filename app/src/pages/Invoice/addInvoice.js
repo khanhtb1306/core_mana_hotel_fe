@@ -173,34 +173,32 @@ export async function action({ request }) {
   if (data.get("addRetailInvoice")) {
     const formData = new FormData();
     formData.append("invoiceDTO.total", data.get("totalPay"));
-    formData.append("invoiceDTO.discount", data.get("discount"));
     formData.append("invoiceDTO.paidMethod", data.get("paidMethod"));
     formData.append("invoiceDTO.priceOther", data.get("priceOther"));
     formData.append("invoiceDTO.customerId", data.get("customerId"));
+    formData.append("invoiceDTO.transactionCode", data.get("transactionCode"));
     const length = data.get("length");
     for (let i = 0; i < length; i++) {
-      console.log(data.get("goodsId" + i));
       formData.append(
         `orderDetailDTOList[${i}].goodsId`,
         data.get("goodsId" + i)
       );
       formData.append(
-        `orderDetailDTOList[${i}].goodsUnitId`,
-        data.get("goodsUnitId" + i)
-      );
-      formData.append(`orderDetailDTOList[${i}].price`, data.get("price" + i));
-      formData.append(
         `orderDetailDTOList[${i}].quantity`,
         data.get("number" + i)
       );
+      formData.append(`orderDetailDTOList[${i}].price`, data.get("price" + i));
+      formData.append(
+        `orderDetailDTOList[${i}].goodsUnitId`,
+        data.get("goodsUnitId" + i)
+      );
     }
-    Swal.close();
-    return redirect("/listReservation");
     const response = await axiosPrivate
       .post("invoice/purchase", formData)
       .catch((e) => {
         console.log(e);
       });
+    Swal.close();
     return redirect("/listReservation");
   }
 

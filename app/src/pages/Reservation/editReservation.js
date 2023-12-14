@@ -37,8 +37,9 @@ async function loadListFundsById(id) {
   const response = await axiosPrivate.get(
     "reservation/get_fund_book_by_reservation?reservationId=" + id
   );
+  console.log(response);
   if (response.data.success) {
-    return response.data.result;
+    return response.data.result ? response.data.result : [];
   } else {
     Swal.close();
     window.location.href = "/error";
@@ -301,16 +302,16 @@ export async function action({ request }) {
       return { success: true, listRoom: listRoom };
     }
   }
-  if (data.get("isAddGroup")) {
-    const formData = new FormData();
-    formData.append("customerGroupName", data.get("groupCusName"));
-    const response = await axiosPrivate
-      .post("customer/customerGroup", formData)
-      .catch((e) => {
-        console.log(e);
-      });
-    return { success: true };
-  }
+  // if (data.get("isAddGroup")) {
+  //   const formData = new FormData();
+  //   formData.append("customerGroupName", data.get("groupCusName"));
+  //   const response = await axiosPrivate
+  //     .post("customer/customerGroup", formData)
+  //     .catch((e) => {
+  //       console.log(e);
+  //     });
+  //   return { success: true };
+  // }
   if (data.get("newMainCustomer")) {
     const formData = new FormData();
     formData.append("customerName", data.get("customerName"));
@@ -366,7 +367,10 @@ export async function action({ request }) {
       formData.append("customerName", data.get("customerName"));
       formData.append("customerGroupId", data.get("customerGroupId"));
       formData.append("phoneNumber", data.get("phoneNumber"));
-      formData.append("dob", new Date(data.get("dob")).toISOString());
+      formData.append(
+        "dob",
+        dayjs(data.get("dob")).format("YYYY-MM-DD HH:mm:ss")
+      );
       formData.append("email", data.get("email"));
       formData.append("address", data.get("address"));
       formData.append("identity", data.get("identity"));
@@ -396,13 +400,12 @@ export async function action({ request }) {
         formData1.append("adult", data.get("isAdult"));
         await axiosPrivate
           .post("reservation-detail/reservation-detail-customer", formData1)
-          .then((e) => {
-            console.log(e);
-          })
           .catch((e) => {
             console.log(e);
           });
+        return { success: true };
       }
+      return { success: true, isSameIdentity: true };
     }
     //Edit visitor in reservation details
     if (method === "PUT") {
@@ -442,12 +445,10 @@ export async function action({ request }) {
         formData1.append("check", data.get("isChange"));
         await axiosPrivate
           .put("reservation-detail/reservation-detail-customer", formData1)
-          .then((e) => {
-            console.log(e);
-          })
           .catch((e) => {
             console.log(e);
           });
+        return { success: true };
       }
     }
     //Remove visitor in reservation details
@@ -466,6 +467,7 @@ export async function action({ request }) {
       await axiosPrivate.delete("customer/" + dataArray).catch((e) => {
         console.log(e);
       });
+      return { success: true };
     }
     return { success: true };
   }
@@ -552,14 +554,10 @@ export async function action({ request }) {
           `orderDetailDTOList[${i}].goodsId`,
           data.get("goodsId" + i)
         );
-        console.log(data.get("goodsId" + i));
         formData.append(
           `orderDetailDTOList[${i}].goodsUnitId`,
           data.get("goodsUnitId" + i)
         );
-        console.log(data.get("goodsUnitId" + i));
-        console.log(data.get("price" + i));
-        console.log(data.get("number" + i));
         formData.append(
           `orderDetailDTOList[${i}].price`,
           data.get("price" + i)
@@ -756,22 +754,16 @@ export async function action({ request }) {
       data.get("transactionCode")
     );
     formInvoice.append("invoiceDTO.usePoint", data.get("usePoint"));
-    // console.log(data.get("total"));
-    // console.log(data.get("discount"));
-    // console.log(data.get("prePail"));
-    // console.log(data.get("paidMethod"));
-    // console.log(data.get("priceOther"));
-    // console.log(data.get("customerId"));
-    // console.log(data.get("transactionCode"));
-    // console.log(data.get("usePoint"));
     const response = await axiosPrivate
       .post("invoice/reservation", formInvoice)
       .catch((e) => {
         console.log(e);
       });
     console.log(response);
-    return { success: true, isCreateInvoiceRoom: true };
-    return redirect("/listReservation");
+    return {
+      success: true,
+      isCreateInvoiceRoom: response && response.data.success,
+    };
   }
   //Add deposit
   if (data.get("addDeposit")) {
@@ -798,5 +790,46 @@ export async function action({ request }) {
     return { success: true, addDeposit: response };
   }
 
+  //Add deposit
+  if (data.get("addDoneReservation")) {
+    const formInvoice = new FormData();
+    const listReservationDetails = data
+      .get("listReservationDetails")
+      .split(",");
+    for (let i = 0; i < listReservationDetails.length; i++) {
+      formInvoice.append(
+        `reservationDetailDTO[${i}].reservationDetailId`,
+        listReservationDetails[i]
+      );
+      formInvoice.append(
+        `reservationDetailDTO[${i}].reservationId`,
+        data.get("reservationId")
+      );
+    }
+    formInvoice.append("invoiceDTO.total", data.get("priceCheckout"));
+    formInvoice.append("invoiceDTO.discount", data.get("discount"));
+    formInvoice.append("invoiceDTO.prePail", data.get("prePail"));
+    formInvoice.append(
+      "invoiceDTO.paidMethod",
+      data.get("payType") === "1" ? "CASH" : "TRANSFER"
+    );
+    formInvoice.append("invoiceDTO.priceOther", data.get("priceOther"));
+    formInvoice.append("invoiceDTO.customerId", data.get("customerId"));
+    formInvoice.append(
+      "invoiceDTO.transactionCode",
+      data.get("transactionCode")
+    );
+    formInvoice.append("invoiceDTO.usePoint", data.get("usePoint"));
+    formInvoice.append("invoiceDTO.totalReservationLate", data.get("priceAll"));
+    const response = await axiosPrivate
+      .post("invoice/reservation", formInvoice)
+      .catch((e) => {
+        console.log(e);
+      });
+    return {
+      success: true,
+      isDoneReservation: response && response.data.success,
+    };
+  }
   return { success: true };
 }

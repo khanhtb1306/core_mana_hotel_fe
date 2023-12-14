@@ -30,8 +30,14 @@ function ReservationForm(props) {
   const printBookingRef = useRef();
   const actionData = useActionData();
   const reservation = props.reservation;
+  const isDone =
+    reservation.listReservationDetails.length > 0
+      ? reservation.listReservationDetails.every(
+          (details) => details.status === "DONE"
+        )
+      : false;
   // console.log(invoices);
-  console.log(reservation);
+  // console.log(reservation);
   // console.log(categories);
   // console.log(listQR);
   const dayInWeek = ["2", "3", "4", "5", "6", "7", "8"];
@@ -612,6 +618,7 @@ function ReservationForm(props) {
             customer={customer}
             handleCustomerClick={handleCustomerClick}
             handleCustomerRemove={handleCustomerRemove}
+            disable={isDone}
           />
           <button
             type="button"
@@ -636,6 +643,7 @@ function ReservationForm(props) {
                   : allPrices[0].PriceList.priceListId
               }
               onChange={handlePriceBookChange}
+              disabled={isDone}
             >
               {allPrices.map((price) => {
                 const details = price.PriceList;
@@ -724,15 +732,17 @@ function ReservationForm(props) {
                   })}
                 </div>
               )}
+              {!isDone && (
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded-lg text-green-500 hover:bg-green-100"
+                  onClick={() => setOpenAddRoomModal(true)}
+                >
+                  <i className="fa-solid fa-circle-plus pr-2"></i>
+                  Phòng
+                </button>
+              )}
 
-              <button
-                type="button"
-                className="px-4 py-2 rounded-lg text-green-500 hover:bg-green-100"
-                onClick={() => setOpenAddRoomModal(true)}
-              >
-                <i className="fa-solid fa-circle-plus pr-2"></i>
-                Phòng
-              </button>
               {reservation.listReservationDetails.length === 0 && (
                 <button
                   type="button"
@@ -1006,11 +1016,13 @@ function ReservationForm(props) {
                       In
                     </button>
                   </div>
-                  <div>
-                    <button className="px-4 py-2 bg-white border border-green-500 rounded-lg text-green-500 mr-2 hover:bg-gray-100">
-                      Lưu
-                    </button>
-                  </div>
+                  {!isDone && (
+                    <div>
+                      <button className="px-4 py-2 bg-white border border-green-500 rounded-lg text-green-500 mr-2 hover:bg-gray-100">
+                        Lưu
+                      </button>
+                    </div>
+                  )}
                   <div>
                     <button
                       type={

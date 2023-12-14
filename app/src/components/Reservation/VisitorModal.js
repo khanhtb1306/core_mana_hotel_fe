@@ -4,6 +4,7 @@ import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
 import { useState } from "react";
 import AddOrEditVisitor from "./AddOrEditVisitor";
 import DeleteVisitor from "./DeleteVisitor";
+import { Checkbox, FormControlLabel } from "@mui/material";
 
 function VisitorModal(props) {
   const room = props.room;
@@ -14,6 +15,12 @@ function VisitorModal(props) {
   const childrenVisitors = visitors.filter(
     (visitor) => dayjs().diff(dayjs(visitor.customer.dob), "year") < 16
   );
+  const maxAdults = room.room.roomCategory.numMaxOfAdults;
+  const maxChildren = room.room.roomCategory.numMaxOfChildren;
+  const adults = room.room.roomCategory.numOfAdults;
+  const children = room.room.roomCategory.numOfChildren;
+  const curAdults = adultVisitors.length;
+  const curChildren = childrenVisitors.length;
 
   const [openAddVisitorModal, setOpenAddVisitorModal] = useState(false);
   const [openEditVisitorModal, setOpenEditVisitorModal] = useState(false);
@@ -63,10 +70,7 @@ function VisitorModal(props) {
   ];
 
   const rows = visitors.map((visitor) => {
-    const age =
-      dayjs().diff(dayjs(visitor.customer.dob), "year") >= 16
-        ? "Người lớn"
-        : "Trẻ em";
+    const age = dayjs().diff(dayjs(visitor.customer.dob), "year") + " tuổi";
     let checkin = dayjs();
     let checkout = dayjs();
     if (visitor.reservationDetail.status === "BOOKING") {
@@ -108,26 +112,37 @@ function VisitorModal(props) {
         size="w-8/12 h-.5/6"
       >
         <div className="p-2 w-full">
-          <div className="mb-5">
+          <div className="mb-3">
             <h1 className="text-lg pb-5 font-bold">
               Khách lưu trú - {room.room.roomName}
             </h1>
           </div>
           <div className="flex text-sm mb-2">
-            <h2 className="font-bold mr-8">Số lượng khách</h2>
-            <p className="mr-8">Người lớn: {adultVisitors.length}</p>
-            <p>Trẻ em: {childrenVisitors.length}</p>
+            <h2 className="font-bold mr-8">Số lượng khách hiện tại</h2>
+            <p className="mr-8">
+              Người lớn: {curAdults} / {maxAdults}
+            </p>
+            <p>
+              Trẻ em: {curChildren} / {maxChildren}
+            </p>
+          </div>
+          <div className="flex text-sm mb-2">
+            <h2 className="font-bold mr-8">Số lượng khách tiêu chuẩn</h2>
+            <p className="mr-8">Người lớn: {adults}</p>
+            <p>Trẻ em: {children}</p>
           </div>
           <div className="flex text-sm">
             <h2 className="font-bold">Thông tin chi tiết</h2>
-            <button
-              type="button"
-              className="ml-auto mb-4 text-white border py-1 px-3 rounded bg-green-500 hover:bg-green-600"
-              onClick={() => setOpenAddVisitorModal(true)}
-            >
-              <i className="fa-solid fa-plus mr-2"></i>
-              Thêm khách lưu trú
-            </button>
+            {(curAdults < maxAdults || curChildren < maxChildren) && (
+              <button
+                type="button"
+                className="ml-auto mb-4 text-white border py-1 px-3 rounded bg-green-500 hover:bg-green-600"
+                onClick={() => setOpenAddVisitorModal(true)}
+              >
+                <i className="fa-solid fa-plus mr-2"></i>
+                Thêm khách lưu trú
+              </button>
+            )}
           </div>
           <div>
             <DataGrid
@@ -158,6 +173,8 @@ function VisitorModal(props) {
           onClose={() => setOpenAddVisitorModal(false)}
           name="Thêm khách lưu trú"
           method="POST"
+          canAddAdult={curAdults < maxAdults}
+          canAddChildren={curChildren < maxChildren}
           visitor={null}
           reservationDetail={room}
         />
@@ -168,6 +185,8 @@ function VisitorModal(props) {
           onClose={() => setOpenEditVisitorModal(false)}
           name="Chỉnh sửa khách lưu trú"
           method="PUT"
+          canAddAdult={curAdults < maxAdults}
+          canAddChildren={curChildren < maxChildren}
           visitor={selectedVisitor.customer}
           reservationDetail={room}
         />

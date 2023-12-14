@@ -25,6 +25,19 @@ function SelectRoom(props) {
   const timeBonusDay = timeUsing.timeBonusDay;
   const timeBonusHour = timeUsing.timeBonusHour;
   const room = props.room;
+  const visitors = props.visitors;
+  const adultVisitors = visitors.filter(
+    (visitor) => dayjs().diff(dayjs(visitor.customer.dob), "year") >= 16
+  );
+  const childrenVisitors = visitors.filter(
+    (visitor) => dayjs().diff(dayjs(visitor.customer.dob), "year") < 16
+  );
+  const maxAdults = room.room.roomCategory.numMaxOfAdults;
+  const maxChildren = room.room.roomCategory.numMaxOfChildren;
+  const adults = room.room.roomCategory.numOfAdults;
+  const children = room.room.roomCategory.numOfChildren;
+  const curAdults = adultVisitors.length;
+  const curChildren = childrenVisitors.length;
   // console.log(room);
   const listRoomIdByRes = props.listRoomByRes.map((r) => r.room.roomId);
   const listRoomsByCate = categories.find(
@@ -85,8 +98,12 @@ function SelectRoom(props) {
   const [soonCheckin, setSoonCheckin] = useState(soonCheckIn);
   const [isPaidSoonCheckin, setIsPaidSoonCheckin] = useState(null);
   const [isPaidLateCheckout, setIsPaidLateCheckout] = useState(null);
+  const [isPaidOverAdults, setIsPaidOverAdults] = useState(null);
+  const [isPaidOverChildren, setIsPaidOverChildren] = useState(null);
   const [priceSoon, setPriceSoon] = useState(0);
   const [priceLate, setPriceLate] = useState(0);
+  const [priceAdults, setPriceAdults] = useState(0);
+  const [priceChildren, setPriceChildren] = useState(0);
   useEffect(() => {
     async function fetchRoomActive() {
       try {
@@ -96,11 +113,23 @@ function SelectRoom(props) {
         const isLateCheckout = await axiosPrivate.get(
           `reservation/get_control_policy_by_reservation_detail?reservationDetailId=${room.reservationDetailId}&policyName=LATER_OVERTIME_SURCHARGE`
         );
+        const isOverAdults = await axiosPrivate.get(
+          `reservation/get_control_policy_by_reservation_detail?reservationDetailId=${room.reservationDetailId}&policyName=ADDITIONAL_ADULT_SURCHARGE`
+        );
+        const isOverChildren = await axiosPrivate.get(
+          `reservation/get_control_policy_by_reservation_detail?reservationDetailId=${room.reservationDetailId}&policyName=ADDITIONAL_CHILDREN_SURCHARGE`
+        );
         if (isSoonCheckin.data.success && isSoonCheckin.data.result) {
           setIsPaidSoonCheckin(isSoonCheckin.data.result.status);
         }
         if (isLateCheckout.data.success && isLateCheckout.data.result) {
           setIsPaidLateCheckout(isLateCheckout.data.result.status);
+        }
+        if (isOverAdults.data.success && isOverAdults.data.result) {
+          setIsPaidOverAdults(isOverAdults.data.result.status);
+        }
+        if (isOverChildren.data.success && isOverChildren.data.result) {
+          setIsPaidOverAdults(isOverChildren.data.result.status);
         }
         setToTime(to);
         setFromTime(from);
@@ -295,7 +324,7 @@ function SelectRoom(props) {
               ? room.room.roomCategory.priceByDay
               : room.room.roomCategory.priceByNight;
           const response = await axiosPrivate.get(
-            `reservation/calculate-early-surcharge?reservationDetailId=${room.reservationDetailId}&roomCategoryId=${room.room.roomCategory.roomCategoryId}&lateTime=${soonCheckin}&roomPrice=${roomPrice}&status=${isPaidSoonCheckin}`
+            `reservation/calculate-early-surcharge?reservationDetailId=${room.reservationDetailId}&roomCategoryId=${room.room.roomCategory.roomCategoryId}&lateTime=${soonCheckin}&roomPrice=${roomPrice}&timeUse=${time}&status=${isPaidSoonCheckin}`
           );
           if (response.data.success) {
             setPriceSoon(response.data.result);
@@ -331,6 +360,75 @@ function SelectRoom(props) {
     }
     fetchLateSurchange();
   }, [lateCheckout, isPaidLateCheckout]);
+
+  useEffect(() => {
+    async function fetchOverAdults() {
+      try {
+        if (curAdults > adults && isPaidOverAdults !== null) {
+          const roomPrice =
+            typeTime === 1
+              ? room.room.roomCategory.priceByHour
+              : typeTime === 2
+              ? room.room.roomCategory.priceByDay
+              : room.room.roomCategory.priceByNight;
+          const response = await axiosPrivate.get(
+            `reservation/calculate_additional_adult_surcharge?reservationDetailId=${
+              room.reservationDetailId
+            }&roomCategoryId=${
+              room.room.roomCategory.roomCategoryId
+            }&totalAdult=${
+              curAdults - adults
+            }&roomPrice=${roomPrice}&timeUse=${valueTime}&status=${isPaidOverAdults}`
+          );
+          if (response.data.success) {
+            setPriceAdults(response.data.result);
+          }
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchOverAdults();
+  }, [isPaidOverAdults]);
+
+  useEffect(() => {
+    async function fetchOverChildren() {
+      try {
+        if (curChildren > children && isPaidOverChildren !== null) {
+          const sortByAge = childrenVisitors
+            .sort((a, b) => dayjs(b.customer.dob).diff(dayjs(a.customer.dob)))
+            .map((cus) => dayjs(cus.customer.dob).format("YYYY-MM-DD HH:mm:ss"))
+            .slice(children);
+          const roomPrice =
+            typeTime === 1
+              ? room.room.roomCategory.priceByHour
+              : typeTime === 2
+              ? room.room.roomCategory.priceByDay
+              : room.room.roomCategory.priceByNight;
+          const form = new FormData();
+          form.append("reservationDetailId", room.reservationDetailId);
+          form.append("roomCategoryId", room.room.roomCategory.roomCategoryId);
+          form.append("roomPrice", roomPrice);
+          sortByAge.map((age, index) => {
+            form.append("customerDTOS[" + index + "].dob", age);
+          });
+          form.append("timeUse", valueTime);
+          form.append("status", isPaidOverChildren);
+          const response = await axiosPrivate.post(
+            "reservation/calculate_additional_children_surcharge",
+            form
+          );
+          console.log(response);
+          if (response.data.success) {
+            setPriceChildren(response.data.result);
+          }
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchOverChildren();
+  }, [isPaidOverChildren]);
 
   let timeUse = "";
   if (typeTime === 1) {
@@ -480,7 +578,7 @@ function SelectRoom(props) {
             <i className="fa-solid fa-user-tie ml-2"></i>
             <span className="mx-2">
               {
-                props.visitors.filter(
+                visitors.filter(
                   (visitor) =>
                     dayjs().diff(dayjs(visitor.customer.dob), "year") >= 16
                 ).length
@@ -490,7 +588,7 @@ function SelectRoom(props) {
             <i className="fa-solid fa-child ml-2"></i>
             <span className="mx-2">
               {
-                props.visitors.filter(
+                visitors.filter(
                   (visitor) =>
                     dayjs().diff(dayjs(visitor.customer.dob), "year") < 16
                 ).length
@@ -686,6 +784,28 @@ function SelectRoom(props) {
               label="Phụ thu trả muộn"
             />
           )}
+          {curAdults > adults && (
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={isPaidOverAdults}
+                  onChange={() => setIsPaidOverAdults(!isPaidOverAdults)}
+                />
+              }
+              label="Phụ thu người lớn"
+            />
+          )}
+          {curChildren > children && (
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={isPaidOverChildren}
+                  onChange={() => setIsPaidOverChildren(!isPaidOverChildren)}
+                />
+              }
+              label="Phụ thu trẻ em"
+            />
+          )}
         </div>
       )}
       <div className="flex pt-2">
@@ -736,6 +856,22 @@ function SelectRoom(props) {
           <p className="w-8/12">Phụ thu trả muộn (Giờ)</p>
           <p className="w-1/12">{lateCheckout}</p>
           <p className="w-2/12 text-right">{priceLate.toLocaleString()}</p>
+          <p className="w-1/12"></p>
+        </div>
+      )}
+      {curAdults > adults && isPaidOverAdults && (
+        <div className="flex border-t pt-2">
+          <p className="w-8/12">Phụ thu người lớn</p>
+          <p className="w-1/12"></p>
+          <p className="w-2/12 text-right">{priceAdults.toLocaleString()}</p>
+          <p className="w-1/12"></p>
+        </div>
+      )}
+      {curChildren > children && isPaidOverChildren && (
+        <div className="flex border-t pt-2">
+          <p className="w-8/12">Phụ thu trẻ em</p>
+          <p className="w-1/12"></p>
+          <p className="w-2/12 text-right">{priceChildren.toLocaleString()}</p>
           <p className="w-1/12"></p>
         </div>
       )}

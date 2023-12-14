@@ -15,8 +15,8 @@ import NewAccBankModal from "./NewAccBankModal";
 import OtherFeeModal from "./OtherFeeModal";
 import dayjs from "dayjs";
 import { useReactToPrint } from "react-to-print";
-import { axiosPrivate } from "../../utils/axiosConfig";
 import FuncBooksModal from "./FundBooksModal";
+import { jwtDecode } from "jwt-decode";
 
 function PaymentModal(props) {
   const {
@@ -28,6 +28,8 @@ function PaymentModal(props) {
     invoiceReservation,
     points,
   } = useLoaderData();
+  const token = localStorage.getItem("token");
+  const decodedToken = jwtDecode(token);
   if (points.LIST_PROMOTION_POLICY_DETAIL.length === 0) {
     points = {
       ...points,
@@ -87,7 +89,6 @@ function PaymentModal(props) {
       : 0;
   // console.log(deposit);
   // console.log(invoiceReservation);
-  // console.log(points);
   // console.log(otherFees);
   // console.log(reservation);
   // console.log(invoices);
@@ -584,7 +585,7 @@ function PaymentModal(props) {
                           {isDone
                             ? invoiceReservation
                                 .reduce((sum, inv) => {
-                                  return (sum += inv.discount);
+                                  return (sum += inv.Invoice.discount);
                                 }, 0)
                                 .toLocaleString()
                             : discountPrice.toLocaleString()}
@@ -604,7 +605,7 @@ function PaymentModal(props) {
                           {isDone
                             ? invoiceReservation
                                 .reduce((sum, inv) => {
-                                  return (sum += inv.priceOther);
+                                  return (sum += inv.Invoice.priceOther);
                                 }, 0)
                                 .toLocaleString()
                             : otherFeePrice.toLocaleString()}
@@ -799,16 +800,18 @@ function PaymentModal(props) {
                         return (
                           <div className="mt-2 mx-1 rounded py-1 px-2 border border-gray-300 border-dotted flex">
                             <div className="mr-auto">
-                              {invoice.invoiceId}
+                              {invoice.Invoice.invoiceId}
                               <div className="text-xs">
-                                {dayjs(invoice.createdDate).format(
+                                {dayjs(invoice.Invoice.createdDate).format(
                                   "DD/MM/YYYY HH:mm"
                                 )}
                               </div>
                             </div>
                             <div className="ml-auto font-bold">
                               {(
-                                invoice.total + invoice.priceOther
+                                invoice.Invoice.total +
+                                invoice.Invoice.priceOther -
+                                invoice.Invoice.discount
                               ).toLocaleString()}
                               <div className="text-right">
                                 <button
@@ -816,7 +819,7 @@ function PaymentModal(props) {
                                   className="ml-auto hover:text-green-500"
                                   onMouseOver={() =>
                                     setSelectedInvoiceReservationId(
-                                      invoice.invoiceId
+                                      invoice.Invoice.invoiceId
                                     )
                                   }
                                   onMouseLeave={() =>
@@ -970,47 +973,192 @@ function PaymentModal(props) {
         <div className="hidden">
           <div ref={printInvoiceRef}>
             {invoiceReservation.map((invoice) => {
+              let totalInvoice = 0;
+              console.log(invoice);
               return (
                 <div
                   className={`${
-                    invoice.invoiceId === selectedInvoiceReservationId
+                    invoice.Invoice.invoiceId === selectedInvoiceReservationId
                       ? ""
                       : "hidden"
                   } m-10`}
                 >
                   <p>Tên khách sạn: Khách sạn Văn Lâm</p>
                   <p>Điện thoại: 0981987625</p>
+                  <p>Địa chỉ: </p>
                   <div className="mt-4 border-t border-black border-dotted">
-                    Ngày xuất phiếu: {dayjs().format("DD/MM/YYYY HH:mm")}
+                    Ngày xuất HĐ: {dayjs().format("DD/MM/YYYY HH:mm")}
                   </div>
                   <div className="mt-4">
                     <div className="font-bold text-center">
                       <h2>HOÁ ĐƠN BÁN HÀNG</h2>
-                      <p className="text-sm">{invoice.invoiceId}</p>
+                      <p className="text-sm">{invoice.Invoice.invoiceId}</p>
                     </div>
                     <div>
                       <p>
                         Khách hàng:{" "}
-                        {reservation.reservation.customer
-                          ? reservation.reservation.customer.customerName
-                          : "Khách lẻ"}
+                        {reservation.reservation.customer.customerName}
                       </p>
-                      <p>
-                        Mã đặt phòng: {reservation.reservation.reservationId}
-                      </p>
-                      <p>Thu ngân: </p>
+                      <p>Lễ tân: {decodedToken.sub}</p>
                     </div>
+                    <table className="text-left min-w-full divide-y divide-gray-300">
+                      <thead className="">
+                        <tr className="border border-black">
+                          <td className="px-4 py-2 text-center border-r border-black">
+                            Thông tin phòng
+                          </td>
+                          <td className="px-4 py-2">Thành tiền</td>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {invoice.ListReservationOfInvoice.map(
+                          (detailsInvoice, index) => {
+                            const details = detailsInvoice.reservationDetail;
+                            let priceRoom = details.price;
+                            let listGoods = [];
+                            detailsInvoice.ListOrder.flatMap(
+                              (group) => group.OrderDetail
+                            ).map((cur) => {
+                              const productIndex =
+                                listGoods.length > 0
+                                  ? listGoods.findIndex(
+                                      (a) =>
+                                        cur.OrderDetail.goodsUnit
+                                          .goodsUnitId ===
+                                        a.goodsUnit.goodsUnitId
+                                    )
+                                  : -1;
+                              if (productIndex !== -1) {
+                                listGoods[productIndex] = {
+                                  ...listGoods[productIndex],
+                                  quantity:
+                                    listGoods[productIndex].quantity +
+                                    cur.OrderDetail.quantity,
+                                };
+                              } else {
+                                listGoods.push(cur.OrderDetail);
+                              }
+                            });
+                            const surcharge = detailsInvoice.ListControlPolicy;
+                            return (
+                              <tr className="border border-black">
+                                <td className="px-4 py-2 border-r border-black">
+                                  <h2 className="flex">
+                                    <div className="mr-4">{index + 1}.</div>
+                                    <div className="font-bold">
+                                      {
+                                        details.room.roomCategory
+                                          .roomCategoryName
+                                      }
+                                    </div>
+                                    <div className="ml-2 px-2 rounded">
+                                      {details.room.roomName}
+                                    </div>
+                                    <div className="ml-auto text-right">
+                                      {details.price.toLocaleString() + " VND"}
+                                    </div>
+                                  </h2>
+                                  {surcharge.length > 0 && (
+                                    <div className="ml-2 mt-2 text-xs">
+                                      {surcharge.map((sur) => {
+                                        priceRoom += sur.value;
+                                        return (
+                                          <div>
+                                            {sur.note +
+                                              ": " +
+                                              sur.value.toLocaleString() +
+                                              " " +
+                                              sur.typeValue}
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                  {listGoods.length > 0 && (
+                                    <div className="mt-2 text-xs text-center">
+                                      <h3 className="ml-2 font-medium mb-1">
+                                        Hàng hoá đã mua
+                                      </h3>
+                                      <div className="flex ">
+                                        <div className="w-3/12">
+                                          Tên sản phẩm/dịch vụ
+                                        </div>
+                                        <div className="w-3/12 text-right">
+                                          Số lượng
+                                        </div>
+                                        <div className="w-3/12 text-right">
+                                          Giá
+                                        </div>
+                                        <div className="w-3/12 text-right">
+                                          Tổng tiền
+                                        </div>
+                                      </div>
+                                      {listGoods.map((good) => {
+                                        priceRoom +=
+                                          good.goodsUnit.price * good.quantity;
+                                        return (
+                                          <div className="flex">
+                                            <div className="w-3/12 text-left">
+                                              {good.goods.goodsName +
+                                                "(" +
+                                                good.goodsUnit.goodsUnitName +
+                                                ")"}
+                                            </div>
+                                            <div className="w-3/12 text-right">
+                                              {good.quantity}
+                                            </div>
+                                            <div className="w-3/12 text-right">
+                                              {good.goodsUnit.price.toLocaleString() +
+                                                " VND"}
+                                            </div>
+                                            <div className="w-3/12 text-right">
+                                              {(
+                                                good.goodsUnit.price *
+                                                good.quantity
+                                              ).toLocaleString() + " VND"}
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="px-2 py-1 font-bold text-right">
+                                  {priceRoom.toLocaleString() + " VND"}
+                                </td>
+                              </tr>
+                            );
+                          }
+                        )}
+                      </tbody>
+                    </table>
                     <div className="flex mt-4">
-                      <div className="ml-auto mr-10">Tổng tiền hàng: </div>
-                      <div className="w-32 text-right"></div>
+                      <div className="ml-auto mr-10">Tổng tiền hoá đơn: </div>
+                      <div className="w-32 text-right">
+                        {invoice.Invoice.total.toLocaleString() + " VND"}
+                      </div>
                     </div>
-                    <div className="flex">
-                      <div className="ml-auto mr-10">Chiếu khấu: </div>
-                      <div className="w-32 text-right">0</div>
+                    <div className="flex mt-2">
+                      <div className="ml-auto mr-10">Giảm giá: </div>
+                      <div className="w-32 text-right">
+                        {invoice.Invoice.discount.toLocaleString() + " VND"}
+                      </div>
                     </div>
-                    <div className="flex">
+                    <div className="flex mt-2">
+                      <div className="ml-auto mr-10">Phí khác: </div>
+                      <div className="w-32 text-right">
+                        {invoice.Invoice.priceOther.toLocaleString() + " VND"}
+                      </div>
+                    </div>
+                    <div className="flex mt-2">
                       <div className="ml-auto mr-10">Tổng cộng: </div>
-                      <div className="w-32 text-right"></div>
+                      <div className="w-32 text-right">
+                        {(
+                          invoice.Invoice.total -
+                          invoice.Invoice.discount +
+                          invoice.Invoice.priceOther
+                        ).toLocaleString() + " VND"}
+                      </div>
                     </div>
                   </div>
                   <div className="text-center mt-10 text-sm">
