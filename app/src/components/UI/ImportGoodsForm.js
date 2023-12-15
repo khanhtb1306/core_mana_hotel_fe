@@ -1,16 +1,17 @@
 import { Form, useLoaderData } from "react-router-dom";
 import Modal from "./Modal";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
 import SearchProduct from "../Search/SearchProduct";
 
 
-function ImportGoodsForm({ name, open, onClose, method, importGoods,importGoodsDetail }) {
+function ImportGoodsForm({ name, open, onClose, method, importGoods, importGoodsDetail }) {
   const { goodsUnit } = useLoaderData();
   const productUnit = goodsUnit.filter((unit) => unit.goods.goodsCategory);
+  const [totalImport, setTotalImport] = useState(0);
   let formattedDate = null;
-  
-  if (importGoods.timeImport ) {
+
+  if (importGoods.timeImport) {
     const dateNow = new Date(importGoods.timeImport);
     const year = dateNow.getFullYear();
     const month = String(dateNow.getMonth() + 1).padStart(2, "0");
@@ -18,7 +19,15 @@ function ImportGoodsForm({ name, open, onClose, method, importGoods,importGoodsD
     formattedDate = `${year}-${month}-${day}`;
   }
   let array = [];
+  useEffect(() => {
+    if(importGoodsDetail)
+    {
+      setTotalImport(importGoodsDetail.reduce((total, product) => total + product.total, 0));
+    }
+ }, []);
+
   if (importGoodsDetail) {
+     
     array = goodsUnit.filter((unit) => {
       for (const stock of importGoodsDetail) {
         if (stock.goodsUnit.goodsUnitId === unit.goodsUnitId) {
@@ -27,7 +36,16 @@ function ImportGoodsForm({ name, open, onClose, method, importGoods,importGoodsD
 
       }
       return false;
+    })
+    .map((unit, index) => {
+      return {
+        ...unit,
+        number: importGoodsDetail.find(
+          (good) => (good.goodsUnit.goodsUnitId === unit.goodsUnitId)
+        ).amount,
+      };
     });
+    ;
   }
   const listUnit = productUnit.filter((unit) => {
     if (importGoodsDetail) {
@@ -44,21 +62,23 @@ function ImportGoodsForm({ name, open, onClose, method, importGoods,importGoodsD
   const [productsAdd, setProductsAdd] = useState(listUnit);
   const handleProductClick = (goodsUnitId) => {
     const updateProducts = [
-      ...products,
-      productsAdd.find((unit) => unit.goodsUnitId === goodsUnitId),
+      ...products,{
+      ...productsAdd.find((unit) => unit.goodsUnitId === goodsUnitId),
+      number: 1
+      }
     ];
     setProductsAdd(
       productsAdd.filter((unit) => unit.goodsUnitId !== goodsUnitId)
     );
     setProducts(updateProducts);
-
+    setTotalImport(updateProducts.reduce((total, product) => total + product.number * product.cost, 0));
   };
   const [formData, setFormData] = useState(() => {
     const initialFormData = productUnit.reduce((acc, unit) => {
       let actualInventory = 0;
       if (importGoodsDetail) {
         importGoodsDetail.map((check) => {
-          if (check.goodsUnit.goodsUnitId === unit.goodsUnitId ) {
+          if (check.goodsUnit.goodsUnitId === unit.goodsUnitId) {
             actualInventory = check.amount;
           }
         });
@@ -79,17 +99,32 @@ function ImportGoodsForm({ name, open, onClose, method, importGoods,importGoodsD
       ...formData,
       [name]: parseInt(value),
     });
+    const index = products.findIndex(
+      (u) => u.goodsUnitId === id
+    );
+    if (index !== -1) {
+      products[index].number = e.target.value;
+      setProducts([...products]);
+    }
+ 
+    setTotalImport(products.reduce((total, product) => total + product.number * product.cost, 0));
+
   }
 
   const handleProductDelete = (goodsUnitId) => {
+
     const updateProducts = products.filter(
       (unit) => unit.goodsUnitId !== goodsUnitId
     );
+
     setProductsAdd([
       ...productsAdd,
-      products.find((unit) => unit.goodsUnitId === goodsUnitId),
+      productUnit.find((unit) => unit.goodsUnitId === goodsUnitId),
     ]);
+
     setProducts(updateProducts);
+    setTotalImport(updateProducts.reduce((total, product) => total + product.number * product.cost, 0));
+
   };
 
   const [inputStatus, setInputStatus] = useState(4);
@@ -120,12 +155,12 @@ function ImportGoodsForm({ name, open, onClose, method, importGoods,importGoodsD
               <div className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0">
                 <input
                   type="number"
-                  min={0}
+                  min={1}
                   name={`actualInventory${row.id}`}
                   value={
                     formData[`actualInventory${row.id}`]
                       ? formData[`actualInventory${row.id}`]
-                      : 0
+                      : 1
                   }
                   onChange={handleChange}
                 />
@@ -136,7 +171,7 @@ function ImportGoodsForm({ name, open, onClose, method, importGoods,importGoodsD
         ];
       },
     },
-    // { field: "total", headerName: "Thành tiền", width: 150 },
+    { field: "total", headerName: "Thành tiền", width: 150 },
     {
       field: "action",
       headerName: "Hành động",
@@ -158,19 +193,13 @@ function ImportGoodsForm({ name, open, onClose, method, importGoods,importGoodsD
   let rows = [];
   if (products.length > 0) {
     rows = products.map((pro, index) => {
-      // let inventory = pro.goods.inventory;
-      // if (!pro.isDefault) {
-      //   const defaultPro = goodsUnit.find(
-      //     (unit) => unit.goods.goodsId && unit.isDefault
-      //   );
-      //   inventory /= pro.cost / defaultPro.cost;
-      // }
       return {
         id: pro.goodsUnitId,
         goodsId: pro.goods.goodsId,
         goodsName: pro.goods.goodsName + ` (${pro.goodsUnitName})`,
         cost: pro.cost,
         actualInventory: 0,
+        total: pro.cost * pro.number || 0
       };
     });
   }
@@ -267,7 +296,7 @@ function ImportGoodsForm({ name, open, onClose, method, importGoods,importGoodsD
               <input
                 type="hidden"
                 name="importGoodsId"
-                defaultValue={importGoods.importGoodsId?importGoods.importGoodsId: ""}
+                defaultValue={importGoods.importGoodsId ? importGoods.importGoodsId : ""}
               />
             )}
             {rows.length > 0 && (
@@ -313,6 +342,7 @@ function ImportGoodsForm({ name, open, onClose, method, importGoods,importGoodsD
               defaultValue={""}
             ></textarea>
           </div>
+          <div className="mt-2 bg-gray-200 text-lg text-red-400">Tổng: {totalImport}</div>
         </div>
         <div className="flex pt-5">
           <div className="ml-auto">

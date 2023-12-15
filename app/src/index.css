@@ -10,7 +10,7 @@
     grid-template-rows: 370px 90px 100px; /* Thiết lập chiều cao cho ba hàng */
 }
 .custom-button:hover {
-    background-color: rgb(97, 95, 95); /* Thay đổi màu nền của nút khi di chuột qua */
+    background-color: #D3D3D3; /* Thay đổi màu nền của nút khi di chuột qua */
 }
 .custom-button {
     background-color: #E5E7EB; /* Thay đổi màu nền của nút khi di chuột qua */

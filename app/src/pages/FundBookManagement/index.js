@@ -128,7 +128,6 @@ function FundBookManagementPage() {
       width: 200,
       getActions: ({ id }) => {
         return [
-
           <GridActionsCellItem
             icon={<i className="fa-solid fa-eye"></i>}
             label="Xem chi tiết"
@@ -157,7 +156,7 @@ function FundBookManagementPage() {
         code: fundBook.fundBookId,
         time: formattedDate,
         note: fundBook.note,
-        paidMethod: fundBook.paidMethod,
+        paidMethod: fundBook.paidMethod === "BANK"?"Chuyển khoản":"Tiền mặt",
         valueIncome: fundBook.value + " VND",
         valueExpense: 0 + " VND",
         status: fundBook.status === "COMPLETE" ? "Hoàn tất" : "Hủy bỏ",
@@ -401,7 +400,7 @@ export async function action({ request }) {
   const formData = new FormData();
   const fundBookId = data.get("fundBookId")
   formData.append("fundBookId", data.get("fundBookId"));
-  formData.append("time", data.get("time"));
+  // formData.append("time", data.get("time"));
   formData.append("value", data.get("value"));
   formData.append("note", data.get("note"));
   formData.append("payerReceiver", data.get("payerReceiver"));

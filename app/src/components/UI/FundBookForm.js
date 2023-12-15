@@ -24,15 +24,16 @@ function FundBookForm({ name, open, onClose, method, fundBook, isIncome }) {
                                 <h4 className="text-left text-lg font-bold">
                                     {" "}
                                     <i className="bi bi-person-circle me-3">
-                                        </i>{isIncome === true ? "Lập phiếu thu" : "Lập phiếu chi"}
+                                    </i>{isIncome === true ? "Lập phiếu thu" : "Lập phiếu chi"}
                                 </h4>
                             </div>
                             {fundBook.fundBookId !== null && (
-                                    <div className=" flex flex-row mb-2 ">
-                                        <div className="w-3/12 basis-2/12">
+                                <div className=" flex flex-row mb-3 ">
+                                    <div  className="basis-1/2 flex flex-row  ">
+                                        <div className="w-3/12 basis-1/4">
                                             <h2 className="mt-3">Số hiệu </h2>
                                         </div>
-                                        <div className="w-9/12  basis-8/12">
+                                        <div className="w-9/12  basis-3/4">
                                             <input
                                                 readOnly
                                                 className="w-9/12 border-0 border-b border-gray-500  focus:border-b-2 focus:border-green-500 focus:ring-0"
@@ -42,7 +43,24 @@ function FundBookForm({ name, open, onClose, method, fundBook, isIncome }) {
                                             />
                                         </div>
                                     </div>
-                                )}
+
+                                    <div className="basis-1/2 flex flex-row  ">
+                                        <div className="w-3/12 basis-1/4">
+                                            <h2 className="mt-3">Ngày tạo</h2>
+                                        </div>
+                                        <div className="w-9/12  basis-3/4">
+                                        <input
+                                            readOnly
+                                            className="w-9/12 border-0 border-b border-gray-500  focus:border-b-2 focus:border-green-500 focus:ring-0"
+                                            name="time"
+                                            defaultValue= {formattedDate ? formattedDate : ""}
+                                        />
+                                        </div>
+                                    </div>
+
+
+                                </div>
+                            )}
                             <div className="flex flex-row mb-3 ">
                                 <div className="basis-1/2 flex flex-row  ">
                                     <div className="w-3/12 basis-1/4">
@@ -59,24 +77,6 @@ function FundBookForm({ name, open, onClose, method, fundBook, isIncome }) {
                                         </select>
                                     </div>
                                 </div>
-
-                                <div className="basis-1/2 flex flex-row  ">
-                                    <div className="w-3/12 basis-1/4">
-                                        <h2 className="mt-3">Ngày tạo</h2>
-                                    </div>
-                                    <div className="w-9/12  basis-3/4">
-                                        <input
-                                            className="w-9/12 border-0 border-b border-gray-500  focus:border-b-2 focus:border-green-500 focus:ring-0"
-                                            type="date"
-                                            name="time"
-                                            defaultValue={formattedDate ? formattedDate : ""}
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                            </div>
-                            <div className="flex flex-row mb-3 ">
                                 <div className="basis-1/2 flex flex-row  ">
                                     <div className="w-3/12 basis-1/4">
                                         <h2 className="mt-3">Giá trị</h2>
@@ -89,6 +89,29 @@ function FundBookForm({ name, open, onClose, method, fundBook, isIncome }) {
                                             minLength="1"
                                             maxLength="255"
                                             defaultValue={fundBook.value ? fundBook.value : ""}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+
+
+                            </div>
+                            <div className="flex flex-row mb-3 ">
+
+                            </div>
+                            <div className="flex flex-row mb-3 ">
+                                <div className="basis-1/2 flex flex-row  ">
+                                    <div className="w-3/12 basis-1/4">
+                                        <h2 className="mt-3">Người nộp</h2>
+                                    </div>
+                                    <div className="w-9/12  basis-3/4">
+                                        <input
+                                            className="w-9/12 border-0 border-b border-gray-500 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                                            type="text"
+                                            name="payerReceiver"
+                                            minLength="1"
+                                            maxLength="255"
+                                            defaultValue={fundBook.payerReceiver ? fundBook.payerReceiver : ""}
                                             required
                                         />
                                     </div>
@@ -109,55 +132,38 @@ function FundBookForm({ name, open, onClose, method, fundBook, isIncome }) {
                                         />
                                     </div>
                                 </div>
-                            </div>
-                            <div className="flex flex-row mb-3 ">
-                                <div className="basis-1/2 flex flex-row  ">
-                                    <div className="w-3/12 basis-1/4">
-                                        <h2 className="mt-3">Người nộp</h2>
-                                    </div>
-                                    <div className="w-9/12  basis-3/4">
-                                        <input
-                                            className="w-9/12 border-0 border-b border-gray-500 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                                            type="text"
-                                            name="payerReceiver"
-                                            minLength="1"
-                                            maxLength="255"
-                                            defaultValue={fundBook.payerReceiver ? fundBook.payerReceiver : ""}
-                                            required
-                                        />
-                                    </div>
-                                </div>
-                                {
-                                    method !== "put" && (
-                                        <div className="basis-1/2 flex flex-row  ">
-                                            <div className="w-3/12 basis-1/4">
-                                                <h2 className="mt-3">Loại thu </h2>
-                                            </div>
-                                            <div className="w-9/12  basis-3/4">
-                                                <select
-                                                    className="w-9/12 border-0 border-b border-gray-500 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                                                    name="type"
-                                                    required
-                                                >
-                                                    {isIncome === true && (
-                                                        <>
-                                                            <option value="INCOME">Thu nhập</option>
-                                                            <option value="OTHER_INCOME">Thu nhập khác</option>
-                                                        </>
-                                                    )}
-                                                    {isIncome === false && (
-                                                        <>
-                                                            <option value="EXPENSE">Chi phí</option>
-                                                            <option value="OTHER_EXPENSE">Chi phí khác</option>
-                                                        </>
-                                                    )}
 
-                                                </select>
-                                            </div>
-                                        </div>
-                                    )}
+
                             </div>
-                            
+                            {
+                                method !== "put" && (
+                                    <div className=" flex flex-row mb-2 ">
+                                        <div className="w-3/12 basis-1/4">
+                                            <h2 className="mt-3">Loại thu </h2>
+                                        </div>
+                                        <div className="w-9/12  basis-3/4">
+                                            <select
+                                                className="w-9/12 border-0 border-b border-gray-500 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                                                name="type"
+                                                required
+                                            >
+                                                {isIncome === true && (
+                                                    <>
+                                                        <option value="INCOME">Thu nhập</option>
+                                                        <option value="OTHER_INCOME">Thu nhập khác</option>
+                                                    </>
+                                                )}
+                                                {isIncome === false && (
+                                                    <>
+                                                        <option value="EXPENSE">Chi phí</option>
+                                                        <option value="OTHER_EXPENSE">Chi phí khác</option>
+                                                    </>
+                                                )}
+
+                                            </select>
+                                        </div>
+                                    </div>
+                                )}
 
                         </div>
                     </div>
