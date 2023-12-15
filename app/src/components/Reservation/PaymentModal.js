@@ -111,7 +111,7 @@ function PaymentModal(props) {
   // console.log(account);
 
   const [otherFeePrice, setOtherFeePrice] = useState(
-    otherFees
+    otherFees && listNotCheckOut.length === 0 
       ? otherFees.LIST_OTHER_REVENUE_DETAIL.reduce((sum, fee) => {
           if (fee.autoAddToInvoice) {
             if (fee.typeValue === "%") {

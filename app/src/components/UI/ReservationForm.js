@@ -31,7 +31,7 @@ function ReservationForm(props) {
   const actionData = useActionData();
   const reservation = props.reservation;
   const isDone =
-    reservation.listReservationDetails.length > 0
+    reservation && reservation.listReservationDetails.length > 0
       ? reservation.listReservationDetails.every(
           (details) => details.status === "DONE"
         )

@@ -52,7 +52,7 @@ function PersonFeeModal(props) {
     } else {
       listChildren = [
         {
-          number: 1,
+          number: 7,
           price: 0,
         },
       ];
@@ -197,7 +197,6 @@ function PersonFeeModal(props) {
                     hourFee.roomCategoryId ===
                     category.roomCategory.roomCategoryId
                 );
-                console.log(cate);
                 return (
                   <tr key={ind} className="border border-gray-300">
                     <td className="py-1 px-2">
@@ -411,8 +410,26 @@ function PersonFeeModal(props) {
                       )}
                     </td>
                     <td className="py-1 px-2 text-center">
+                      <div>
+                        Từ {0} đến dưới{" "}
+                        <input
+                          className="p-1 border-0 border-b border-gray-500 w-10 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                          type="number"
+                          name=""
+                          defaultValue={6}
+                          disabled={true}
+                        />{" "}
+                        tuổi giá{" "}
+                        <input
+                          className="p-1 border-0 border-b border-gray-500 w-14 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                          type="number"
+                          name=""
+                          defaultValue={0}
+                          disabled={true}
+                        />
+                      </div>
                       {cate.listChildren.map((children, index) => {
-                        let from = 0;
+                        let from = 6;
                         if (index !== 0) {
                           from = cate.listChildren[index - 1].number;
                         }
@@ -425,7 +442,7 @@ function PersonFeeModal(props) {
                                 defaultValue={children.policyDetailId}
                               />
                             )}
-                            Từ {from} đến{" "}
+                            Từ {from} đến dưới{" "}
                             <input
                               className="p-1 border-0 border-b border-gray-500 w-10 focus:border-b-2 focus:border-green-500 focus:ring-0"
                               type="number"
@@ -471,7 +488,7 @@ function PersonFeeModal(props) {
                               max={
                                 index < cate.listChildren.length - 1
                                   ? cate.listChildren[index + 1].number - 1
-                                  : 16
+                                  : 15
                               }
                             />{" "}
                             tuổi giá{" "}
@@ -529,7 +546,7 @@ function PersonFeeModal(props) {
                         );
                       })}
                       {cate.listChildren[cate.listChildren.length - 1].number <
-                        16 && (
+                        15 && (
                         <div className="text-center mt-2">
                           <button
                             type="button"

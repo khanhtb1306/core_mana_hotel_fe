@@ -787,6 +787,7 @@ export async function action({ request }) {
         console.log(e);
         Swal.close();
       });
+    console.log(response);
     return { success: true, addDeposit: response };
   }
 

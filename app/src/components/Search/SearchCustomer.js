@@ -51,6 +51,7 @@ function SearchCustomer(props) {
               onClick={() => {
                 setOpenEditCustomerModal(true);
               }}
+              disabled={props.disable}
             >
               {props.customer.customerName}
             </button>
@@ -58,6 +59,7 @@ function SearchCustomer(props) {
               type="button"
               className="mr-4 ml-auto my-auto rounded-full px-2 py-0.5 remove-customer hover:bg-gray-300"
               onClick={handleRemoveCustomer}
+              disabled={props.disable}
             >
               <i className="fa-solid fa-xmark"></i>
             </button>

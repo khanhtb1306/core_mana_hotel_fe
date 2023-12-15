@@ -227,7 +227,7 @@ function AddRetailInvoice() {
         <input
           type="hidden"
           name="customerId"
-          value={customer.customerId}
+          value={customer ? customer.customerId : "C000000"}
           onChange={() => 1}
         />
         <input

@@ -123,13 +123,17 @@ function ListReservationPage() {
       type: "actions",
       getActions: (params) => {
         const row = params.row;
-        // console.log(row);
         let status = 1;
-        if (row.status.some((room) => room.bookingStatus === "CHECK_OUT")) {
-          status = 2;
-        } else if (row.status.every((room) => room.bookingStatus === "DONE")) {
-          status = 3;
+        if (row.status.length > 0) {
+          if (row.status.every((room) => room.bookingStatus === "DONE")) {
+            status = 3;
+          } else if (
+            !row.status.every((room) => room.bookingStatus === "BOOKING")
+          ) {
+            status = 2;
+          }
         }
+
         return [
           <>
             {status === 1 && (
@@ -138,10 +142,10 @@ function ListReservationPage() {
                   icon={
                     <button
                       type="button"
-                      className="text-medium text-green-600"
+                      className="text-sm text-green-500 py-1 px-2 rounded border border-green-500 hover:bg-green-200"
                     >
                       <Link to={`/editReservation/${row.reservationId}`}>
-                        <i className="fa-solid fa-pen-to-square"></i>
+                        Chỉnh sửa
                       </Link>
                     </button>
                   }
@@ -150,9 +154,9 @@ function ListReservationPage() {
                   icon={
                     <button
                       type="button"
-                      className="text-medium text-green-600"
+                      className="text-sm text-white py-1 px-2 rounded bg-red-500 border border-red-500 hover:bg-red-600"
                     >
-                      <i className="fa-solid fa-trash"></i>
+                      Xoá
                     </button>
                   }
                 />
@@ -164,21 +168,27 @@ function ListReservationPage() {
                   icon={
                     <button
                       type="button"
-                      className="text-medium text-green-600"
+                      className="text-sm text-green-500 py-1 px-2 rounded border border-green-500 hover:bg-green-200"
                     >
                       <Link to={`/editReservation/${row.reservationId}`}>
-                        <i className="fa-solid fa-pen-to-square"></i>
+                        Chỉnh sửa
                       </Link>
                     </button>
                   }
                 />
+              </>
+            )}
+            {status === 3 && (
+              <>
                 <GridActionsCellItem
                   icon={
                     <button
                       type="button"
-                      className="text-medium text-green-600"
+                      className="text-sm text-white py-1 px-2 rounded bg-green-500 border border-green-500 hover:bg-green-600"
                     >
-                      <i className="fa-solid fa-eye"></i>
+                      <Link to={`/editReservation/${row.reservationId}`}>
+                        Xem chi tiết
+                      </Link>
                     </button>
                   }
                 />
@@ -194,8 +204,8 @@ function ListReservationPage() {
   let rows = [];
 
   if (
-    (isChecked1 && isChecked1 && isChecked1 && findCus === "") ||
-    (!isChecked1 && !isChecked1 && !isChecked1 && findCus === "")
+    (isChecked1 && isChecked2 && isChecked3 && findCus === "") ||
+    (!isChecked1 && !isChecked2 && !isChecked3 && findCus === "")
   ) {
     rows = listReservations.map((res, index) => {
       const date =
@@ -204,7 +214,7 @@ function ListReservationPage() {
         dayjs(res.reservation.durationEnd).format("DD-MM, hh:mm");
       const listRoom = res.listReservationDetails.map((resDetails) => {
         let color = "";
-        if (resDetails.status === "CHECK_OUT") {
+        if (resDetails.status === "CHECK_OUT" || resDetails.status === "DONE") {
           color = "gray";
         } else if (resDetails.status === "BOOKING") {
           color = "orange";
@@ -230,36 +240,39 @@ function ListReservationPage() {
     });
   } else {
     rows = listReservations
-      .filter((res) => {
-        if (isChecked1) {
-          return res.listReservationDetails.some(
-            (detail) => detail.status === "BOOKING"
-          );
-        }
-        if (isChecked2) {
-          return res.listReservationDetails.some(
-            (detail) => detail.status === "CHECK_IN"
-          );
-        }
-        if (isChecked3) {
-          return res.listReservationDetails.some(
-            (detail) => detail.status === "CHECK_OUT"
-          );
-        }
-        if (findCus !== "") {
-          const cus = res.reservation.customer;
-          return (
-            (cus.customerName &&
-              cus.customerName.toLowerCase().includes(findCus.toLowerCase())) ||
-            (cus.identity &&
-              cus.identity.toLowerCase().includes(findCus.toLowerCase())) ||
-            (cus.email &&
-              cus.email.toLowerCase().includes(findCus.toLowerCase())) ||
-            (cus.phoneNumber &&
-              cus.phoneNumber.toLowerCase().includes(findCus.toLowerCase()))
-          );
-        }
-      })
+      .filter(
+        (res) =>
+          (isChecked1 &&
+            res.listReservationDetails.some(
+              (detail) => detail.status === "BOOKING"
+            )) ||
+          (isChecked2 &&
+            res.listReservationDetails.some(
+              (detail) => detail.status === "CHECK_IN"
+            )) ||
+          (isChecked3 &&
+            res.listReservationDetails.some(
+              (detail) =>
+                detail.status === "CHECK_OUT" || detail.status === "DONE"
+            )) ||
+          (findCus !== "" &&
+            ((res.reservation.customer.customerName &&
+              res.reservation.customer.customerName
+                .toLowerCase()
+                .includes(findCus.toLowerCase())) ||
+              (res.reservation.customer.identity &&
+                res.reservation.customer.identity
+                  .toLowerCase()
+                  .includes(findCus.toLowerCase())) ||
+              (res.reservation.customer.email &&
+                res.reservation.customer.email
+                  .toLowerCase()
+                  .includes(findCus.toLowerCase())) ||
+              (res.reservation.customer.phoneNumber &&
+                res.reservation.customer.phoneNumber
+                  .toLowerCase()
+                  .includes(findCus.toLowerCase()))))
+      )
       .map((res, index) => {
         const date =
           dayjs(res.reservation.durationStart).format("DD-MM, hh:mm") +
@@ -267,7 +280,10 @@ function ListReservationPage() {
           dayjs(res.reservation.durationEnd).format("DD-MM, hh:mm");
         const listRoom = res.listReservationDetails.map((resDetails) => {
           let color = "";
-          if (resDetails.status === "CHECK_OUT") {
+          if (
+            resDetails.status === "CHECK_OUT" ||
+            resDetails.status === "DONE"
+          ) {
             color = "gray";
           } else if (resDetails.status === "BOOKING") {
             color = "orange";
