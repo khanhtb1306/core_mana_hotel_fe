@@ -21,9 +21,19 @@ import Swal from "sweetalert2";
 import ChangeRoomModal from "../Reservation/ChangeRoomModal";
 import { useReactToPrint } from "react-to-print";
 import { jwtDecode } from "jwt-decode";
+import CancelReservationModal from "../Reservation/CancelReservationModal";
 
 function ReservationForm(props) {
-  const { customers, prices, categories, invoices, listQR } = useLoaderData();
+  const {
+    customers,
+    prices,
+    categories,
+    listSurchage,
+    check,
+    invoices,
+    invoiceReservation,
+    listQR,
+  } = useLoaderData();
   const token = localStorage.getItem("token");
   const decodedToken = jwtDecode(token);
   const printInvoiceRef = useRef();
@@ -36,6 +46,17 @@ function ReservationForm(props) {
           (details) => details.status === "DONE"
         )
       : false;
+  let priceAll = 0;
+  let priceDiscount = reservation
+    ? invoiceReservation.reduce((sum, inv) => {
+        return (sum += inv.Invoice.discount);
+      }, 0)
+    : 0;
+  let priceOtherFee = reservation
+    ? invoiceReservation.reduce((sum, inv) => {
+        return (sum += inv.Invoice.priceOther);
+      }, 0)
+    : 0;
   // console.log(invoices);
   // console.log(reservation);
   // console.log(categories);
@@ -148,6 +169,8 @@ function ReservationForm(props) {
   const [listCustomers, setListCustomers] = useState(null);
   const [openVisitorModal, setOpenVisitorModal] = useState(false);
   const [openPaymentModal, setOpenPaymentModal] = useState(false);
+  const [openCancelReservationModal, setOpenCancelReservationModal] =
+    useState(false);
   const [customer, setCustomer] = useState(
     reservation
       ? reservation.reservation.customer.customerId === "C000000"
@@ -405,8 +428,37 @@ function ReservationForm(props) {
               });
             }
           }
+          //Notify edit customer
+          if (actionData.editCustomer) {
+            if (actionData.editCustomer) {
+              setCustomer(
+                customers.find(
+                  (cus) => cus.customerId === actionData.editCustomer.customerId
+                )
+              );
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-green-800 text-white">Chỉnh sửa thông tin khách hàng thành công</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            } else {
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Chỉnh sửa thông tin khách hàng thất bại</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            }
+          }
+
           //Notify add customer
           if (actionData.addCustomer) {
+            console.log(actionData);
             if (actionData.addCustomer) {
               setCustomer(
                 customers.find(
@@ -608,13 +660,13 @@ function ReservationForm(props) {
     content: () => printBookingRef.current,
   });
 
-  // console.log(listCustomers);
+  // console.log(customers);
   return (
     <>
       <div className="px-4 w-full py-2 print:hidden">
         <div className="flex">
           <SearchCustomer
-            customers={customers}
+            customers={customers.filter((customer) => customer.isCustomer)}
             customer={customer}
             handleCustomerClick={handleCustomerClick}
             handleCustomerRemove={handleCustomerRemove}
@@ -736,7 +788,20 @@ function ReservationForm(props) {
                 <button
                   type="button"
                   className="px-4 py-2 rounded-lg text-green-500 hover:bg-green-100"
-                  onClick={() => setOpenAddRoomModal(true)}
+                  onClick={() => {
+                    if (customer) {
+                      setOpenAddRoomModal(true);
+                    } else {
+                      Swal.fire({
+                        position: "bottom",
+                        html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Bạn cần phải chọn khách hàng</button>`,
+                        showConfirmButton: false,
+                        background: "transparent",
+                        backdrop: "none",
+                        timer: 2000,
+                      });
+                    }
+                  }}
                 >
                   <i className="fa-solid fa-circle-plus pr-2"></i>
                   Phòng
@@ -747,7 +812,7 @@ function ReservationForm(props) {
                 <button
                   type="button"
                   className="px-4 py-2 rounded-lg text-red-500 hover:bg-red-100"
-                  onClick={() => setOpenAddRoomModal(true)}
+                  onClick={() => setOpenCancelReservationModal(true)}
                 >
                   <i className="fa-solid fa-trash pr-2"></i>
                   Huỷ đặt phòng
@@ -877,78 +942,220 @@ function ReservationForm(props) {
                           roomActive.reservationDetailId
                       )
                       .listOrderByReservationDetailId.map((invoice, index) => {
-                        // console.log(invoice);
-                        return (
-                          <div key={index} className="bg-white p-4 mt-1 flex">
-                            <div className="w-3/12">
-                              {invoice.order.orderId}
-                            </div>
-                            <div
-                              className={`w-3/12 ${
-                                invoice.order.status === "UNCONFIRMED" &&
-                                "text-orange-500"
-                              } ${
-                                invoice.order.status === "CONFIRMED" &&
-                                "text-blue-500"
-                              } ${
-                                invoice.order.status === "PAID" &&
-                                "text-green-500"
-                              } ${
-                                invoice.order.status === "CANCEL_ORDER" &&
-                                "text-gray-500"
-                              }`}
-                            >
-                              {invoice.order.status === "UNCONFIRMED" &&
-                                "Chưa xác nhận"}
-                              {invoice.order.status === "CONFIRMED" &&
-                                "Xác nhận"}
-                              {invoice.order.status === "PAID" &&
-                                "Đã thanh toán"}
-                              {invoice.order.status === "CANCEL_ORDER" &&
-                                "Huỷ hoá đơn"}
-                            </div>
-                            <div className="w-3/12">
-                              {invoice.order.totalPay.toLocaleString()}
-                            </div>
-                            <div className="w-3/12">
-                              <button
-                                type="button"
-                                className="mr-4 px-1 rounded-full hover:bg-gray-200"
-                                onClick={() => {
-                                  setSelectedInvoice(invoice);
-                                  setOpenViewInvoiceModal(true);
-                                }}
+                        if (
+                          roomActive.status === "CHECK_OUT" ||
+                          roomActive.status === "DONE"
+                        ) {
+                          if (
+                            invoice.order.status === "CONFIRMED" ||
+                            invoice.order.status === "PAID"
+                          ) {
+                            return (
+                              <div
+                                key={index}
+                                className="bg-white p-4 mt-1 flex"
                               >
-                                <i className="fa-solid fa-eye"></i>
-                              </button>
-                              <button
-                                type="button"
-                                className="mr-4 px-1 rounded-full hover:bg-gray-200"
-                                onMouseOver={() => {
-                                  setSelectedInvoice(invoice);
-                                }}
-                                onMouseLeave={() => {
-                                  setSelectedInvoice(null);
-                                }}
-                                onClick={handleInvoicePrint}
+                                <div className="w-3/12">
+                                  {invoice.order.orderId}
+                                </div>
+                                <div
+                                  className={`w-3/12 ${
+                                    invoice.order.status === "UNCONFIRMED" &&
+                                    "text-orange-500"
+                                  } ${
+                                    invoice.order.status === "CONFIRMED" &&
+                                    "text-blue-500"
+                                  } ${
+                                    invoice.order.status === "PAID" &&
+                                    "text-green-500"
+                                  } ${
+                                    invoice.order.status === "CANCEL_ORDER" &&
+                                    "text-gray-500"
+                                  }`}
+                                >
+                                  {invoice.order.status === "UNCONFIRMED" &&
+                                    "Chưa xác nhận"}
+                                  {invoice.order.status === "CONFIRMED" &&
+                                    "Xác nhận"}
+                                  {invoice.order.status === "PAID" &&
+                                    "Đã thanh toán"}
+                                  {invoice.order.status === "CANCEL_ORDER" &&
+                                    "Huỷ hoá đơn"}
+                                </div>
+                                <div className="w-3/12">
+                                  {invoice.order.totalPay.toLocaleString()}
+                                </div>
+                                <div className="w-3/12">
+                                  <button
+                                    type="button"
+                                    className="mr-4 px-1 rounded-full hover:bg-gray-200"
+                                    onClick={() => {
+                                      setSelectedInvoice(invoice);
+                                      setOpenViewInvoiceModal(true);
+                                    }}
+                                  >
+                                    <i className="fa-solid fa-eye"></i>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="mr-4 px-1 rounded-full hover:bg-gray-200"
+                                    onMouseOver={() => {
+                                      setSelectedInvoice(invoice);
+                                    }}
+                                    onMouseLeave={() => {
+                                      setSelectedInvoice(null);
+                                    }}
+                                    onClick={handleInvoicePrint}
+                                  >
+                                    <i className="fa-solid fa-print"></i>
+                                  </button>
+                                  {invoice.order.status === "UNCONFIRMED" &&
+                                    (roomActive.status === "CHECK_IN" ||
+                                      roomActive.status === "BOOKING") && (
+                                      <>
+                                        <button
+                                          type="button"
+                                          className="mr-4 px-1 rounded-full hover:bg-gray-200"
+                                          onClick={() => {
+                                            // console.log(invoice);
+                                            setSelectedInvoice(invoice);
+                                            setOpenEditInvoiceModal(true);
+                                          }}
+                                        >
+                                          <i className="fa-solid fa-pen"></i>
+                                        </button>
+                                        <button
+                                          className="mr-4 px-1 rounded-full hover:bg-gray-200"
+                                          onClick={() => {
+                                            setSelectedInvoice(invoice);
+                                            setOpenStatusInvoiceModal(true);
+                                          }}
+                                        >
+                                          <i className="fa-solid fa-check"></i>
+                                        </button>
+                                        <button
+                                          className="mr-4 px-1 rounded-full hover:bg-gray-200"
+                                          onClick={() => {
+                                            setSelectedInvoice(invoice);
+                                            setOpenDeleteInvoiceModal(true);
+                                          }}
+                                        >
+                                          <i className="fa-solid fa-trash"></i>
+                                        </button>
+                                      </>
+                                    )}
+                                  {invoice.order.status === "CONFIRMED" &&
+                                    (roomActive.status === "CHECK_IN" ||
+                                      roomActive.status === "BOOKING") && (
+                                      <button
+                                        className="mr-4 px-1 rounded-full hover:bg-gray-200"
+                                        onClick={() => {
+                                          setSelectedInvoice(invoice);
+                                          setOpenStatusInvoiceModal(true);
+                                        }}
+                                      >
+                                        <i className="fa-solid fa-check"></i>
+                                      </button>
+                                    )}
+                                </div>
+                              </div>
+                            );
+                          }
+                        } else {
+                          return (
+                            <div key={index} className="bg-white p-4 mt-1 flex">
+                              <div className="w-3/12">
+                                {invoice.order.orderId}
+                              </div>
+                              <div
+                                className={`w-3/12 ${
+                                  invoice.order.status === "UNCONFIRMED" &&
+                                  "text-orange-500"
+                                } ${
+                                  invoice.order.status === "CONFIRMED" &&
+                                  "text-blue-500"
+                                } ${
+                                  invoice.order.status === "PAID" &&
+                                  "text-green-500"
+                                } ${
+                                  invoice.order.status === "CANCEL_ORDER" &&
+                                  "text-gray-500"
+                                }`}
                               >
-                                <i className="fa-solid fa-print"></i>
-                              </button>
-                              {invoice.order.status === "UNCONFIRMED" &&
-                                (roomActive.status === "CHECK_IN" ||
-                                  roomActive.status === "BOOKING") && (
-                                  <>
-                                    <button
-                                      type="button"
-                                      className="mr-4 px-1 rounded-full hover:bg-gray-200"
-                                      onClick={() => {
-                                        // console.log(invoice);
-                                        setSelectedInvoice(invoice);
-                                        setOpenEditInvoiceModal(true);
-                                      }}
-                                    >
-                                      <i className="fa-solid fa-pen"></i>
-                                    </button>
+                                {invoice.order.status === "UNCONFIRMED" &&
+                                  "Chưa xác nhận"}
+                                {invoice.order.status === "CONFIRMED" &&
+                                  "Xác nhận"}
+                                {invoice.order.status === "PAID" &&
+                                  "Đã thanh toán"}
+                                {invoice.order.status === "CANCEL_ORDER" &&
+                                  "Huỷ hoá đơn"}
+                              </div>
+                              <div className="w-3/12">
+                                {invoice.order.totalPay.toLocaleString()}
+                              </div>
+                              <div className="w-3/12">
+                                <button
+                                  type="button"
+                                  className="mr-4 px-1 rounded-full hover:bg-gray-200"
+                                  onClick={() => {
+                                    setSelectedInvoice(invoice);
+                                    setOpenViewInvoiceModal(true);
+                                  }}
+                                >
+                                  <i className="fa-solid fa-eye"></i>
+                                </button>
+                                <button
+                                  type="button"
+                                  className="mr-4 px-1 rounded-full hover:bg-gray-200"
+                                  onMouseOver={() => {
+                                    setSelectedInvoice(invoice);
+                                  }}
+                                  onMouseLeave={() => {
+                                    setSelectedInvoice(null);
+                                  }}
+                                  onClick={handleInvoicePrint}
+                                >
+                                  <i className="fa-solid fa-print"></i>
+                                </button>
+                                {invoice.order.status === "UNCONFIRMED" &&
+                                  (roomActive.status === "CHECK_IN" ||
+                                    roomActive.status === "BOOKING") && (
+                                    <>
+                                      <button
+                                        type="button"
+                                        className="mr-4 px-1 rounded-full hover:bg-gray-200"
+                                        onClick={() => {
+                                          // console.log(invoice);
+                                          setSelectedInvoice(invoice);
+                                          setOpenEditInvoiceModal(true);
+                                        }}
+                                      >
+                                        <i className="fa-solid fa-pen"></i>
+                                      </button>
+                                      <button
+                                        className="mr-4 px-1 rounded-full hover:bg-gray-200"
+                                        onClick={() => {
+                                          setSelectedInvoice(invoice);
+                                          setOpenStatusInvoiceModal(true);
+                                        }}
+                                      >
+                                        <i className="fa-solid fa-check"></i>
+                                      </button>
+                                      <button
+                                        className="mr-4 px-1 rounded-full hover:bg-gray-200"
+                                        onClick={() => {
+                                          setSelectedInvoice(invoice);
+                                          setOpenDeleteInvoiceModal(true);
+                                        }}
+                                      >
+                                        <i className="fa-solid fa-trash"></i>
+                                      </button>
+                                    </>
+                                  )}
+                                {invoice.order.status === "CONFIRMED" &&
+                                  (roomActive.status === "CHECK_IN" ||
+                                    roomActive.status === "BOOKING") && (
                                     <button
                                       className="mr-4 px-1 rounded-full hover:bg-gray-200"
                                       onClick={() => {
@@ -958,33 +1165,11 @@ function ReservationForm(props) {
                                     >
                                       <i className="fa-solid fa-check"></i>
                                     </button>
-                                    <button
-                                      className="mr-4 px-1 rounded-full hover:bg-gray-200"
-                                      onClick={() => {
-                                        setSelectedInvoice(invoice);
-                                        setOpenDeleteInvoiceModal(true);
-                                      }}
-                                    >
-                                      <i className="fa-solid fa-trash"></i>
-                                    </button>
-                                  </>
-                                )}
-                              {invoice.order.status === "CONFIRMED" &&
-                                (roomActive.status === "CHECK_IN" ||
-                                  roomActive.status === "BOOKING") && (
-                                  <button
-                                    className="mr-4 px-1 rounded-full hover:bg-gray-200"
-                                    onClick={() => {
-                                      setSelectedInvoice(invoice);
-                                      setOpenStatusInvoiceModal(true);
-                                    }}
-                                  >
-                                    <i className="fa-solid fa-check"></i>
-                                  </button>
-                                )}
+                                  )}
+                              </div>
                             </div>
-                          </div>
-                        );
+                          );
+                        }
                       })}
                   {roomActive &&
                     (roomActive.status === "CHECK_IN" ||
@@ -1002,7 +1187,10 @@ function ReservationForm(props) {
                     (details) => details.status === "BOOKING"
                   ) && (
                     <div>
-                      <button type="button">
+                      <button
+                        type="button"
+                        onClick={() => setOpenCancelReservationModal(true)}
+                      >
                         <i className="fa-solid fa-trash fa-lg"></i>
                       </button>
                     </div>
@@ -1153,7 +1341,13 @@ function ReservationForm(props) {
                           <div className="flex mt-10">
                             <img
                               className="mx-auto w-90 h-96"
-                              src={`https://img.vietqr.io/image/${listQR[0].bankId}-${listQR[0].bankAccountNumber}-print.jpg?amount=${invoice.order.totalPay}&addInfo=${invoice.order.transactionCode}`}
+                              src={`https://img.vietqr.io/image/${
+                                listQR[0].bankId
+                              }-${
+                                listQR[0].bankAccountNumber
+                              }-print.jpg?amount=${
+                                invoice.order.totalPay
+                              }&addInfo=${"MGD" + invoice.order.orderId}`}
                             />
                           </div>
                           <div className="text-center text-sm">
@@ -1185,6 +1379,7 @@ function ReservationForm(props) {
               open={openStatusInvoiceModal}
               onClose={() => setOpenStatusInvoiceModal(false)}
               invoice={selectedInvoice}
+              transactionCode={"MGD" + selectedInvoice.order.orderId}
             />
           )}
           {selectedInvoice && openDeleteInvoiceModal && (
@@ -1199,6 +1394,7 @@ function ReservationForm(props) {
               open={openVisitorModal}
               onClose={() => setOpenVisitorModal(false)}
               room={roomActive}
+              check={check}
               visitors={listCustomers}
             />
           )}
@@ -1224,7 +1420,20 @@ function ReservationForm(props) {
             <button
               className="mx-auto mt-10 text-green-500 px-4 py-2 rounded-lg border border-green-500 hover:bg-green-100"
               type="button"
-              onClick={() => setOpenAddRoomModal(true)}
+              onClick={() => {
+                if (customer) {
+                  setOpenAddRoomModal(true);
+                } else {
+                  Swal.fire({
+                    position: "bottom",
+                    html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Bạn cần phải chọn khách hàng</button>`,
+                    showConfirmButton: false,
+                    background: "transparent",
+                    backdrop: "none",
+                    timer: 2000,
+                  });
+                }
+              }}
             >
               <i className="fa-solid fa-plus mr-2"></i>
               Phòng
@@ -1256,47 +1465,195 @@ function ReservationForm(props) {
             <div className="m-10">
               <p>Tên khách sạn: Khách sạn Văn Lâm</p>
               <p>Điện thoại: 0981987625</p>
+              <p>Địa chỉ: </p>
               <div className="mt-4 border-t border-black border-dotted">
-                Ngày xuất phiếu: {dayjs().format("DD/MM/YYYY HH:mm")}
+                Ngày xuất HĐ: {dayjs().format("DD/MM/YYYY HH:mm")}
               </div>
-              <p>Địa chỉ:</p>
               <div className="mt-4">
                 <div className="font-bold text-center">
-                  <h2>PHIẾU ĐẶT PHÒNG</h2>
-                  <p className="text-sm"></p>
+                  <h2>HOÁ ĐƠN ĐẶT PHÒNG</h2>
                 </div>
                 <div>
                   <p>
-                    Khách hàng: {customer ? customer.customerName : "Khách lẻ"}
+                    Khách hàng: {reservation.reservation.customer.customerName}
                   </p>
-                  <p>
-                    Điện thoại:{" "}
-                    {customer
-                      ? customer.phoneNumber
-                        ? customer.phoneNumber
-                        : ""
-                      : ""}
-                  </p>
-                  <p>
-                    Email:{" "}
-                    {customer ? (customer.email ? customer.email : "") : ""}
-                  </p>
+                  <p>Lễ tân: {decodedToken.sub}</p>
                 </div>
-                <div>Thông tin các phòng</div>
+                <table className="text-left min-w-full divide-y divide-gray-300">
+                  <thead className="">
+                    <tr className="border border-black">
+                      <td className="px-4 py-2 text-center border-r border-black">
+                        Thông tin phòng
+                      </td>
+                      <td className="px-4 py-2">Thành tiền</td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reservation.listReservationDetails.map(
+                      (details, index) => {
+                        let priceRoom = details.price;
+                        let listGoods = [];
+                        const invoiceByDetails = invoices.find(
+                          (invoice) =>
+                            invoice.ReservationDetailId ===
+                            details.reservationDetailId
+                        );
+                        if (invoiceByDetails) {
+                          invoiceByDetails.listOrderByReservationDetailId
+                            .flatMap((group) => group.listOrderDetailByOrder)
+                            .map((cur) => {
+                              const productIndex =
+                                listGoods.length > 0
+                                  ? listGoods.findIndex(
+                                      (a) =>
+                                        cur.orderDetail.goodsUnit
+                                          .goodsUnitId ===
+                                        a.goodsUnit.goodsUnitId
+                                    )
+                                  : -1;
+                              if (productIndex !== -1) {
+                                listGoods[productIndex] = {
+                                  ...listGoods[productIndex],
+                                  quantity:
+                                    listGoods[productIndex].quantity +
+                                    cur.orderDetail.quantity,
+                                };
+                              } else {
+                                listGoods.push(cur.orderDetail);
+                              }
+                            });
+                        }
+                        let surcharge = [];
+                        listSurchage.map((sur) => {
+                          if (
+                            sur.length > 0 &&
+                            sur[0].reservationDetail.reservationDetailId ===
+                              details.reservationDetailId
+                          ) {
+                            surcharge = sur;
+                          }
+                        });
+                        return (
+                          <tr className="border border-black">
+                            <td className="px-4 py-2 border-r border-black">
+                              <h2 className="flex">
+                                <div className="mr-4">{index + 1}.</div>
+                                <div className="font-bold">
+                                  {details.room.roomCategory.roomCategoryName}
+                                </div>
+                                <div className="ml-2 px-2 rounded">
+                                  {details.room.roomName}
+                                </div>
+                                <div className="ml-auto text-right">
+                                  {details.price.toLocaleString() + " VND"}
+                                </div>
+                              </h2>
+                              {surcharge.length > 0 && (
+                                <div className="ml-2 mt-2 text-xs">
+                                  {surcharge.map((sur) => {
+                                    priceRoom += sur.value;
+                                    return (
+                                      <div>
+                                        {sur.note +
+                                          ": " +
+                                          sur.value.toLocaleString() +
+                                          " " +
+                                          sur.typeValue}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                              {listGoods.length > 0 && (
+                                <div className="mt-2 text-xs text-center">
+                                  <h3 className="ml-2 font-medium mb-1">
+                                    Hàng hoá đã mua
+                                  </h3>
+                                  <div className="flex ">
+                                    <div className="w-3/12">
+                                      Tên sản phẩm/dịch vụ
+                                    </div>
+                                    <div className="w-3/12 text-right">
+                                      Số lượng
+                                    </div>
+                                    <div className="w-3/12 text-right">Giá</div>
+                                    <div className="w-3/12 text-right">
+                                      Tổng tiền
+                                    </div>
+                                  </div>
+                                  {listGoods.map((good) => {
+                                    priceRoom +=
+                                      good.goodsUnit.price * good.quantity;
+                                    return (
+                                      <div className="flex">
+                                        <div className="w-3/12 text-left">
+                                          {good.goods.goodsName +
+                                            "(" +
+                                            good.goodsUnit.goodsUnitName +
+                                            ")"}
+                                        </div>
+                                        <div className="w-3/12 text-right">
+                                          {good.quantity}
+                                        </div>
+                                        <div className="w-3/12 text-right">
+                                          {good.goodsUnit.price.toLocaleString() +
+                                            " VND"}
+                                        </div>
+                                        <div className="w-3/12 text-right">
+                                          {(
+                                            good.goodsUnit.price * good.quantity
+                                          ).toLocaleString() + " VND"}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-2 py-1 font-bold text-right">
+                              {priceRoom.toLocaleString() + " VND"}
+                            </td>
+                            <div className="hidden">
+                              {(priceAll += priceRoom)}
+                            </div>
+                          </tr>
+                        );
+                      }
+                    )}
+                  </tbody>
+                </table>
                 <div className="flex mt-4">
-                  <div className="ml-auto mr-10">Tổng tiền hàng: </div>
-                  <div className="w-32 text-right"></div>
+                  <div className="ml-auto mr-10">Tổng tiền hoá đơn: </div>
+                  <div className="w-32 text-right">
+                    {priceAll.toLocaleString() + " VND"}
+                  </div>
                 </div>
-                <div className="flex">
-                  <div className="ml-auto mr-10">Chiếu khấu: </div>
-                  <div className="w-32 text-right">0</div>
+                <div className="flex mt-2">
+                  <div className="ml-auto mr-10">Giảm giá: </div>
+                  <div className="w-32 text-right">
+                    {priceDiscount.toLocaleString() + " VND"}
+                  </div>
                 </div>
-                <div className="flex">
+                <div className="flex mt-2">
+                  <div className="ml-auto mr-10">Phí khác: </div>
+                  <div className="w-32 text-right">
+                    {priceOtherFee.toLocaleString() + " VND"}
+                  </div>
+                </div>
+                <div className="flex mt-2">
                   <div className="ml-auto mr-10">Tổng cộng: </div>
-                  <div className="w-32 text-right"></div>
+                  <div className="w-32 text-right">
+                    {(
+                      priceAll -
+                      priceDiscount +
+                      priceOtherFee
+                    ).toLocaleString() + " VND"}
+                  </div>
                 </div>
               </div>
-              <div className="text-center text-sm">Cảm ơn và hẹn gặp lại</div>
+              <div className="text-center mt-10 text-sm">
+                Cảm ơn và hẹn gặp lại
+              </div>
             </div>
           </div>
         </div>
@@ -1341,6 +1698,13 @@ function ReservationForm(props) {
                 roomActive.room.roomCategory.roomCategoryId
             ).PriceListDetailWithDayOfWeek
           }
+        />
+      )}
+      {openCancelReservationModal && (
+        <CancelReservationModal
+          open={openCancelReservationModal}
+          onClose={() => setOpenCancelReservationModal(false)}
+          reservation={reservation}
         />
       )}
     </>

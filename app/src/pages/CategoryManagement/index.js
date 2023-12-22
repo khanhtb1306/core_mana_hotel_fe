@@ -59,7 +59,27 @@ function CategoryManagementPage() {
   };
 
   const newRoomHandler = () => {
-    setOpenNewRoomModal(true);
+    if (categories.length <= 0) {
+      Swal.fire({
+        position: "bottom",
+        html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Bạn phải tạo hạng phòng trước</button>`,
+        showConfirmButton: false,
+        background: "transparent",
+        backdrop: "none",
+        timer: 2000,
+      });
+    } else if (floors.length <= 0) {
+      Swal.fire({
+        position: "bottom",
+        html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Bạn phải tạo khu vực trước</button>`,
+        showConfirmButton: false,
+        background: "transparent",
+        backdrop: "none",
+        timer: 2000,
+      });
+    } else {
+      setOpenNewRoomModal(true);
+    }
   };
 
   const deleteCateRoomsHandler = () => {
@@ -70,7 +90,7 @@ function CategoryManagementPage() {
     { field: "idCateRoom", headerName: "Mã hạng phòng", width: 150 },
     { field: "name", headerName: "Tên hạng phòng", width: 200 },
     { field: "amount", headerName: "SL phòng", width: 100 },
-    { field: "emptyRoom", headerName: "Phòng còn trống", width: 100 },
+    { field: "emptyRoom", headerName: "Phòng trống", width: 100 },
     { field: "priceHour", headerName: "Giá theo giờ", width: 100 },
     { field: "priceDay", headerName: "Giá theo ngày", width: 100 },
     { field: "priceNight", headerName: "Giá theo đêm", width: 100 },
@@ -151,7 +171,7 @@ function CategoryManagementPage() {
     <>
       <Box className="h-full w-10/12 mx-auto mt-10">
         <div className="flex">
-          <h1 className="text-4xl">Hạng phòng & Phòng</h1>
+          <h1 className="text-4xl">Hạng phòng</h1>
           <div className="ml-auto flex">
             {rowSelectionModel.length > 0 ? (
               <div className="mx-2">
@@ -198,7 +218,7 @@ function CategoryManagementPage() {
               toolbar: GridToolbar,
               noRowsOverlay: () => (
                 <div className="pt-8 text-center">
-                  Không có hạng phòng nào, hãy tạo hàng phòng!
+                  Không có hạng phòng nào, hãy tạo hàng phòng mới!
                 </div>
               ),
             }}

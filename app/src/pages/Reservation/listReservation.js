@@ -156,7 +156,7 @@ function ListReservationPage() {
                       type="button"
                       className="text-sm text-white py-1 px-2 rounded bg-red-500 border border-red-500 hover:bg-red-600"
                     >
-                      Xoá
+                      Huỷ
                     </button>
                   }
                 />
@@ -516,20 +516,29 @@ function ListReservationPage() {
         </div>
       </div>
       <ReservationLayout isActive={true} />
-      <DataGrid
-        className="bg-white"
-        getRowHeight={(params) => {
-          let height = (params.model.status.length / 4).toFixed() * 40;
-          height += params.model.status.length % 4 <= 2 ? 40 : 0;
-          return height;
-        }}
-        columns={columns}
-        rows={rows}
-        initialState={{
-          pagination: { paginationModel: { pageSize: 5 } },
-        }}
-        pageSizeOptions={[5, 10, 25]}
-      />
+      <div className={`${rows.length <= 0 && "h-48"}`}>
+        <DataGrid
+          className="bg-white"
+          getRowHeight={(params) => {
+            let height = (params.model.status.length / 4).toFixed() * 40;
+            height += params.model.status.length % 4 <= 2 ? 40 : 0;
+            return height;
+          }}
+          columns={columns}
+          rows={rows}
+          initialState={{
+            pagination: { paginationModel: { pageSize: 5 } },
+          }}
+          pageSizeOptions={[5, 10, 25]}
+          slots={{
+            noRowsOverlay: () => (
+              <div className="pt-8 text-center">
+                Không có đơn đặt phòng nào, hãy tạo đơn đặt phòng mới!
+              </div>
+            ),
+          }}
+        />
+      </div>
     </div>
   );
 }

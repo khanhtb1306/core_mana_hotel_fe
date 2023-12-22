@@ -82,7 +82,7 @@ function DetailsCustomer(props) {
                   Thông tin
                 </button>
               </div>
-              <div className="w-6/12">
+              {/* <div className="w-6/12">
                 <button
                   className={`border-0 border-b border-gray-500 w-full ${
                     openTrans ? "border-b-2 border-green-500 ring-0" : ""
@@ -91,7 +91,7 @@ function DetailsCustomer(props) {
                 >
                   Thẻ kho
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
           {openInfo ? (
@@ -116,7 +116,7 @@ function DetailsCustomer(props) {
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Nhóm khách hàng:</td>
                         <td className="w-7/12 pt-2">
-                          {customer.customerGroup}
+                          {customer.customerGroup.customerGroupName}
                         </td>
                       </tr>
                       <tr className="border-0 border-b">

@@ -91,6 +91,7 @@ function CreateInvoiceRoomModal(props) {
       : []
   );
   const listCheckout = props.listCheckout;
+  // console.log(listCheckout);
   const invoices = props.invoices;
   let discountPrice =
     (usePoint / points.LIST_PROMOTION_POLICY_DETAIL[0].limitValue) *
@@ -197,8 +198,25 @@ function CreateInvoiceRoomModal(props) {
         );
       },
     },
-    { field: "price", headerName: "Thành tiền", width: 150 },
+    { field: "price", headerName: "Thành tiền", width: 140 },
   ];
+
+  const changeStatusInvoices = invoices
+    .filter((invoice) =>
+      listCheckout
+        .filter((checkout) =>
+          rowSelectionModel.includes(checkout.reservationDetailId)
+        )
+        .map((checkout) => {
+          return checkout.reservationDetailId;
+        })
+        .includes(invoice.ReservationDetailId)
+    )
+    .reduce((listInvoice, curList) => {
+      return listInvoice.concat(curList.listOrderByReservationDetailId);
+    }, [])
+    .filter((invoices) => invoices.order.status === "CONFIRMED");
+  console.log(changeStatusInvoices);
 
   const rows = listCheckout.map((checkout, index) => {
     const listInvoices = invoices.find(
@@ -416,6 +434,14 @@ function CreateInvoiceRoomModal(props) {
                   value={usePoint}
                   onChange={() => console.log()}
                 />
+                <input
+                  type="hidden"
+                  name="listConfirmInvoices"
+                  value={changeStatusInvoices.map(
+                    (order) => order.order.orderId
+                  )}
+                  onChange={() => console.log()}
+                />
               </h1>
               <div className="w-full flex text-sm">
                 <div className="w-8/12 pr-4 border-r-2 border-gray-500 border-dotted">
@@ -425,12 +451,21 @@ function CreateInvoiceRoomModal(props) {
                     rows={rows}
                     getRowHeight={(params) => {
                       const listInvoices = params.model.listInvoices;
-                      const surcharge = listSurchage[params.model.index];
+                      const surcharge = listSurchage.filter(
+                        (sur) =>
+                          sur.length > 0 &&
+                          sur[0].reservationDetail.reservationDetailId ===
+                            params.id &&
+                          sur.status
+                      );
                       let height = 50;
                       if (surcharge.length > 0) {
                         height += surcharge.length * 25;
                       }
-                      if (listInvoices) {
+                      if (
+                        listInvoices &&
+                        listInvoices.listOrderByReservationDetailId.length > 0
+                      ) {
                         height += 30;
                         listInvoices.listOrderByReservationDetailId.map(
                           (invoice) => {
@@ -688,9 +723,10 @@ function CreateInvoiceRoomModal(props) {
                 </div>
               </div>
             </div>
-            {rowSelectionModel.length > 0 && (
-              <div className="flex pt-5 absolute bottom-0 right-0">
-                <div className="mr-10 mb-10 ml-auto">
+
+            <div className="flex pt-5 absolute bottom-0 right-0">
+              <div className="mr-10 mb-10 ml-auto">
+                {rowSelectionModel.length > 0 && (
                   <button
                     type={
                       priceAll - discountPrice - totalDeposit + otherFeePrice >
@@ -718,9 +754,16 @@ function CreateInvoiceRoomModal(props) {
                   >
                     Hoàn thành
                   </button>
-                </div>
+                )}
+                <button
+                  type="button"
+                  className="text-white ml-5 border border-red-500 bg-red-500 py-2 px-6 rounded hover:bg-red-600"
+                  onClick={() => props.onClose()}
+                >
+                  Huỷ bỏ
+                </button>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </Form>

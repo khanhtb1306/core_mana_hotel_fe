@@ -1,9 +1,5 @@
 import { Box } from "@mui/material";
-import {
-  DataGrid,
-  GridActionsCellItem,
-  GridToolbar,
-} from "@mui/x-data-grid";
+import { DataGrid, GridActionsCellItem, GridToolbar } from "@mui/x-data-grid";
 import { useState, useEffect } from "react";
 import ButtonHover from "../../components/UI/ButtonHover";
 import DetailsStaff from "../../components/Staff/DetailsStaff";
@@ -32,24 +28,31 @@ function StaffManagementPage() {
 
   const [openNewDepartmentModal, setOpenNewDepartmentModal] = useState(false);
   const [openEditDepartmentModal, setOpenEditDepartmentModal] = useState(false);
-  const [openDeleteDepartmentModal, setOpenDeleteDepartmentModal] = useState(false);
+  const [openDeleteDepartmentModal, setOpenDeleteDepartmentModal] =
+    useState(false);
   const [selectedDepartmentId, setSelectedDepartmentId] = useState(null);
   const [selectedDepartmentName, setSelectedDepartmentName] = useState(null);
   const [staffByDepartment, setStaffByDepartment] = useState(staffs);
 
   const [selectedDepartment, setSelectedDepartment] = useState(null);
-  const [searchValue, setSearchValue] = useState('');
+  const [searchValue, setSearchValue] = useState("");
   const [hoveredDepartment, setHoveredDepartment] = useState(null);
   const [filteredDepartment, setfilteredDepartment] = useState([]);
 
   useEffect(() => {
-    const filtered = departments.filter(department => department.departmentName.toLowerCase().includes(searchValue.toLowerCase()));
+    const filtered = departments.filter((department) =>
+      department.departmentName
+        .toLowerCase()
+        .includes(searchValue.toLowerCase())
+    );
     setfilteredDepartment(filtered);
   }, [departments, searchValue]);
 
   useEffect(() => {
     const filtered = selectedDepartment
-      ? staffs.filter(staff => staff.department.departmentName === selectedDepartment)
+      ? staffs.filter(
+          (staff) => staff.department.departmentName === selectedDepartment
+        )
       : staffs;
     setStaffByDepartment(filtered);
   }, [staffs, selectedDepartment]);
@@ -64,7 +67,6 @@ function StaffManagementPage() {
     setSelectedDepartment(departmentName);
     setSelectedDepartmentName(departmentName);
   };
-
 
   const handleEditDepartment = (id) => {
     setOpenEditDepartmentModal(true);
@@ -107,7 +109,6 @@ function StaffManagementPage() {
       width: 200,
       getActions: ({ id }) => {
         return [
-
           <GridActionsCellItem
             icon={<i className="fa-solid fa-eye"></i>}
             label="Xem chi tiết"
@@ -145,7 +146,7 @@ function StaffManagementPage() {
     const year = dateNow.getFullYear();
     const month = String(dateNow.getMonth() + 1).padStart(2, "0");
     const day = String(dateNow.getDate()).padStart(2, "0");
-    const status = staff.status === 'ACTIVE' ? 'hoạt động' : 'không hoạt động';
+    const status = staff.status === "ACTIVE" ? "hoạt động" : "không hoạt động";
     const formattedDate = `${year}-${month}-${day}`;
     return {
       id: staff.staffId,
@@ -208,19 +209,29 @@ function StaffManagementPage() {
           </button>
           <div className="overflow-y-auto h-40">
             {filteredDepartment.map((departments, index) => (
-              <div className="flex flex-row custom-button "
+              <div
+                className="flex flex-row custom-button "
                 key={index}
-                onMouseEnter={() => setHoveredDepartment(departments.departmentName)}
+                onMouseEnter={() =>
+                  setHoveredDepartment(departments.departmentName)
+                }
                 onMouseLeave={() => setHoveredDepartment(null)}
               >
-                <button className="pt-1 ms-3 basis-3/4 text-left " onClick={() => handleDepartmentSelection(departments.departmentName)}>
+                <button
+                  className="pt-1 ms-3 basis-3/4 text-left "
+                  onClick={() =>
+                    handleDepartmentSelection(departments.departmentName)
+                  }
+                >
                   {departments.departmentName}
                 </button>
                 {hoveredDepartment === departments.departmentName && (
                   <button
                     type="button"
                     className="basis-1/4 text-1xl text-gray-500"
-                    onClick={() => handleEditDepartment(departments.departmentId)}
+                    onClick={() =>
+                      handleEditDepartment(departments.departmentId)
+                    }
                   >
                     <i className="fa-solid fa-pen-to-square edit-action"></i>
                   </button>
@@ -229,7 +240,9 @@ function StaffManagementPage() {
                   <button
                     type="button"
                     className="basis-1/4 text-1xl text-gray-500"
-                    onClick={() => handleDeleteDepartment(departments.departmentId)}
+                    onClick={() =>
+                      handleDeleteDepartment(departments.departmentId)
+                    }
                   >
                     <i className="fa-solid fa-trash edit-action"></i>
                   </button>
@@ -310,7 +323,7 @@ function StaffManagementPage() {
           <EditStaff
             open={openEditStaffModal}
             onClose={() => setOpenEditStaffModal(false)}
-            StaffId={selectedStaffId}
+            staff={staffs.find((staff) => staff.staffId === selectedStaffId)}
             departments={departments}
           />
         )}
@@ -363,7 +376,9 @@ async function loadDepartments() {
     return redirect("/login");
   }
   const response = await axiosPrivate.get("staff/department");
-  return response.data.result.filter((customer) => customer.status !== 'NO_ACTIVE');
+  return response.data.result.filter(
+    (customer) => customer.status !== "NO_ACTIVE"
+  );
 }
 
 export async function loader() {
@@ -374,7 +389,7 @@ export async function loader() {
   return defer({
     // demo: await loadStaffs(),
     staffs: await loadStaffs(),
-    departments: await loadDepartments()
+    departments: await loadDepartments(),
   });
 }
 
@@ -384,12 +399,12 @@ export async function action({ request }) {
   const formData = new FormData();
 
   if (data.get("isDepartment")) {
-    if (data.get("departmentId") != null ) {
+    if (data.get("departmentId") != null) {
       formData.append("departmentId", data.get("departmentId"));
     }
     formData.append("departmentName", data.get("departmentName"));
     formData.append("status", data.get("status"));
-    
+
     if (method === "POST") {
       const response = await axiosPrivate
         .post("staff/department", formData)
@@ -415,7 +430,7 @@ export async function action({ request }) {
     }
     if (method === "DELETE") {
       const response = await axiosPrivate
-        .delete("staff/department/"+data.get("departmentId"))
+        .delete("staff/department/" + data.get("departmentId"))
         .then((response) => {
           Swal.fire({
             position: "center",
@@ -436,9 +451,7 @@ export async function action({ request }) {
         });
       return redirect("/manager/staffManagement");
     }
-  }
- 
-  else {
+  } else {
     if (data.get("staffId") != null) {
       formData.append("staffId", data.get("staffId"));
     }
@@ -460,7 +473,6 @@ export async function action({ request }) {
         .put("staff/admin/" + data.get("staffId"))
         .then((response) => {
           if (response.data.success) {
-
             Swal.fire({
               position: "center",
               icon: "success",
@@ -468,8 +480,7 @@ export async function action({ request }) {
               showConfirmButton: false,
               timer: 1500,
             });
-          }
-          else {
+          } else {
             Swal.fire({
               position: "center",
               icon: "error",
@@ -499,7 +510,6 @@ export async function action({ request }) {
         })
         .then((response) => {
           if (response.data.success) {
-
             Swal.fire({
               position: "center",
               icon: "success",
@@ -507,8 +517,7 @@ export async function action({ request }) {
               showConfirmButton: false,
               timer: 1500,
             });
-          }
-          else {
+          } else {
             Swal.fire({
               position: "center",
               icon: "error",
@@ -517,7 +526,6 @@ export async function action({ request }) {
               timer: 1500,
             });
           }
-
         })
         .catch((e) => {
           console.log(e);
@@ -531,14 +539,12 @@ export async function action({ request }) {
         });
 
       if (data.get("staffId") === null && data.get("userName") !== "") {
-
-        const body = { email: data.get("email"), type: 1 }
-        const response = await axiosConfig.post("auth/password-reset-request", body
-        )
+        const body = { email: data.get("email"), type: 1 };
+        const response = await axiosConfig
+          .post("auth/password-reset-request", body)
           .then((response) => {
             console.log(response);
           });
-
       }
       return redirect("/manager/staffManagement");
     }
@@ -550,7 +556,8 @@ export async function action({ request }) {
         .then((response) => {
           let message = "";
           dataArray.map((id) => {
-            message += response.data.result[id] + " có mã nhân viên là " + id + "<br/>";
+            message +=
+              response.data.result[id] + " có mã nhân viên là " + id + "<br/>";
           });
           Swal.fire({
             position: "center",

@@ -3,6 +3,7 @@ import Modal from "../UI/Modal";
 import SearchProduct from "../Search/SearchProduct";
 import { useState } from "react";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
+import Swal from "sweetalert2";
 
 function StocktakeForm({ name, open, onClose, method, stocktake }) {
   const { goodsUnit } = useLoaderData();
@@ -30,6 +31,7 @@ function StocktakeForm({ name, open, onClose, method, stocktake }) {
   });
 
   const [products, setProducts] = useState(array);
+  console.log(products);
   const [productsAdd, setProductsAdd] = useState(listUnit);
   const handleProductClick = (goodsUnitId) => {
     const updateProducts = [
@@ -83,15 +85,6 @@ function StocktakeForm({ name, open, onClose, method, stocktake }) {
 
   const [inputStatus, setInputStatus] = useState(4);
 
-  function handleStatus(status) {
-    if (status === 5) {
-      setInputStatus(5);
-    }
-    if (status === 4) {
-      setInputStatus(4);
-    }
-  }
-
   const columns = [
     { field: "goodsId", headerName: "Mã hàng hoá", width: 150 },
     { field: "goodsName", headerName: "Tên hàng hoá", width: 200 },
@@ -109,7 +102,6 @@ function StocktakeForm({ name, open, onClose, method, stocktake }) {
               <div className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0">
                 <input
                   type="number"
-                  min={0}
                   name={`actualInventory${row.id}`}
                   value={
                     formData[`actualInventory${row.id}`]
@@ -117,6 +109,16 @@ function StocktakeForm({ name, open, onClose, method, stocktake }) {
                       : 0
                   }
                   onChange={handleChange}
+                  onInvalid={(event) => {
+                    if (event.target.value < 0) {
+                      event.target.setCustomValidity(
+                        "Số lượng hàng hoá thực tế không được âm"
+                      );
+                    } else {
+                      event.target.setCustomValidity("");
+                    }
+                  }}
+                  min={0}
                 />
               </div>
             }
@@ -174,6 +176,14 @@ function StocktakeForm({ name, open, onClose, method, stocktake }) {
     setOpenInfo(false);
     setOpenNote(true);
   };
+
+  let check = false;
+
+  if (products.length <= 0) {
+    check = false;
+  } else {
+    check = true;
+  }
 
   return (
     <Form method={method} onSubmit={onClose}>
@@ -252,7 +262,9 @@ function StocktakeForm({ name, open, onClose, method, stocktake }) {
                       );
                     } else {
                       const defaultPro = goodsUnit.find(
-                        (unit) => pro.goods.goodsId === unit.goods.goodsId && unit.isDefault
+                        (unit) =>
+                          pro.goods.goodsId === unit.goods.goodsId &&
+                          unit.isDefault
                       );
                       return (
                         pro.goodsUnitId +
@@ -279,15 +291,50 @@ function StocktakeForm({ name, open, onClose, method, stocktake }) {
         <div className="flex pt-5">
           <div className="ml-auto">
             <button
+              type={check ? "" : "button"}
               className="bg-green-500 mr-10 py-2 px-6 text-white rounded"
-              onClick={() => handleStatus(5)}
-              disabled={``}
+              onClick={() => {
+                if (check) {
+                  setInputStatus(5);
+                } else {
+                  let message = "";
+                  if (products.length <= 0) {
+                    message = "Hãy nhập hàng hoá để tạo phiếu kiểm kho";
+                  }
+                  Swal.fire({
+                    position: "bottom",
+                    html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">${message}</button>`,
+                    showConfirmButton: false,
+                    background: "transparent",
+                    backdrop: "none",
+                    timer: 2000,
+                  });
+                }
+              }}
             >
               Lưu
             </button>
             <button
+              type={check ? "" : "button"}
               className="bg-orange-500 mr-10 py-2 px-6 text-white rounded"
-              onClick={() => handleStatus(4)}
+              onClick={() => {
+                if (check) {
+                  setInputStatus(4);
+                } else {
+                  let message = "";
+                  if (products.length <= 0) {
+                    message = "Hãy nhập hàng hoá để tạo phiếu kiểm kho";
+                  }
+                  Swal.fire({
+                    position: "bottom",
+                    html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">${message}</button>`,
+                    showConfirmButton: false,
+                    background: "transparent",
+                    backdrop: "none",
+                    timer: 2000,
+                  });
+                }
+              }}
             >
               Lưu tạm
             </button>

@@ -37,7 +37,6 @@ async function loadListFundsById(id) {
   const response = await axiosPrivate.get(
     "reservation/get_fund_book_by_reservation?reservationId=" + id
   );
-  console.log(response);
   if (response.data.success) {
     return response.data.result ? response.data.result : [];
   } else {
@@ -142,6 +141,19 @@ async function loadInvoiceReservation(id) {
   }
 }
 
+async function checkAddCustomerToVisitor(id) {
+  const response = await axiosPrivate.get(
+    "reservation-detail/check_customer_is_visitor?reservationId=" + id
+  );
+  if (response.data.success) {
+    return response.data.result;
+  } else {
+    Swal.close();
+    window.location.href = "/error";
+    return;
+  }
+}
+
 async function loadListSurchage(id) {
   const response = await axiosPrivate.get(
     "reservation/get_control_policy_by_reservation?reservationId=" + id
@@ -197,6 +209,7 @@ export async function loader({ request, params }) {
     const listQR = await loadListQR();
     const otherFees = await loadOtherRevenue();
     const deposit = await loadDeposit();
+    const check = await checkAddCustomerToVisitor(id);
     const listFunds = await loadListFundsById(id);
     const invoiceReservation = await loadInvoiceReservation(id);
     const listSurchage = await loadListSurchage(id);
@@ -217,6 +230,7 @@ export async function loader({ request, params }) {
         listFunds,
         invoiceReservation,
         listSurchage,
+        check,
         reservation,
       },
       Swal.close()
@@ -302,16 +316,6 @@ export async function action({ request }) {
       return { success: true, listRoom: listRoom };
     }
   }
-  // if (data.get("isAddGroup")) {
-  //   const formData = new FormData();
-  //   formData.append("customerGroupName", data.get("groupCusName"));
-  //   const response = await axiosPrivate
-  //     .post("customer/customerGroup", formData)
-  //     .catch((e) => {
-  //       console.log(e);
-  //     });
-  //   return { success: true };
-  // }
   if (data.get("newMainCustomer")) {
     const formData = new FormData();
     formData.append("customerName", data.get("customerName"));
@@ -325,6 +329,7 @@ export async function action({ request }) {
     formData.append("taxCode", data.get("taxCode"));
     formData.append("gender", data.get("gender"));
     formData.append("image", data.get("image"));
+    formData.append("customer", true);
     const response = await axiosPrivate
       .post("customer", formData, {
         headers: {
@@ -334,6 +339,7 @@ export async function action({ request }) {
       .catch((e) => {
         console.log(e);
       });
+    console.log(response);
     return { success: true, addCustomer: response.data };
   }
   if (data.get("editMainCustomer")) {
@@ -349,6 +355,7 @@ export async function action({ request }) {
     formData.append("taxCode", data.get("taxCode"));
     formData.append("gender", data.get("gender"));
     formData.append("image", data.get("image"));
+    formData.append("customer", data.get("isCustomer"));
     const response = await axiosPrivate
       .put("customer/" + data.get("customerId"), formData, {
         headers: {
@@ -498,6 +505,38 @@ export async function action({ request }) {
     }
     return { success: true, listAddingRoom: listAddingRoom };
   }
+  if (data.get("isAddCustomerToVisitor")) {
+    const formData = new FormData();
+    formData.append(
+      "reservationDetailCustomerDTO.reservationDetailId",
+      data.get("reservationDetailId")
+    );
+    formData.append(
+      "reservationDetailCustomerDTO.customerId",
+      data.get("customerId")
+    );
+    formData.append("adult", true);
+    await axiosPrivate
+      .post("reservation-detail/reservation-detail-customer", formData)
+      .catch((e) => {
+        console.log(e);
+      });
+    return { success: true };
+  }
+  if (data.get("isRemoveCustomerToVisitor")) {
+    await axiosPrivate
+      .delete(
+        "reservation-detail/reservation-detail-customer/" +
+          data.get("reservationDetailCustomerId") +
+          "?isAdult=" +
+          true
+      )
+      .catch((e) => {
+        console.log(e);
+      });
+    return { success: true };
+  }
+
   //Action Invoice in reservation details
   if (data.get("isInvoice")) {
     //Create Invoice
@@ -580,6 +619,13 @@ export async function action({ request }) {
   if (data.get("isStatusInvoice")) {
     const formData = new FormData();
     formData.append("status", data.get("status"));
+    if (data.get("paidMethod")) {
+      formData.append("paidMethod", data.get("paidMethod"));
+      formData.append("transactionCode", data.get("transactionCode"));
+      console.log(data.get("paidMethod"));
+      console.log(data.get("transactionCode"));
+    }
+    // return { success: true };
     const response = await axiosPrivate
       .put("order/updateStatus/" + data.get("orderId"), formData)
       .catch((e) => {
@@ -666,7 +712,6 @@ export async function action({ request }) {
           .catch((e) => {
             console.log(e);
           });
-        console.log(response);
         return { success: true, changeRoom: response.data.success };
       } else {
         const formCheckout = new FormData();
@@ -726,6 +771,16 @@ export async function action({ request }) {
   }
   //Create payment
   if (data.get("isCreateInvoiceRoom")) {
+    const listInvoices = data.get("listConfirmInvoices").split(",");
+    for (let i = 0; i < listInvoices.length; i++) {
+      const formOrder = new FormData();
+      formOrder.append("status", "PAID");
+      await axiosPrivate
+        .put("order/updateStatus/" + listInvoices[i], formOrder)
+        .catch((e) => {
+          console.log(e);
+        });
+    }
     const formInvoice = new FormData();
     const listReservationDetails = data
       .get("listReservationDetails")
@@ -759,7 +814,6 @@ export async function action({ request }) {
       .catch((e) => {
         console.log(e);
       });
-    console.log(response);
     return {
       success: true,
       isCreateInvoiceRoom: response && response.data.success,
@@ -831,6 +885,15 @@ export async function action({ request }) {
       success: true,
       isDoneReservation: response && response.data.success,
     };
+  }
+  if (data.get("isCancelReservation")) {
+    // const deposit = data.get("deposit");
+    // const number = data.get("number");
+    // const reservationId = data.get("reservationId");
+    // await axiosPrivate.get(
+    //   `reservation/calculate_deposit_cancel_reservation?deposit=${deposit}&number=${number}&reservationId=${reservationId}&checkFundBook=true`
+    // );
+    return redirect("/listRoom");
   }
   return { success: true };
 }

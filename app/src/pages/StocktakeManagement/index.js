@@ -16,7 +16,7 @@ import EditStocktake from "../../components/Stocktake/EditStocktake";
 import DeleteStocktake from "../../components/Stocktake/DeleteStocktake";
 
 function StocktakeManagementPage() {
-  const { stocktakes } = useLoaderData();
+  const { stocktakes, goodsUnit } = useLoaderData();
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openNewStockModal, setOpenNewStocktModal] = useState(false);
 
@@ -143,7 +143,18 @@ function StocktakeManagementPage() {
   });
 
   const newStockHandler = () => {
-    setOpenNewStocktModal(true);
+    if (goodsUnit.length > 0) {
+      setOpenNewStocktModal(true);
+    } else {
+      Swal.fire({
+        position: "bottom",
+        html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Không có hàng hoá để tạo phiếu kiểm kho</button>`,
+        showConfirmButton: false,
+        background: "transparent",
+        backdrop: "none",
+        timer: 2500,
+      });
+    }
   };
 
   return (
@@ -161,23 +172,32 @@ function StocktakeManagementPage() {
             </div>
           </div>
         </div>
-        <DataGrid
-          className="bg-white"
-          columns={columns}
-          rows={rows}
-          initialState={{
-            pagination: { paginationModel: { pageSize: 5 } },
-          }}
-          pageSizeOptions={[5, 10, 25]}
-          checkboxSelection
-          disableRowSelectionOnClick
-          onRowSelectionModelChange={(newRowSelectionModel) => {
-            setRowSelectionModel(newRowSelectionModel);
-          }}
-          rowSelectionModel={rowSelectionModel}
-          localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
-          slots={{ toolbar: GridToolbar }}
-        />
+        <div className={`${rows.length <= 0 && "h-60"}`}>
+          <DataGrid
+            className="bg-white"
+            columns={columns}
+            rows={rows}
+            initialState={{
+              pagination: { paginationModel: { pageSize: 5 } },
+            }}
+            pageSizeOptions={[5, 10, 25]}
+            checkboxSelection
+            disableRowSelectionOnClick
+            onRowSelectionModelChange={(newRowSelectionModel) => {
+              setRowSelectionModel(newRowSelectionModel);
+            }}
+            rowSelectionModel={rowSelectionModel}
+            localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
+            slots={{
+              toolbar: GridToolbar,
+              noRowsOverlay: () => (
+                <div className="pt-8 text-center">
+                  Không có phiếu kiểm kho nào, hãy tạo phiếu kiểm kho mới!
+                </div>
+              ),
+            }}
+          />
+        </div>
       </Box>
       {openNewStockModal && (
         <NewStocktakeRoom
@@ -303,7 +323,7 @@ export async function action({ request }) {
     } else {
       acc.push({
         productId: curr.productId,
-        actualInventory: (Number(actualInventory) * Number(curr.amount)),
+        actualInventory: Number(actualInventory) * Number(curr.amount),
       });
     }
     return acc;

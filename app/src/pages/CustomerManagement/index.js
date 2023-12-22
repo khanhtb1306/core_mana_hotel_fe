@@ -19,19 +19,23 @@ function CustomerManagementPage() {
   const [hoveredCustomerGroups, setHoveredCustomerGroups] = useState(null);
   const [filteredCustomerGroups, setfilteredCustomerGroups] = useState([]);
   const [openNewGroupCusModal, setOpenNewGroupCusModal] = useState(false);
-  const [searchValue, setSearchValue] = useState('');
+  const [searchValue, setSearchValue] = useState("");
   const [selectedCustomerGroups, setSelectedCustomerGroups] = useState(null);
-  const [selectedCustomerGroupName, setSelectedCustomerGroupName] = useState(null);
-  const [customerByCustomerGroups, setCustomerByCustomerGroups] = useState(customers);
+  const [selectedCustomerGroupName, setSelectedCustomerGroupName] =
+    useState(null);
+  const [customerByCustomerGroups, setCustomerByCustomerGroups] =
+    useState(customers);
   const [selectedCustomerGroupId, setSelectedCustomerGroupId] = useState(null);
-  const [openEditCustomerGroupModal, setOpenEditCustomerGroupModal] = useState(null);
-  const [openDeleteCustomerGroupModal, setOpenDeleteCustomerGroupModal] = useState(null);
-
+  const [openEditCustomerGroupModal, setOpenEditCustomerGroupModal] =
+    useState(null);
+  const [openDeleteCustomerGroupModal, setOpenDeleteCustomerGroupModal] =
+    useState(null);
 
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openNewCustomerModal, setOpenNewCustomerModal] = useState(false);
   const [openEditCustomerModal, setOpenEditCustomerModal] = useState(false);
-  const [openDetailsCustomerModal, setOpenDetailsCustomerModal] = useState(false);
+  const [openDetailsCustomerModal, setOpenDetailsCustomerModal] =
+    useState(false);
   const [openDeleteCustomerModal, setOpenDeleteCustomerModal] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
 
@@ -53,7 +57,6 @@ function CustomerManagementPage() {
     setOpenDeleteCustomerModal(true);
   };
 
-
   const handleEditCustomerGroup = (id) => {
     setOpenEditCustomerGroupModal(true);
     setSelectedCustomerGroupId(id);
@@ -63,21 +66,26 @@ function CustomerManagementPage() {
     setSelectedCustomerGroupId(id);
   };
 
-
   // const handleEditArea = (customerGroupsId) => {
   //   setSelectedCustomerGroupsId(customerGroupsId);
   //   setOpenEditAreaModal(true);
   // };
 
   useEffect(() => {
-    const filtered = customerGroups.filter(customerGroups => customerGroups.customerGroupName.toLowerCase().includes(searchValue.toLowerCase()));
+    const filtered = customerGroups.filter((customerGroups) =>
+      customerGroups.customerGroupName
+        .toLowerCase()
+        .includes(searchValue.toLowerCase())
+    );
     setfilteredCustomerGroups(filtered);
   }, [customerGroups, searchValue]);
 
   useEffect(() => {
-    console.log(customers);
     const filtered = selectedCustomerGroups
-      ? customers.filter(customer => customer.customerGroup.customerGroupName === selectedCustomerGroups)
+      ? customers.filter(
+          (customer) =>
+            customer.customerGroup.customerGroupName === selectedCustomerGroups
+        )
       : customers;
     setCustomerByCustomerGroups(filtered);
   }, [customers, selectedCustomerGroups]);
@@ -92,7 +100,6 @@ function CustomerManagementPage() {
     setSelectedCustomerGroups(customerGroupName);
     setSelectedCustomerGroupName(customerGroupName);
   };
-
 
   const columns = [
     { field: "code", headerName: "Mã khách hàng", width: 150 },
@@ -134,42 +141,42 @@ function CustomerManagementPage() {
     },
   ];
 
-  const rows = customerByCustomerGroups.filter((customer) => customer.status !== 'NO_ACTIVE').map((cus) => {
-    const gender = cus.gender ? "Nam giới" : "Nữ giới";
-    const dateNow = new Date(cus.dob);
-    const year = dateNow.getFullYear();
-    const month = String(dateNow.getMonth() + 1).padStart(2, "0");
-    const day = String(dateNow.getDate()).padStart(2, "0");
+  const rows = customerByCustomerGroups
+    .filter((customer) => customer.status !== "NO_ACTIVE")
+    .map((cus) => {
+      const gender = cus.gender ? "Nam giới" : "Nữ giới";
+      const dateNow = new Date(cus.dob);
+      const year = dateNow.getFullYear();
+      const month = String(dateNow.getMonth() + 1).padStart(2, "0");
+      const day = String(dateNow.getDate()).padStart(2, "0");
 
-    const formattedDate = `${year}-${month}-${day}`;
-    return {
-      id: cus.customerId,
-      code: cus.customerId,
-      nameCus: cus.customerName,
-      customerGroup: cus.customerGroup.customerGroupName,
-      IC: cus.identity,
-      address: cus.address,
-      phoneNumber: cus.phoneNumber,
-      DOB: formattedDate,
-      gender: gender,
-      email: cus.email,
-      taxCode: cus.taxCode,
-    };
-  });
-
+      const formattedDate = `${year}-${month}-${day}`;
+      return {
+        id: cus.customerId,
+        code: cus.customerId,
+        nameCus: cus.customerName,
+        customerGroup: cus.customerGroup.customerGroupName,
+        IC: cus.identity,
+        address: cus.address,
+        phoneNumber: cus.phoneNumber,
+        DOB: formattedDate,
+        gender: gender,
+        email: cus.email,
+        taxCode: cus.taxCode,
+      };
+    });
 
   return (
-
     <div className="flex flex-row">
-      <div className=" mt-10 mx-5">
-        <div className="flex pt-1 mt-10">
-          <div className="w-10/12 text-1xl ">
+      <div className="mt-10 mx-2 px-2">
+        <div className="flex mt-5">
+          <div className="w-10/12 text-xl">
             <p className="text-lg font-bold">Nhóm khách hàng</p>
           </div>
-          <div className="w-2/12">
+          <div className="w-2/12 text-gray-500 ml-4">
             <button
               type="button"
-              className="w-1/12 text-2xl text-gray-500"
+              className="text-2xl"
               onClick={() => setOpenNewGroupCusModal(true)}
             >
               <i className="fa-solid fa-plus"></i>
@@ -185,35 +192,47 @@ function CustomerManagementPage() {
         <div className="">
           <input
             type="text"
-            placeholder="Tìm kiếm "
+            placeholder="Tìm kiếm"
             className="w-full p-2 border border-gray-300 rounded"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
           />
         </div>
-        <div className="pt-2 ">
+        <div className="pt-2">
           <button
             type="button"
-            className="w-full p-1 border border-gray-300 rounded bg-gray-200"
+            className="w-full p-1 bg-gray-200 hover:bg-gray-300"
             onClick={handleSelectAllCustomerGroups}
           >
             Tất cả nhóm khách hàng
           </button>
           <div className="overflow-y-auto h-40">
             {filteredCustomerGroups.map((customerGroups, index) => (
-              <div className="flex flex-row custom-button "
+              <div
+                className="flex flex-row custom-button"
                 key={index}
-                onMouseEnter={() => setHoveredCustomerGroups(customerGroups.customerGroupName)}
+                onMouseEnter={() =>
+                  setHoveredCustomerGroups(customerGroups.customerGroupName)
+                }
                 onMouseLeave={() => setHoveredCustomerGroups(null)}
               >
-                <button className="pt-1 ms-3 basis-3/4 text-left " onClick={() => handleCustomerGroupsSelection(customerGroups.customerGroupName)}>
+                <button
+                  className="py-1 ms-3 w-3/4 text-left hover:bg-gray-300"
+                  onClick={() =>
+                    handleCustomerGroupsSelection(
+                      customerGroups.customerGroupName
+                    )
+                  }
+                >
                   {customerGroups.customerGroupName}
                 </button>
                 {hoveredCustomerGroups === customerGroups.customerGroupName && (
                   <button
                     type="button"
-                    className="basis-1/4 text-1xl text-gray-500"
-                    onClick={() => handleEditCustomerGroup(customerGroups.customerGroupId)}
+                    className="w-1/4 text-sm text-gray-500 hover:bg-gray-300"
+                    onClick={() =>
+                      handleEditCustomerGroup(customerGroups.customerGroupId)
+                    }
                   >
                     <i className="fa-solid fa-pen-to-square edit-action"></i>
                   </button>
@@ -221,8 +240,10 @@ function CustomerManagementPage() {
                 {hoveredCustomerGroups === customerGroups.customerGroupName && (
                   <button
                     type="button"
-                    className="basis-1/4 text-1xl text-gray-500"
-                    onClick={() => handleDeleteCustomerGroup(customerGroups.customerGroupId)}
+                    className="basis-1/4 text-sm text-gray-500 hover:bg-gray-300"
+                    onClick={() =>
+                      handleDeleteCustomerGroup(customerGroups.customerGroupId)
+                    }
                   >
                     <i className="fa-solid fa-trash edit-action"></i>
                   </button>
@@ -233,10 +254,12 @@ function CustomerManagementPage() {
               <CustomerGroupForm
                 open={openEditCustomerGroupModal}
                 onClose={() => setOpenEditCustomerGroupModal(false)}
-                customerGroupId={selectedCustomerGroupId}
+                customerGroup={customerGroups.find(
+                  (group) => selectedCustomerGroupId === group.customerGroupId
+                )}
               />
             )}
-             {openDeleteCustomerGroupModal && (
+            {openDeleteCustomerGroupModal && (
               <DeleteCustomerGroup
                 open={openDeleteCustomerGroupModal}
                 onClose={() => setOpenDeleteCustomerGroupModal(false)}
@@ -253,16 +276,10 @@ function CustomerManagementPage() {
             <div className="ml-auto flex">
               {rowSelectionModel.length > 0 ? (
                 <div className="mx-2">
-                  <ButtonHover
-                    action="Thao tác"
-                    iconAction="fa-solid fa-ellipsis-vertical"
-                    names={[
-                      {
-                        name: "Xoá khách hàng",
-                        icon: "fa-solid fa-trash",
-                        action: deleteCustomerHandler,
-                      },
-                    ]}
+                  <ButtonClick
+                    name="Xoá khách hàng"
+                    iconAction="fa-solid fa-plus"
+                    action={deleteCustomerHandler}
                   />
                 </div>
               ) : null}
@@ -275,22 +292,31 @@ function CustomerManagementPage() {
               </div>
             </div>
           </div>
-          <DataGrid
-            className="bg-white"
-            columns={columns}
-            rows={rows}
-            initialState={{
-              pagination: { paginationModel: { pageSize: 5 } },
-            }}
-            pageSizeOptions={[5, 10, 25]}
-            checkboxSelection
-            disableRowSelectionOnClick
-            onRowSelectionModelChange={(newRowSelectionModel) => {
-              setRowSelectionModel(newRowSelectionModel);
-            }}
-            rowSelectionModel={rowSelectionModel}
-            slots={{ toolbar: GridToolbar }}
-          />
+          <div className={`${rows.length <= 0 && "h-60"}`}>
+            <DataGrid
+              className="bg-white"
+              columns={columns}
+              rows={rows}
+              initialState={{
+                pagination: { paginationModel: { pageSize: 5 } },
+              }}
+              pageSizeOptions={[5, 10, 25]}
+              checkboxSelection
+              disableRowSelectionOnClick
+              onRowSelectionModelChange={(newRowSelectionModel) => {
+                setRowSelectionModel(newRowSelectionModel);
+              }}
+              rowSelectionModel={rowSelectionModel}
+              slots={{
+                toolbar: GridToolbar,
+                noRowsOverlay: () => (
+                  <div className="pt-8 text-center">
+                    Không có khách hàng nào, hãy tạo khách hàng mới!
+                  </div>
+                ),
+              }}
+            />
+          </div>
         </Box>
         {openNewCustomerModal && (
           <NewCustomer
@@ -327,8 +353,7 @@ function CustomerManagementPage() {
           />
         )}
       </div>
-    </div >
-
+    </div>
   );
 }
 
@@ -351,7 +376,9 @@ async function loadCustomerGroup() {
         redirect("/login");
       });
     if (response.data.success) {
-      return response.data.result.filter((customer) => customer.status !== 'NO_ACTIVE');
+      return response.data.result.filter(
+        (customer) => customer.status !== "NO_ACTIVE"
+      );
     } else {
       window.location.href = "/login";
       return;
@@ -457,6 +484,7 @@ export async function action({ request }) {
   formData.append("gender", data.get("gender"));
   formData.append("image", data.get("image"));
   if (method === "POST") {
+    formData.append("customer", true);
     const response = await axiosPrivate
       .post("customer", formData, {
         headers: {
@@ -482,10 +510,10 @@ export async function action({ request }) {
           timer: 1500,
         });
       });
-      console.log(response);
     return redirect("/manager/customerManagement");
   }
   if (method === "PUT") {
+    formData.append("customer", data.get("isCustomer"));
     const response = await axiosPrivate
       .put("customer/" + data.get("customerId"), formData, {
         headers: {
@@ -513,13 +541,13 @@ export async function action({ request }) {
       });
     return redirect("/manager/customerManagement");
   }
-  if (method === "DELETE") {
+  if (method === "DELETE" && !data.get("customerId")) {
     const dataArray = data.get("customerGroupId");
     const response = await axiosPrivate
       .delete("customer/customerGroup/" + dataArray)
       .then((response) => {
         let message = "";
-       
+
         Swal.fire({
           position: "center",
           icon: "success",

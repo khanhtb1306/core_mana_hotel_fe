@@ -5,6 +5,7 @@ import Modal from "./Modal";
 import { axiosConfig } from "../../utils/axiosConfig";
 import NewCategoryRoom from "../CategoryRoom/NewCategoryRoom";
 import NewArea from "../NewArea";
+import Swal from "sweetalert2";
 
 function RoomForm({
   name,
@@ -26,7 +27,7 @@ function RoomForm({
     priceByNight: defaultCate.priceByNight,
   });
 
-  const [roomName, setRoomName] = useState(room.roomName);
+  const [roomName, setRoomName] = useState(room.roomName ? room.roomName : "");
 
   const optionFloors = floors.map((floor) => {
     return (
@@ -58,6 +59,18 @@ function RoomForm({
     });
   };
 
+  let check = false;
+
+  if (
+    roomName.trim() === "" ||
+    (rooms.find((cate) => cate.roomName === roomName) &&
+      roomName !== room.roomName)
+  ) {
+    check = false;
+  } else {
+    check = true;
+  }
+
   return (
     <>
       <Form method={method} onSubmit={onClose} encType="multipart/form-data">
@@ -85,7 +98,7 @@ function RoomForm({
                   )}
                   <tr>
                     <td className="w-3/12">
-                      <h2>Tên phòng</h2>
+                      <h2><span className="text-red-500">*</span> Tên phòng</h2>
                     </td>
                     <td className="w-9/12">
                       <input
@@ -96,24 +109,12 @@ function RoomForm({
                         onChange={(e) => {
                           setRoomName(e.target.value);
                         }}
-                        onInvalid={(e) => {
-                          e.target.setCustomValidity(
-                            "Không được để trống tên phòng"
-                          );
-                        }}
-                        required
                       />
-                      {rooms.find((cate) => cate.roomName === roomName) &&
-                        roomName !== room.roomName && (
-                          <div className="text-red-500 text-sm">
-                            Tên phòng không thể bị trùng
-                          </div>
-                        )}
                     </td>
                   </tr>
                   <tr>
                     <td className="w-3/12">
-                      <h2>Khu vực</h2>
+                      <h2><span className="text-red-500">*</span> Khu vực</h2>
                     </td>
                     <td className="w-9/12">
                       <select
@@ -134,7 +135,7 @@ function RoomForm({
                   </tr>
                   <tr>
                     <td className="w-3/12">
-                      <h2>Hạng phòng</h2>
+                      <h2><span className="text-red-500">*</span> Hạng phòng</h2>
                     </td>
                     <td className="w-9/12">
                       <select
@@ -160,7 +161,7 @@ function RoomForm({
                   </tr>
                   <tr>
                     <td className="w-3/12">
-                      <h2>Chú ý</h2>
+                      <h2>Ghi chú</h2>
                     </td>
                     <td className="w-9/12">
                       <input
@@ -230,11 +231,29 @@ function RoomForm({
           <div className="flex pt-5">
             <div className="ml-auto">
               <button
+                type={check ? "" : "button"}
                 className="bg-green-500 mr-10 py-2 px-6 text-white rounded hover:bg-green-600"
-                disabled={
-                  rooms.find((cate) => cate.roomName === roomName) &&
-                  roomName !== room.roomName
-                }
+                onClick={() => {
+                  if (!check) {
+                    let message = "";
+                    if (roomName.trim() === "") {
+                      message = "Không được để trống tên phòng";
+                    } else if (
+                      rooms.find((cate) => cate.roomName === roomName) &&
+                      roomName !== room.roomName
+                    ) {
+                      message = "Không được để trùng tên với phòng khác";
+                    }
+                    Swal.fire({
+                      position: "bottom",
+                      html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">${message}</button>`,
+                      showConfirmButton: false,
+                      background: "transparent",
+                      backdrop: "none",
+                      timer: 2000,
+                    });
+                  }
+                }}
               >
                 Lưu
               </button>

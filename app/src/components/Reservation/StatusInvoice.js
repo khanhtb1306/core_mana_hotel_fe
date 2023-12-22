@@ -7,25 +7,12 @@ import {
   RadioGroup,
   Select,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 function StatusInvoice(props) {
-  const { listQR } = useLoaderData();
   const invoice = props.invoice;
-  const [payType, setPayType] = useState(1);
-  const [openNewAccBankModal, setOpenNewAccBankModal] = useState(false);
-  const [selectedAcc, setSelectedAcc] = useState(
-    listQR.length > 0 ? listQR[0].bankAccountId : 0
-  );
-  const [banks, setBanks] = useState([]);
-  useEffect(() => {
-    fetch("https://api.vietqr.io/v2/banks")
-      .then((response) => response.json())
-      .then((data) => {
-        setBanks(data.data);
-      })
-      .catch((error) => console.error(error));
-  }, []);
+  // console.log(invoice);
+  const [payType, setPayType] = useState("2");
   return (
     <Form method="PUT" onSubmit={props.onClose}>
       <Modal open={props.open} onClose={props.onClose} size="w-7/12 h-.5/6">
@@ -47,6 +34,20 @@ function StatusInvoice(props) {
                 invoice.order.status === "CONFIRMED" ? "PAID" : "CONFIRMED"
               }
             />
+            {invoice.order.status === "CONFIRMED" && (
+              <>
+                <input
+                  type="hidden"
+                  name="paidMethod"
+                  defaultValue={payType === "2" ? "TRANSFER" : "CASH"}
+                />
+                <input
+                  type="hidden"
+                  name="transactionCode"
+                  defaultValue={props.transactionCode}
+                />
+              </>
+            )}
           </div>
           <div>
             Từ{" "}

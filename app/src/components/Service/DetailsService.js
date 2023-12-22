@@ -59,7 +59,7 @@ function DetailsService(props) {
                 Thông tin
               </button>
             </div>
-            <div className="w-6/12">
+            {/* <div className="w-6/12">
               <button
                 className={`border-0 border-b border-gray-500 w-full ${
                   openWastage ? "border-b-2 border-green-500 ring-0" : ""
@@ -68,7 +68,7 @@ function DetailsService(props) {
               >
                 Nguyên liệu tiêu hao
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
         {openInfo ? (

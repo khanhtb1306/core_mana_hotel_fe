@@ -1,9 +1,5 @@
 import { Box } from "@mui/material";
-import {
-  DataGrid,
-  GridActionsCellItem,
-  GridToolbar,
-} from "@mui/x-data-grid";
+import { DataGrid, GridActionsCellItem, GridToolbar } from "@mui/x-data-grid";
 import { useState, useEffect } from "react";
 import ButtonHover from "../../components/UI/ButtonHover";
 import dayjs from "dayjs";
@@ -22,20 +18,23 @@ function FundBookManagementPage() {
   let { dataSummary } = useLoaderData();
 
   const [fundBooks, setFundBooks] = useState(data);
-  const [ fundBooksSummary, setFundBooksSummary ] = useState(dataSummary);
+  const [fundBooksSummary, setFundBooksSummary] = useState(dataSummary);
 
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
-  const [openNewFundBookExpenseModal, setOpenNewFundBookExpenseModal] = useState(false);
-  const [openNewFundBookOutComeModal, setOpenNewFundBookOutComeModal] = useState(false);
+  const [openNewFundBookExpenseModal, setOpenNewFundBookExpenseModal] =
+    useState(false);
+  const [openNewFundBookOutComeModal, setOpenNewFundBookOutComeModal] =
+    useState(false);
   const [openEditFundBookModal, setOpenEditFundBookModal] = useState(false);
-  const [openDetailsFundBookModal, setOpenDetailsFundBookModal] = useState(false);
+  const [openDetailsFundBookModal, setOpenDetailsFundBookModal] =
+    useState(false);
   const [selectedFundBookId, setSelectedFundBookId] = useState(null);
 
   const handleDropdownChange = (event) => {
     setselectedValue(event.target.value);
   };
 
-  const [selectedValue, setselectedValue] = useState('1');
+  const [selectedValue, setselectedValue] = useState("1");
   const [month, setMonth] = useState(dayjs());
   const [year, setYear] = useState(dayjs());
 
@@ -44,11 +43,8 @@ function FundBookManagementPage() {
     { value: 2, name: "Theo năm" },
   ];
 
-
-
   useEffect(() => {
     async function fetchListInvoices() {
-
       let response = null;
       let responseSummary = null;
       let formattedDate = null;
@@ -56,7 +52,7 @@ function FundBookManagementPage() {
 
       try {
         if (selectedValue === "1") {
-          formattedDate = month.format('YYYY/MM/DD').toString();
+          formattedDate = month.format("YYYY/MM/DD").toString();
           formData.append("time", formattedDate);
           formData.append("isMonth", true);
           const urlSearchParams = new URLSearchParams(formData);
@@ -65,16 +61,18 @@ function FundBookManagementPage() {
               "Content-Type": "multipart/form-data",
             },
           });
-          responseSummary = await axiosPrivate.get("fund-book/summary?" + urlSearchParams, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          });
+          responseSummary = await axiosPrivate.get(
+            "fund-book/summary?" + urlSearchParams,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
           setFundBooks(response.data.result);
           setFundBooksSummary(responseSummary.data.result);
-        }
-        else {
-          formattedDate = year.format('YYYY/MM/DD').toString();
+        } else {
+          formattedDate = year.format("YYYY/MM/DD").toString();
           formData.append("time", formattedDate);
           formData.append("isMonth", false);
           const urlSearchParams = new URLSearchParams(formData);
@@ -83,14 +81,16 @@ function FundBookManagementPage() {
               "Content-Type": "multipart/form-data",
             },
           });
-          responseSummary = await axiosPrivate.get("fund-book/summary?" + urlSearchParams, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          });
+          responseSummary = await axiosPrivate.get(
+            "fund-book/summary?" + urlSearchParams,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
           setFundBooks(response.data.result);
           setFundBooksSummary(responseSummary.data.result);
-
         }
       } catch (error) {
         console.log(error);
@@ -109,8 +109,6 @@ function FundBookManagementPage() {
     setOpenEditFundBookModal(true);
     setSelectedFundBookId(id);
   };
-
-
 
   const columns = [
     { field: "code", headerName: "Số hiệu chứng từ", width: 150 },
@@ -138,47 +136,48 @@ function FundBookManagementPage() {
             label="Sửa đổi"
             onClick={() => handleEditFundBook(id)}
           />,
-
         ];
       },
     },
   ];
 
-  const rows = Array.isArray(fundBooks) ? fundBooks.filter((fundBook) => fundBook.role !== 'ROLE_MANAGER').map((fundBook) => {
-    const dateNow = new Date(fundBook.time);
-    const year = dateNow.getFullYear();
-    const month = String(dateNow.getMonth() + 1).padStart(2, "0");
-    const day = String(dateNow.getDate()).padStart(2, "0");
-    const formattedDate = `${year}-${month}-${day}`;
-    if (fundBook.type === "INCOME" || fundBook.type === "OTHER_INCOME") {
-      return {
-        id: fundBook.fundBookId,
-        code: fundBook.fundBookId,
-        time: formattedDate,
-        note: fundBook.note,
-        paidMethod: fundBook.paidMethod === "BANK"?"Chuyển khoản":"Tiền mặt",
-        valueIncome: fundBook.value + " VND",
-        valueExpense: 0 + " VND",
-        status: fundBook.status === "COMPLETE" ? "Hoàn tất" : "Hủy bỏ",
-        payerReceiver: fundBook.payerReceiver
-
-      };
-    }
-    return {
-      id: fundBook.fundBookId,
-      code: fundBook.fundBookId,
-      time: formattedDate,
-      note: fundBook.note
-      //  === "INCOME" ? 'Thu nhập' : fundBook.type === "OTHER_INCOME" ? 'Thu nhập khác' : fundBook.type === "OTHER_EXPENSE" ? 'Chi phí khác' : 'Chi phí'
-      ,
-      paidMethod: fundBook.paidMethod,
-      valueIncome: 0 + " VND",
-      valueExpense: fundBook.value + " VND",
-      status: fundBook.status === "COMPLETE" ? "Hoàn tất" : "",
-      payerReceiver: fundBook.payerReceiver
-    };
-
-  }) : [];
+  const rows = Array.isArray(fundBooks)
+    ? fundBooks
+        .filter((fundBook) => fundBook.role !== "ROLE_MANAGER")
+        .map((fundBook) => {
+          const dateNow = new Date(fundBook.time);
+          const year = dateNow.getFullYear();
+          const month = String(dateNow.getMonth() + 1).padStart(2, "0");
+          const day = String(dateNow.getDate()).padStart(2, "0");
+          const formattedDate = `${year}-${month}-${day}`;
+          if (fundBook.type === "INCOME" || fundBook.type === "OTHER_INCOME") {
+            return {
+              id: fundBook.fundBookId,
+              code: fundBook.fundBookId,
+              time: formattedDate,
+              note: fundBook.note,
+              paidMethod:
+                fundBook.paidMethod === "BANK" ? "Chuyển khoản" : "Tiền mặt",
+              valueIncome: fundBook.value + " VND",
+              valueExpense: 0 + " VND",
+              status: fundBook.status === "COMPLETE" ? "Hoàn tất" : "Hủy bỏ",
+              payerReceiver: fundBook.payerReceiver,
+            };
+          }
+          return {
+            id: fundBook.fundBookId,
+            code: fundBook.fundBookId,
+            time: formattedDate,
+            note: fundBook.note,
+            //  === "INCOME" ? 'Thu nhập' : fundBook.type === "OTHER_INCOME" ? 'Thu nhập khác' : fundBook.type === "OTHER_EXPENSE" ? 'Chi phí khác' : 'Chi phí'
+            paidMethod: fundBook.paidMethod,
+            valueIncome: 0 + " VND",
+            valueExpense: fundBook.value + " VND",
+            status: fundBook.status === "COMPLETE" ? "Hoàn tất" : "",
+            payerReceiver: fundBook.payerReceiver,
+          };
+        })
+    : [];
 
   const newFundBookOutComeHandler = () => {
     setOpenNewFundBookOutComeModal(true);
@@ -189,7 +188,6 @@ function FundBookManagementPage() {
 
   return (
     <>
-
       <Box className="h-full w-10/12 mx-auto mt-10">
         <div className="flex mb-10">
           <h1 className="text-4xl">Sổ quỹ</h1>
@@ -223,8 +221,9 @@ function FundBookManagementPage() {
                   )}
                 </LocalizationProvider>
               </div>
-              <div className="">
+              <div className="ml-2">
                 <select
+                  className="rounded"
                   value={selectedValue}
                   onChange={(event) => handleDropdownChange(event)}
                 >
@@ -278,22 +277,31 @@ function FundBookManagementPage() {
             </div>
           </div>
         </div>
-        <DataGrid
-          className="bg-white"
-          columns={columns}
-          rows={rows}
-          initialState={{
-            pagination: { paginationModel: { pageSize: 5 } },
-          }}
-          pageSizeOptions={[5, 10, 25]}
-          checkboxSelection
-          disableRowSelectionOnClick
-          onRowSelectionModelChange={(newRowSelectionModel) => {
-            setRowSelectionModel(newRowSelectionModel);
-          }}
-          rowSelectionModel={rowSelectionModel}
-          slots={{ toolbar: GridToolbar }}
-        />
+        <div className={`${rows.length <= 0 && "h-60"}`}>
+          <DataGrid
+            className="bg-white"
+            columns={columns}
+            rows={rows}
+            initialState={{
+              pagination: { paginationModel: { pageSize: 5 } },
+            }}
+            pageSizeOptions={[5, 10, 25]}
+            checkboxSelection
+            disableRowSelectionOnClick
+            onRowSelectionModelChange={(newRowSelectionModel) => {
+              setRowSelectionModel(newRowSelectionModel);
+            }}
+            rowSelectionModel={rowSelectionModel}
+            slots={{
+              toolbar: GridToolbar,
+              noRowsOverlay: () => (
+                <div className="pt-8 text-center">
+                  Không có phiếu thu, chi nào, hãy tạo phiếu thu, chi mới!
+                </div>
+              ),
+            }}
+          />
+        </div>
       </Box>
       {openNewFundBookOutComeModal && (
         <NewFundBook
@@ -315,7 +323,6 @@ function FundBookManagementPage() {
           open={openEditFundBookModal}
           onClose={() => setOpenEditFundBookModal(false)}
           fundBookId={selectedFundBookId}
-
         />
       )}
       {openDetailsFundBookModal && selectedFundBookId && (
@@ -325,8 +332,6 @@ function FundBookManagementPage() {
           fundBookId={selectedFundBookId}
         />
       )}
-
-
     </>
   );
 }
@@ -371,16 +376,17 @@ async function loadFundBooksSummary() {
   formData.append("time", formattedDate);
   formData.append("isMonth", true);
   const urlSearchParams = new URLSearchParams(formData);
-  const response = await axiosPrivate.get("fund-book/summary?" + urlSearchParams, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  const response = await axiosPrivate.get(
+    "fund-book/summary?" + urlSearchParams,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
 
   return response.data.result;
 }
-
-
 
 export async function loader() {
   const token = localStorage.getItem("token");
@@ -390,7 +396,6 @@ export async function loader() {
   return defer({
     data: await loadFundBooks(),
     dataSummary: await loadFundBooksSummary(),
-
   });
 }
 
@@ -398,7 +403,7 @@ export async function action({ request }) {
   const method = request.method;
   const data = await request.formData();
   const formData = new FormData();
-  const fundBookId = data.get("fundBookId")
+  const fundBookId = data.get("fundBookId");
   formData.append("fundBookId", data.get("fundBookId"));
   // formData.append("time", data.get("time"));
   formData.append("value", data.get("value"));
@@ -416,7 +421,6 @@ export async function action({ request }) {
       })
       .then((response) => {
         if (response.data.success) {
-
           Swal.fire({
             position: "center",
             icon: "success",
@@ -424,8 +428,7 @@ export async function action({ request }) {
             showConfirmButton: false,
             timer: 1500,
           });
-        }
-        else {
+        } else {
           Swal.fire({
             position: "center",
             icon: "error",
@@ -434,7 +437,6 @@ export async function action({ request }) {
             timer: 1500,
           });
         }
-
       })
       .catch((e) => {
         console.log(e);
@@ -446,7 +448,6 @@ export async function action({ request }) {
           timer: 1500,
         });
       });
-
 
     return redirect("/manager/FundBookManagement");
   }
@@ -459,7 +460,6 @@ export async function action({ request }) {
       })
       .then((response) => {
         if (response.data.success) {
-
           Swal.fire({
             position: "center",
             icon: "success",
@@ -467,8 +467,7 @@ export async function action({ request }) {
             showConfirmButton: false,
             timer: 1500,
           });
-        }
-        else {
+        } else {
           Swal.fire({
             position: "center",
             icon: "error",
@@ -477,7 +476,6 @@ export async function action({ request }) {
             timer: 1500,
           });
         }
-
       })
       .catch((e) => {
         console.log(e);
@@ -489,7 +487,6 @@ export async function action({ request }) {
           timer: 1500,
         });
       });
-
 
     return redirect("/manager/FundBookManagement");
   }

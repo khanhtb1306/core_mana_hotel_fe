@@ -243,7 +243,12 @@ function AddRoom(props) {
 
   return (
     <Form method="POST" onSubmit={props.onClose}>
-      <Modal open={props.open} onClose={props.onClose} size="w-8/12 h-.5/6">
+      <Modal
+        open={props.open}
+        onClose={props.onClose}
+        size="w-8/12 h-.5/6"
+        button={true}
+      >
         <div className="p-2 w-full">
           <div className="mb-5">
             <h1 className="text-lg pb-5 font-bold">Chọn phòng</h1>
@@ -382,7 +387,7 @@ function AddRoom(props) {
           </div>
         </div>
         <div className="flex">
-          {category.length > 0 && (
+          {category.length > 0 ? (
             <>
               <input type="hidden" name="categories" value={category.length} />
               <DataGrid
@@ -394,8 +399,26 @@ function AddRoom(props) {
                 pageSizeOptions={[100]}
               />
             </>
+          ) : (
+            <div className="mx-auto">Không còn phòng trống!</div>
           )}
         </div>
+        {category.length > 0 && (
+          <div className="flex pt-5">
+            <div className="ml-auto">
+              <button className="bg-green-500 mr-10 py-2 px-6 text-white rounded hover:bg-green-600">
+                Lưu
+              </button>
+              <button
+                type="button"
+                className="bg-gray-400 py-2 px-6 text-white rounded hover:bg-gray-500"
+                onClick={() => props.onClose()}
+              >
+                Bỏ qua
+              </button>
+            </div>
+          </div>
+        )}
       </Modal>
     </Form>
   );

@@ -90,15 +90,24 @@ function OtherFee() {
           Thêm phí thu mới
         </button>
       </div>
-      <DataGrid
-        className="bg-white"
-        columns={columns}
-        rows={rows}
-        initialState={{
-          pagination: { paginationModel: { pageSize: 5 } },
-        }}
-        pageSizeOptions={[5, 10, 25]}
-      />
+      <div className={`${rows.length <= 0 && "h-48"}`}>
+        <DataGrid
+          className="bg-white"
+          columns={columns}
+          rows={rows}
+          initialState={{
+            pagination: { paginationModel: { pageSize: 5 } },
+          }}
+          pageSizeOptions={[5, 10, 25]}
+          slots={{
+            noRowsOverlay: () => (
+              <div className="pt-8 text-center">
+                Không có phí thu nào, hãy tạo phí thu mới!
+              </div>
+            ),
+          }}
+        />
+      </div>
       {openNewRevenue && (
         <OtherFeeModal
           open={openNewRevenue}

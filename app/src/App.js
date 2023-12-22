@@ -3,9 +3,6 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { viVN as dataGridViVN } from "@mui/x-data-grid";
 import { viVN as coreViVN } from "@mui/material/locale";
 import { viVN } from "@mui/x-date-pickers/locales";
-// Import the functions you need from the SDKs you need
-// import { initializeApp } from "firebase/app";
-// import { getAnalytics } from "firebase/analytics";
 import RootLayout from "./pages/RootLayout";
 import ErrorPage from "./pages/Error";
 import LoginPage, { action as loginAction } from "./pages/Authentication/login";
@@ -50,7 +47,7 @@ import ResetPasswordPage, {
 import PriceManagementPage, {
   loader as loadPriceBooks,
   action as actionPriceBooks,
-} from "./pages/PriceManagementPage";
+} from "./pages/PriceManagement";
 import ListReservationPage, {
   loader as loadReservations,
 } from "./pages/Reservation/listReservation";
@@ -68,7 +65,7 @@ import PolicyManagementPage, {
 } from "./pages/PolicyManagement/index";
 import OverviewManagementPage, {
   loader as loadOverview,
-} from "./pages/OverviewManagementPage";
+} from "./pages/OverviewManagement";
 import TransactionManagementPage, {
   loader as loadTransaction,
 } from "./pages/TransactionManagement";
@@ -78,9 +75,9 @@ import ImportManagementPage, {
 } from "./pages/ImportManagement";
 import FundBookManagementPage, {
   loader as loadFundBooks,
-  action as actionFundBooks
-}from "./pages/FundBookManagement";
-import StaffManagementPage,{
+  action as actionFundBooks,
+} from "./pages/FundBookManagement";
+import StaffManagementPage, {
   loader as loadStaffs,
   action as actionStaff,
 } from "./pages/StaffManagement";
@@ -90,20 +87,6 @@ import InforManagementPage, {
   action as actionInforManagement,
 } from "./pages/InforManagement";
 
-// TODO: Add SDKs for Firebase products that you want to use
-// const firebaseConfig = {
-//   apiKey: "AIzaSyC9L9FyaVE1CNELEF78ovUo55ZCbypvwS0",
-//   authDomain: "manahotel-g41.firebaseapp.com",
-//   projectId: "manahotel-g41",
-//   storageBucket: "manahotel-g41.appspot.com",
-//   messagingSenderId: "686275453200",
-//   appId: "1:686275453200:web:05528a5433a9828c3b0595",
-//   measurementId: "G-LDRFDCHEHF"
-// };
-//
-// // Initialize Firebase
-// const app = initializeApp(firebaseConfig);
-// const analytics = getAnalytics(app);
 const routesForManager = [
   {
     index: true,
@@ -148,14 +131,13 @@ const routesForManager = [
     path: "importManagement",
     element: <ImportManagementPage />,
     loader: loadImportGoods,
-    action: actionImportGoods
+    action: actionImportGoods,
   },
   {
     path: "fundBookManagement",
     element: <FundBookManagementPage />,
     loader: loadFundBooks,
-    action: actionFundBooks
-
+    action: actionFundBooks,
   },
   {
     path: "customerManagement",
@@ -192,8 +174,9 @@ const routesForManager = [
 const routesForReceptionist = [
   {
     index: true,
-    element: <ListReservationPage />,
-    loader: loadReservations,
+    element: <ListRoomPage />,
+    loader: loadRooms,
+    action: actionListRooms,
   },
   {
     path: "listReservation",

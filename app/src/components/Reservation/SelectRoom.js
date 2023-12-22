@@ -127,9 +127,11 @@ function SelectRoom(props) {
         }
         if (isOverAdults.data.success && isOverAdults.data.result) {
           setIsPaidOverAdults(isOverAdults.data.result.status);
+          setPriceAdults(isOverAdults.data.result.value);
         }
         if (isOverChildren.data.success && isOverChildren.data.result) {
-          setIsPaidOverAdults(isOverChildren.data.result.status);
+          setIsPaidOverChildren(isOverChildren.data.result.status);
+          setPriceChildren(isOverChildren.data.result.value);
         }
         setToTime(to);
         setFromTime(from);
@@ -418,8 +420,8 @@ function SelectRoom(props) {
             "reservation/calculate_additional_children_surcharge",
             form
           );
-          console.log(response);
           if (response.data.success) {
+            console.log(response);
             setPriceChildren(response.data.result);
           }
         }
@@ -612,12 +614,16 @@ function SelectRoom(props) {
               );
             })}
           </Select>
-          {room.status === "CHECK_OUT" ||
-            (room.status === "DONE" && (
-              <div className="ml-2 p-2 bg-gray-200 rounded-lg text-gray-700">
-                Đã trả
-              </div>
-            ))}
+          {room.status === "CHECK_OUT" && (
+            <div className="ml-2 p-2 bg-gray-200 rounded-lg text-gray-700">
+              Đã trả
+            </div>
+          )}
+          {room.status === "DONE" && (
+            <div className="ml-2 p-2 bg-gray-200 rounded-lg text-gray-700">
+              Đã thanh toán
+            </div>
+          )}
           {room.status === "CHECK_IN" && (
             <div className="ml-2 p-2 bg-green-200 rounded-lg text-green-700">
               Đang sử dụng
@@ -842,7 +848,6 @@ function SelectRoom(props) {
           </>
         )}
       </div>
-
       {soonCheckin > 0 && isPaidSoonCheckin && (
         <div className="flex pt-2">
           <p className="w-8/12">Phụ thu nhận sớm (Giờ)</p>

@@ -29,7 +29,6 @@ import NewArea from "../../components/NewArea";
 import EditArea from "../../components/UI/EditArea";
 import DeleteArea from "../../components/Area/DeleteArea";
 
-
 function RoomManagementPage() {
   const token = useRouteLoaderData("root");
   const { rooms, categories, floors } = useLoaderData();
@@ -45,7 +44,7 @@ function RoomManagementPage() {
   const [selectedRoomId, setSelectedRoomId] = useState(null);
   const [hoveredFloor, setHoveredFloor] = useState(null);
   const [selectedFloor, setSelectedFloor] = useState(null);
-  const [searchValue, setSearchValue] = useState('');
+  const [searchValue, setSearchValue] = useState("");
   const [filteredFloors, setFilteredFloors] = useState([]);
   const [openNewAreaModal, setOpenNewAreaModal] = useState(false);
   const [openDeleteAreaModal, setOpenDeleteAreaModal] = useState(false);
@@ -60,9 +59,10 @@ function RoomManagementPage() {
     setOpenDeleteAreaModal(true);
   };
 
-
   useEffect(() => {
-    const filtered = floors.filter(floor => floor.floorName.toLowerCase().includes(searchValue.toLowerCase()));
+    const filtered = floors.filter((floor) =>
+      floor.floorName.toLowerCase().includes(searchValue.toLowerCase())
+    );
     setFilteredFloors(filtered);
   }, [floors, searchValue]);
 
@@ -158,38 +158,59 @@ function RoomManagementPage() {
     },
   ];
 
-  const rows = roomsByFloor ? roomsByFloor.map((room) => {
-    const status = room.status === 1 ? "Đang hoạt động" : "Ngừng hoạt động";
-    return {
-      id: room.roomId,
-      name: room.roomName,
-      cateRoom: room.roomCategory.roomCategoryName,
-      area: room.floor.floorName,
-      priceHour: room.roomCategory.priceByHour
-        ? room.roomCategory.priceByHour.toLocaleString()
-        : 0,
-      priceDay: room.roomCategory.priceByDay
-        ? room.roomCategory.priceByDay.toLocaleString()
-        : 0,
-      priceNight: room.roomCategory.priceByNight
-        ? room.roomCategory.priceByNight.toLocaleString()
-        : 0,
-      status: status,
-    };
-  }) : [];
+  const rows = roomsByFloor
+    ? roomsByFloor.map((room) => {
+        const status = room.status === 1 ? "Đang hoạt động" : "Ngừng hoạt động";
+        return {
+          id: room.roomId,
+          name: room.roomName,
+          cateRoom: room.roomCategory.roomCategoryName,
+          area: room.floor.floorName,
+          priceHour: room.roomCategory.priceByHour
+            ? room.roomCategory.priceByHour.toLocaleString()
+            : 0,
+          priceDay: room.roomCategory.priceByDay
+            ? room.roomCategory.priceByDay.toLocaleString()
+            : 0,
+          priceNight: room.roomCategory.priceByNight
+            ? room.roomCategory.priceByNight.toLocaleString()
+            : 0,
+          status: status,
+        };
+      })
+    : [];
   const newCateRoomHandler = () => {
     setOpenNewCateRoomModal(true);
   };
 
   const newRoomHandler = () => {
-    setOpenNewRoomModal(true);
+    if (categories.length <= 0) {
+      Swal.fire({
+        position: "bottom",
+        html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Bạn phải tạo hạng phòng trước</button>`,
+        showConfirmButton: false,
+        background: "transparent",
+        backdrop: "none",
+        timer: 2000,
+      });
+    } else if (floors.length <= 0) {
+      Swal.fire({
+        position: "bottom",
+        html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Bạn phải tạo khu vực trước</button>`,
+        showConfirmButton: false,
+        background: "transparent",
+        backdrop: "none",
+        timer: 2000,
+      });
+    } else {
+      setOpenNewRoomModal(true);
+    }
   };
 
   const deleteRoomsHandler = () => {
     setOpenDeleteRoomsModal(true);
   };
   return (
-
     <div className="flex flex-row">
       <div className="mt-10 mx-5">
         <div className="flex pt-1 mt-10">
@@ -224,14 +245,15 @@ function RoomManagementPage() {
         <div className="pt-2">
           <button
             type="button"
-            className="w-full p-1 border border-gray-300 rounded bg-gray-200"
+            className="w-full p-1 border border-gray-300 rounded bg-gray-200 hover:bg-gray-300"
             onClick={handleSelectAllFloors}
           >
             Tất cả khu vực
           </button>
-          <div className="overflow-y-auto h-40">
+          <div className="overflow-y-auto h-max-40">
             {filteredFloors.map((floor, index) => (
-              <div className=""
+              <div
+                className="w-full p-1 border border-gray-300 rounded bg-gray-200 hover:bg-gray-500"
                 key={index}
                 style={{
                   display: "flex",
@@ -246,7 +268,7 @@ function RoomManagementPage() {
                 onClick={() => handleFloorSelection(floor.floorName)}
               >
                 <div
-                  className="pt-1 "
+                  className="pt-1"
                   style={{
                     width: "80%",
                     backgroundColor:
@@ -272,7 +294,7 @@ function RoomManagementPage() {
                     className="w-1/12 mx-2 text-1xl text-gray-500"
                     onClick={() => handleDeleteArea(floor.floorId)}
                   >
-                    <i className="fa-solid fa-trash edit-action"></i>
+                    <i className="fa-solid fa-trash delete-action"></i>
                   </button>
                 )}
               </div>
@@ -283,6 +305,7 @@ function RoomManagementPage() {
               open={openEditAreaModal}
               onClose={() => setOpenEditAreaModal(false)}
               floorId={selectedFloorId}
+              floor={floors.find((floor) => floor.floorId === selectedFloorId)}
             />
           )}
           {openDeleteAreaModal && (
@@ -296,7 +319,7 @@ function RoomManagementPage() {
       </div>
       <Box className="h-full w-10/12 mx-auto mt-10">
         <div className="flex">
-          <h1 className="text-4xl">Hạng phòng & Phòng</h1>
+          <h1 className="text-4xl">Phòng</h1>
           <div className="ml-auto flex">
             {rowSelectionModel.length > 0 ? (
               <div className="mx-2">
@@ -324,23 +347,32 @@ function RoomManagementPage() {
           </div>
         </div>
         <RoomRootLayout isActive={false} />
-        <DataGrid
-          className="bg-white"
-          columns={columns}
-          rows={rows}
-          initialState={{
-            pagination: { paginationModel: { pageSize: 5 } },
-          }}
-          pageSizeOptions={[5, 10, 25]}
-          checkboxSelection
-          disableRowSelectionOnClick
-          onRowSelectionModelChange={(newRowSelectionModel) => {
-            setRowSelectionModel(newRowSelectionModel);
-          }}
-          rowSelectionModel={rowSelectionModel}
-          localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
-          slots={{ toolbar: GridToolbar }}
-        />
+        <div className={`${rows.length <= 0 && "h-60"}`}>
+          <DataGrid
+            className="bg-white"
+            columns={columns}
+            rows={rows}
+            initialState={{
+              pagination: { paginationModel: { pageSize: 5 } },
+            }}
+            pageSizeOptions={[5, 10, 25]}
+            checkboxSelection
+            disableRowSelectionOnClick
+            onRowSelectionModelChange={(newRowSelectionModel) => {
+              setRowSelectionModel(newRowSelectionModel);
+            }}
+            rowSelectionModel={rowSelectionModel}
+            localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
+            slots={{
+              toolbar: GridToolbar,
+              noRowsOverlay: () => (
+                <div className="pt-8 text-center">
+                  Không có phòng nào, hãy tạo phòng mới!
+                </div>
+              ),
+            }}
+          />
+        </div>
       </Box>
       {openNewRoomModal && (
         <NewRoom
@@ -412,7 +444,6 @@ function RoomManagementPage() {
         Ngừng hoạt động
       </Tooltip>
     </div>
-
   );
 }
 
@@ -544,7 +575,7 @@ export async function action({ request }) {
     });
     return redirect("/manager/roomManagement");
   }
-  if (data.get("isEditFloor") && method==="PUT") {
+  if (data.get("isEditFloor") && method === "PUT") {
     const formData = new FormData();
     console.log("start");
     formData.append("floorName", data.get("floorNameEdit"));
@@ -679,24 +710,24 @@ export async function action({ request }) {
   if (method === "DELETE") {
     const dataArray = data.get("floorId");
     await axiosPrivate
-    .delete("Floor/" + dataArray)
-    .then((response) => {
-      Swal.fire({
-        position: "center",
-        icon: "success",
-        title: "Xóa khu vực thành công",
-        showConfirmButton: false,
+      .delete("Floor/" + dataArray)
+      .then((response) => {
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          title: "Xóa khu vực thành công",
+          showConfirmButton: false,
+        });
+      })
+      .catch((e) => {
+        Swal.fire({
+          position: "center",
+          icon: "error",
+          title: "Xóa khu vực thất bại",
+          showConfirmButton: false,
+          timer: 1500,
+        });
       });
-    })
-    .catch((e) => {
-      Swal.fire({
-        position: "center",
-        icon: "error",
-        title: "Xóa khu vực thất bại",
-        showConfirmButton: false,
-        timer: 1500,
-      });
-    });
     return redirect("/manager/roomManagement");
   }
   if (method === "DELETE") {

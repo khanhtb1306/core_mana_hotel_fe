@@ -2,6 +2,7 @@ import { useState } from "react";
 import SearchProduct from "../Search/SearchProduct";
 import Modal from "../UI/Modal";
 import { Form, useLoaderData } from "react-router-dom";
+import Swal from "sweetalert2";
 
 function InvoiceFormModal(props) {
   const { goodsUnit } = useLoaderData();
@@ -11,14 +12,15 @@ function InvoiceFormModal(props) {
   // console.log(reservationDetail);
   // console.log(invoice);
   // console.log(goodsUnit);
-  const productUnit = goodsUnit.filter((unit) => unit.goods.goodsCategory);
+  const productUnit = goodsUnit.filter(
+    (unit) => unit.goods.inventory > 0 && unit.goods.goodsCategory
+  );
   const service = goodsUnit.filter((unit) => !unit.goods.goodsCategory);
   let array = [];
   if (invoice) {
     array = goodsUnit
       .filter((unit) => {
         for (const stock of invoice.listOrderDetailByOrder) {
-          // console.log(stock);
           if (stock.orderDetail.goodsUnit.goodsUnitId === unit.goodsUnitId) {
             return true;
           }
@@ -29,7 +31,8 @@ function InvoiceFormModal(props) {
         return {
           ...unit,
           number: invoice.listOrderDetailByOrder.find(
-            (good) => (good.orderDetail.goodsUnit.goodsUnitId === unit.goodsUnitId)
+            (good) =>
+              good.orderDetail.goodsUnit.goodsUnitId === unit.goodsUnitId
           ).orderDetail.quantity,
         };
       });
@@ -64,9 +67,55 @@ function InvoiceFormModal(props) {
     setProducts(updateProducts);
   };
 
+  const groupDefautProduct = products.reduce((product, cur) => {
+    const defaultGood = goodsUnit.find(
+      (unit) => unit.isDefault && unit.goods.goodsId === cur.goods.goodsId
+    );
+    const exchange = cur.cost / defaultGood.cost;
+    const exist = product.find(
+      (pro) => pro.goods.goodsId === cur.goods.goodsId
+    );
+    if (exist) {
+      return [
+        {
+          ...exist,
+          number: exist.number + exchange * cur.number,
+        },
+      ];
+    } else {
+      return [
+        ...product,
+        {
+          ...defaultGood,
+          number: exchange * cur.number,
+        },
+      ];
+    }
+  }, []);
+  console.log(groupDefautProduct);
+
+  let check = false;
+
+  if (
+    products.length <= 0 ||
+    products.some((product) => product.number <= 0) ||
+    groupDefautProduct.some(
+      (product) => product.goods.inventory < product.number
+    )
+  ) {
+    check = false;
+  } else {
+    check = true;
+  }
+
   return (
     <Form method={props.method} onSubmit={props.onClose}>
-      <Modal open={props.open} onClose={props.onClose} size="w-10/12 h-.5/6">
+      <Modal
+        open={props.open}
+        onClose={props.onClose}
+        size="w-10/12 h-.5/6"
+        button={true}
+      >
         <div className="p-2 w-full">
           <div className="mb-5">
             <h1 className="text-lg pb-5 font-bold">{props.name}</h1>
@@ -102,7 +151,10 @@ function InvoiceFormModal(props) {
           <div className="flex">
             <div className="w-5/12 bg-gray-200 rounded-lg p-2">
               <SearchProduct
-                goodsUnit={goodsUnit}
+                goodsUnit={goodsUnit.filter(
+                  (unit) =>
+                    unit.goods.inventory > 0 || unit.goods.inventory === null
+                )}
                 handleProductClick={handleProductClick}
               />
               <div className="flex mt-2">
@@ -142,7 +194,7 @@ function InvoiceFormModal(props) {
                         >
                           <div className="flex">
                             <img
-                              src={unit.goods.image}
+                              src={`data:image/png;base64,${unit.goods.image}`}
                               alt={unit.goods.goodsName}
                               className="w-10 h-10"
                             />
@@ -174,7 +226,7 @@ function InvoiceFormModal(props) {
                         >
                           <div className="flex">
                             <img
-                              src={unit.goods.image}
+                              src={`data:image/png;base64,${unit.goods.image}`}
                               alt={unit.goods.goodsName}
                               className="w-10 h-10"
                             />
@@ -230,7 +282,7 @@ function InvoiceFormModal(props) {
                             (u) => u.goodsUnitId === unit.goodsUnitId
                           );
                           if (index !== -1) {
-                            products[index].number = e.target.value;
+                            products[index].number = Number(e.target.value);
                             setProducts([...products]);
                           }
                         }}
@@ -252,6 +304,54 @@ function InvoiceFormModal(props) {
                 );
               })}
             </div>
+          </div>
+        </div>
+        <div className="flex pt-5">
+          <div className="ml-auto">
+            <button
+              type={check ? "" : "button"}
+              className="bg-green-500 mr-10 py-2 px-6 text-white rounded hover:bg-green-600"
+              onClick={() => {
+                if (!check) {
+                  let message = "";
+                  if (products.length <= 0) {
+                    message = "Cần thêm hàng hoá hoặc dịnh vụ để tạo đơn";
+                  } else if (products.some((product) => product.number <= 0)) {
+                    message = "Số lượng hàng hoá hoặc dịch vụ phải lớn hơn 0";
+                  } else if (
+                    groupDefautProduct.some(
+                      (product) => product.goods.inventory < product.number
+                    )
+                  ) {
+                    message = "Đã quá số lượng trong kho đối với";
+                    groupDefautProduct.map((product) => {
+                      if (product.goods.inventory < product.number) {
+                        message += " " + product.goods.goodsName;
+                      }
+                    });
+                  }
+                  Swal.fire({
+                    position: "bottom",
+                    html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">${message}</button>`,
+                    showConfirmButton: false,
+                    background: "transparent",
+                    backdrop: "none",
+                    timer: 2000,
+                  });
+                }
+              }}
+            >
+              Lưu
+            </button>
+            <button
+              type="button"
+              className="bg-gray-400 py-2 px-6 text-white rounded hover:bg-gray-500"
+              onClick={() => {
+                props.onClose();
+              }}
+            >
+              Bỏ qua
+            </button>
           </div>
         </div>
       </Modal>

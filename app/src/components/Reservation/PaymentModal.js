@@ -30,12 +30,6 @@ function PaymentModal(props) {
   } = useLoaderData();
   const token = localStorage.getItem("token");
   const decodedToken = jwtDecode(token);
-  if (points.LIST_PROMOTION_POLICY_DETAIL.length === 0) {
-    points = {
-      ...points,
-      LIST_PROMOTION_POLICY_DETAIL: [{ limitValue: 1, policyValue: 1 }],
-    };
-  }
   const printQRRef = useRef();
   const printInvoiceRef = useRef();
   const reservation = props.reservation;
@@ -48,6 +42,7 @@ function PaymentModal(props) {
     if (reservationDetail.status === "CHECK_OUT") {
       priceCheckout += reservationDetail.price;
     }
+    // console.log(listSurchage);
     const surcharge = listSurchage[index];
     if (surcharge.length > 0) {
       surcharge.map((sur) => {
@@ -111,7 +106,7 @@ function PaymentModal(props) {
   // console.log(account);
 
   const [otherFeePrice, setOtherFeePrice] = useState(
-    otherFees && listNotCheckOut.length === 0 
+    otherFees && listNotCheckOut.length === 0
       ? otherFees.LIST_OTHER_REVENUE_DETAIL.reduce((sum, fee) => {
           if (fee.autoAddToInvoice) {
             if (fee.typeValue === "%") {
@@ -212,7 +207,7 @@ function PaymentModal(props) {
   const [imageUrl, setImageUrl] = useState("");
 
   useEffect(() => {
-    if (payPrice > 0) {
+    if (payPrice > 0 && account) {
       setImageUrl(
         `https://img.vietqr.io/image/${account.bankId}-${account.bankAccountNumber}-print.jpg?amount=${payPrice}&addInfo=${transactionCode}`
       );
@@ -849,7 +844,12 @@ function PaymentModal(props) {
                         defaultValue={true}
                       />
                       <button
-                        type={payPrice > 0 ? "" : "button"}
+                        type={
+                          payPrice > 0 &&
+                          ((payType === "2" && account) || payType === "1")
+                            ? ""
+                            : "button"
+                        }
                         className="bg-white border border-green-500 text-green-500 py-2 px-6 rounded hover:bg-green-200"
                         onClick={() => {
                           if (priceAll <= depositPrice) {
@@ -859,6 +859,15 @@ function PaymentModal(props) {
                             Swal.fire({
                               position: "bottom",
                               html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Xin hãy nhập tiền cọc!</button>`,
+                              showConfirmButton: false,
+                              background: "transparent",
+                              backdrop: "none",
+                              timer: 2500,
+                            });
+                          } else if (payType === "2" && !account) {
+                            Swal.fire({
+                              position: "bottom",
+                              html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Không có tài khoản, xin hãy tạo tài khoản mới!</button>`,
                               showConfirmButton: false,
                               background: "transparent",
                               backdrop: "none",
@@ -889,7 +898,7 @@ function PaymentModal(props) {
                       />
                       <button
                         type={
-                          payPrice >
+                          payPrice >=
                           priceAll +
                             otherFeePrice -
                             depositPrice -
@@ -899,7 +908,13 @@ function PaymentModal(props) {
                         }
                         className="bg-green-500 text-white py-2 px-6 rounded hover:bg-green-600"
                         onClick={() => {
-                          if (priceAll > depositPrice && payPrice <= 0) {
+                          if (
+                            payPrice <
+                            priceAll +
+                              otherFeePrice -
+                              depositPrice -
+                              discountPrice
+                          ) {
                             Swal.fire({
                               position: "bottom",
                               html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Xin hãy nhập đủ tiền thanh toán!</button>`,
@@ -973,8 +988,7 @@ function PaymentModal(props) {
         <div className="hidden">
           <div ref={printInvoiceRef}>
             {invoiceReservation.map((invoice) => {
-              let totalInvoice = 0;
-              console.log(invoice);
+              // console.log(invoice);
               return (
                 <div
                   className={`${
@@ -1094,6 +1108,7 @@ function PaymentModal(props) {
                                         </div>
                                       </div>
                                       {listGoods.map((good) => {
+                                        console.log(good);
                                         priceRoom +=
                                           good.goodsUnit.price * good.quantity;
                                         return (

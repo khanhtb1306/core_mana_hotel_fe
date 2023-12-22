@@ -105,7 +105,7 @@ function DetailsProduct(props) {
                   Thông tin
                 </button>
               </div>
-              <div className="w-4/12">
+              {/* <div className="w-4/12">
                 <button
                   className={`border-0 border-b border-gray-500 w-full ${
                     openWarehouse ? "border-b-2 border-green-500 ring-0" : ""
@@ -114,7 +114,7 @@ function DetailsProduct(props) {
                 >
                   Thẻ kho
                 </button>
-              </div>
+              </div> */}
               {isManyUnit && (
                 <div className="w-4/12">
                   <button

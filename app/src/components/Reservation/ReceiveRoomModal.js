@@ -21,7 +21,7 @@ function ReceiveRoomModal(props) {
   const timeBonusDay = timeUsing.timeBonusDay;
   const timeBonusHour = timeUsing.timeBonusHour;
   const roomActive = props.roomActive;
-  console.log(roomActive);
+  // console.log(roomActive);
   const listPrice = props.price;
   const [fromTime, setFromTime] = useState(dayjs(roomActive.checkInEstimate));
   const [toTime, setToTime] = useState(dayjs(roomActive.checkOutEstimate));

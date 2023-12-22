@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Form, redirect } from "react-router-dom";
+import { Form, redirect, useLoaderData } from "react-router-dom";
 import { axiosPrivate } from "../../utils/axiosConfig";
 import Modal from "./Modal";
 
 function DepartmentForm({ name, open, onClose, method,  department }) {
-
   return (
     <Form method={method} onSubmit={onClose} encType="multipart/form-data">
       <Modal open={open} onClose={onClose}  size="w-5/12 h-.5/6">
