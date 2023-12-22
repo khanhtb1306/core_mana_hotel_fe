@@ -13,6 +13,8 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import NewFundBook from "../../components/FundBook/NewFundBook";
 import EditFundBook from "../../components/FundBook/EditFundBook";
 import DetailsFundBook from "../../components/FundBook/DetailsFundBook";
+import { useReactToPrint } from "react-to-print";
+
 function FundBookManagementPage() {
   let { data } = useLoaderData();
   let { dataSummary } = useLoaderData();
@@ -110,6 +112,11 @@ function FundBookManagementPage() {
     setSelectedFundBookId(id);
   };
 
+  const printBookingRef = useRef();
+  const handleBookingPrint = useReactToPrint({
+    content: () => printBookingRef.current,
+  });
+
   const columns = [
     { field: "code", headerName: "Số hiệu chứng từ", width: 150 },
     { field: "time", headerName: "Ngày", width: 100 },
@@ -124,60 +131,100 @@ function FundBookManagementPage() {
       headerName: "Hoạt động",
       type: "actions",
       width: 200,
-      getActions: ({ id }) => {
+      getActions: (params) => {
+        const row = params.row;
+        // const date = new Date();
+        const date = new Date();
+
+        const dateNow = new Date(date);
+        const year = dateNow.getFullYear();
+        const month = String(dateNow.getMonth() + 1).padStart(2, "0");
+        const day = String(dateNow.getDate()).padStart(2, "0");
+        const formattedDate = `${year}-${month}-${day}`;
+
         return [
-          <GridActionsCellItem
-            icon={<i className="fa-solid fa-eye"></i>}
-            label="Xem chi tiết"
-            onClick={() => handleDetailsFundBook(id)}
-          />,
-          <GridActionsCellItem
-            icon={<i className="fa-solid fa-pen-to-square"></i>}
-            label="Sửa đổi"
-            onClick={() => handleEditFundBook(id)}
-          />,
+          <>
+            {row.time === formattedDate && (
+              <>
+                <GridActionsCellItem
+                  icon={<i className="fa-solid fa-eye"></i>}
+                  label="Xem chi tiết"
+                  onClick={() => handleDetailsFundBook(row.id)}
+                />
+                <GridActionsCellItem
+                  icon={<i className="fa-solid fa-pen-to-square"></i>}
+                  label="Sửa đổi"
+                  onClick={() => handleEditFundBook(row.id)}
+                />
+                <GridActionsCellItem
+                  icon={<i className="fa-solid fa-print"></i>}
+                  label="In"
+                  onClick={() => handleBookingPrint()}
+                  onMouseOver={() => {
+                    setSelectedFundBookId(row.id);
+                  }}
+                  onMouseLeave={() => {
+                    setSelectedFundBookId(null);
+                  }}
+                />
+              </>
+            )}
+            {row.time !== formattedDate && (
+              <GridActionsCellItem
+                icon={<i className="fa-solid fa-print"></i>}
+                label="In"
+                onClick={() => handleBookingPrint()}
+                onMouseOver={() => {
+                  setSelectedFundBookId(row.id);
+                }}
+                onMouseLeave={() => {
+                  setSelectedFundBookId(null);
+                }}
+              />
+            )}
+
+
+          </>
         ];
       },
     },
   ];
 
-  const rows = Array.isArray(fundBooks)
-    ? fundBooks
-        .filter((fundBook) => fundBook.role !== "ROLE_MANAGER")
-        .map((fundBook) => {
-          const dateNow = new Date(fundBook.time);
-          const year = dateNow.getFullYear();
-          const month = String(dateNow.getMonth() + 1).padStart(2, "0");
-          const day = String(dateNow.getDate()).padStart(2, "0");
-          const formattedDate = `${year}-${month}-${day}`;
-          if (fundBook.type === "INCOME" || fundBook.type === "OTHER_INCOME") {
-            return {
-              id: fundBook.fundBookId,
-              code: fundBook.fundBookId,
-              time: formattedDate,
-              note: fundBook.note,
-              paidMethod:
-                fundBook.paidMethod === "BANK" ? "Chuyển khoản" : "Tiền mặt",
-              valueIncome: fundBook.value + " VND",
-              valueExpense: 0 + " VND",
-              status: fundBook.status === "COMPLETE" ? "Hoàn tất" : "Hủy bỏ",
-              payerReceiver: fundBook.payerReceiver,
-            };
-          }
-          return {
-            id: fundBook.fundBookId,
-            code: fundBook.fundBookId,
-            time: formattedDate,
-            note: fundBook.note,
-            //  === "INCOME" ? 'Thu nhập' : fundBook.type === "OTHER_INCOME" ? 'Thu nhập khác' : fundBook.type === "OTHER_EXPENSE" ? 'Chi phí khác' : 'Chi phí'
-            paidMethod: fundBook.paidMethod,
-            valueIncome: 0 + " VND",
-            valueExpense: fundBook.value + " VND",
-            status: fundBook.status === "COMPLETE" ? "Hoàn tất" : "",
-            payerReceiver: fundBook.payerReceiver,
-          };
-        })
-    : [];
+  const rows = Array.isArray(fundBooks) ? fundBooks.filter((fundBook) => fundBook.role !== 'ROLE_MANAGER').map((fundBook) => {
+    const dateNow = new Date(fundBook.time);
+    const year = dateNow.getFullYear();
+    const month = String(dateNow.getMonth() + 1).padStart(2, "0");
+    const day = String(dateNow.getDate()).padStart(2, "0");
+    const formattedDate = `${year}-${month}-${day}`;
+    if (fundBook.type === "INCOME" || fundBook.type === "OTHER_INCOME") {
+      return {
+        id: fundBook.fundBookId,
+        code: fundBook.fundBookId,
+        time: formattedDate,
+        note: fundBook.note,
+        paidMethod: fundBook.paidMethod === "BANK" ? "Chuyển khoản" : "Tiền mặt",
+        valueIncome: fundBook.value.toLocaleString() + " VND",
+        valueExpense: 0 + " VND",
+        status: fundBook.status === "COMPLETE" ? "Hoàn tất" : "Hủy bỏ",
+        payerReceiver: fundBook.payerReceiver
+
+      };
+    }
+    return {
+      id: fundBook.fundBookId,
+      code: fundBook.fundBookId,
+      time: formattedDate,
+      note: fundBook.note
+      //  === "INCOME" ? 'Thu nhập' : fundBook.type === "OTHER_INCOME" ? 'Thu nhập khác' : fundBook.type === "OTHER_EXPENSE" ? 'Chi phí khác' : 'Chi phí'
+      ,
+      paidMethod: fundBook.paidMethod,
+      valueIncome: 0 + " VND",
+      valueExpense: fundBook.value.toLocaleString() + " VND",
+      status: fundBook.status === "COMPLETE" ? "Hoàn tất" : "",
+      payerReceiver: fundBook.payerReceiver
+    };
+
+  }) : [];
 
   const newFundBookOutComeHandler = () => {
     setOpenNewFundBookOutComeModal(true);
@@ -255,25 +302,25 @@ function FundBookManagementPage() {
           <div className="mx-5">
             <div className="text-lg">Quỹ đầu kì:</div>
             <div className="text-lg text-gray-400">
-              {fundBooksSummary?.openingBalance}
+              {fundBooksSummary?.openingBalance.toLocaleString()}
             </div>
           </div>
           <div className="mx-5">
             <div className="text-lg">Tổng thu:</div>
             <div className="text-lg text-green-400">
-              {fundBooksSummary?.allIncome}
+              {fundBooksSummary?.allIncome.toLocaleString()}
             </div>
           </div>
           <div className="mx-5">
             <div className="text-lg">Tổng chi:</div>
             <div className="text-lg text-red-400">
-              {fundBooksSummary?.allExpense}
+              {fundBooksSummary?.allExpense.toLocaleString()}
             </div>
           </div>
           <div className="mx-5">
             <div className="text-lg">Tồn quỹ:</div>
             <div className="text-lg text-blue-400">
-              {fundBooksSummary?.fundBalance}
+              {fundBooksSummary?.fundBalance.toLocaleString()}
             </div>
           </div>
         </div>
@@ -332,6 +379,69 @@ function FundBookManagementPage() {
           fundBookId={selectedFundBookId}
         />
       )}
+
+      <div className="hidden">
+        <div ref={printBookingRef}>
+          {fundBooks.map((fundBook) => {
+            return (
+              <div
+                className={`${fundBook
+                  ? fundBook.fundBookId === selectedFundBookId
+
+                    ? ""
+                    : "hidden"
+                  : "hidden"
+                  } m-10`}
+              >
+                <p>Tên khách sạn: Khách sạn Văn Lâm</p>
+                <p>Điện thoại: 0981987625</p>
+                {/* <div className="mt-4 border-t border-black border-dotted">
+                  Ngày xuất phiếu: {dayjs().format("DD/MM/YYYY HH:mm")}
+                </div> */}
+                <p>Địa chỉ:</p>
+                <div className="mt-4">
+                  <div className="font-bold text-center">
+                    {(fundBook.type === "INCOME" || fundBook.type === "OTHER_INCOME") && (
+                      <h2>PHIẾU THU</h2>
+                    )}
+                    <p className="text-sm"></p>
+                    {(fundBook.type === "EXPENSE" || fundBook.type === "OTHER_EXPENSE") && (
+                      <h2>PHIẾU CHI</h2>
+                    )}
+                    <p className="text-sm"></p>
+                  </div>
+                  <div>
+                    <p>
+                      Số hiệu:{" "}
+                      {fundBook ? (fundBook.fundBookId ? fundBook.fundBookId : "") : ""}
+                    </p>
+                    {/* <p>
+                        {fundBook ? (fundBook.time ? fundBook.time : "") : ""}
+                    </p> */}
+                    <p>
+                      Hình thức :{" "}
+                      {fundBook ? (fundBook.paidMethod === "BANK" ? "Chuyển khoản" : "Tiền mặt") : ""}
+                    </p>
+                    <p>
+                      Giá trị :{" "}
+                      {fundBook ? (fundBook.value ? fundBook.value.toLocaleString() : "") : ""}
+                    </p>
+                    <p>
+                      Người nộp :{" "}
+                      {fundBook ? (fundBook.payerReceiver ? fundBook.payerReceiver : "") : ""}
+                    </p>
+                    <p>
+                      Ghi chú :{" "}
+                      {fundBook ? (fundBook.note ? fundBook.note : "") : ""}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-center text-sm">Cảm ơn và hẹn gặp lại</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </>
   );
 }

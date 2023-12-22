@@ -12,7 +12,7 @@ function DeleteImportGoods(props) {
         <div className="p-2 w-full">
           <h1 className="text-lg pb-10 font-bold">Xoá phiếu nhập hàng</h1>
           <input
-            // type="hidden"
+            type="hidden"
             name="importGoodsId"
             defaultValue={props.importGoodsId}
           />

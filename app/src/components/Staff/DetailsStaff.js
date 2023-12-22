@@ -97,7 +97,7 @@ function DetailsStaff(props) {
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Tình trạng</td>
-                        <td className="w-7/12 pt-2">{staff.status}</td>
+                        <td className="w-7/12 pt-2">{staff.status === 'ACTIVE' ? 'hoạt động' : 'không hoạt động'}</td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Năm sinh:</td>

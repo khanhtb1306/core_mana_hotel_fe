@@ -77,12 +77,12 @@ function TransactionManagementPage() {
             createDate: formattedDate,
             custormer: transaction.customer.customerName,
             discount: transaction.discount,
-            total: transaction.total,
-            status: transaction.status,
-            paid_method: transaction.paidMethod,
-          };
-        })
-    : [];
+            total: transaction.total.toLocaleString(),
+            status: transaction.status === "COMPLETE" ? "Hoàn thành" : transaction.status === "C" ? "Lưu tạm" : "Hủy",
+            paid_method: transaction.paidMethod
+
+        };
+    }) : [];
 
   const newTransactionHandler = () => {
     setOpenNewTransactionModal(true);

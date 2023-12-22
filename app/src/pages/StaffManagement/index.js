@@ -435,7 +435,7 @@ export async function action({ request }) {
           Swal.fire({
             position: "center",
             icon: "success",
-            title: response.data.result,
+            title: "Nhân viên không còn hoạt động",
             showConfirmButton: false,
             timer: 1500,
           });

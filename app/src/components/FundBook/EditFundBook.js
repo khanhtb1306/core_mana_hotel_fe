@@ -4,11 +4,16 @@ import FundBookForm from "../UI/FundBookForm";
 
 function EditFundBook(props) {
   const [fundBook, setfundBook ] = useState(null);
+  const [isIncome, setIsIncome ] = useState(true);
   useEffect(() => {
     async function fetchCategory() {
       try {
         const response = await axiosPrivate.get("fund-book/" + props.fundBookId);
         setfundBook(response.data.result);
+        if(response.data.result.type === "EXPENSE" ||response.data.result.type === "OTHER_EXPENSE")
+        {
+          setIsIncome(false);
+        }
       } catch (error) {
         console.log(error);
       }
@@ -24,7 +29,7 @@ function EditFundBook(props) {
         open={props.open}
         onClose={props.onClose}
         fundBook={fundBook}
-
+        isIncome={isIncome}
       />
     )
   );
