@@ -707,7 +707,8 @@ export async function action({ request }) {
       });
     return redirect("/manager/roomManagement");
   }
-  if (method === "DELETE") {
+  if (method === "DELETE" && !data.get("roomId")) {
+
     const dataArray = data.get("floorId");
     await axiosPrivate
       .delete("Floor/" + dataArray)
@@ -723,7 +724,7 @@ export async function action({ request }) {
         Swal.fire({
           position: "center",
           icon: "error",
-          title: "Xóa khu vực thất bại",
+          title: e.response.data,
           showConfirmButton: false,
           timer: 1500,
         });

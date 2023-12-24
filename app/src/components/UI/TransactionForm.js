@@ -9,7 +9,7 @@ function TransactionForm({ open, onClose, transaction, name }) {
     formattedDate = `${year}-${month}-${day}`;
     return (
         <div >
-            <Modal open={open} onClose={onClose}  reset={onClose} button={true} size="w-8/12 h-.5/6">
+            <Modal open={open} onClose={onClose} reset={onClose} button={true} size="w-8/12 h-.5/6">
                 <div className="mx-10 my-3" >
                     <div>
                         <h1 className="text-lg pb-5 font-bold">{name}</h1>
@@ -62,28 +62,6 @@ function TransactionForm({ open, onClose, transaction, name }) {
                         <div className="flex flex-row mb-3">
                             <div className="basis-1/2 flex flex-row  ">
                                 <div className="w-3/12 basis-1/4">
-                                    <h2 className="">Mã giao dịch: </h2>
-                                </div>
-                                <div className="w-9/12  basis-3/4 border-0 border-b border-gray-500">
-                                    <div className="w-9/12 ">
-                                        {transaction.Invoice.transactionCode}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="basis-1/2 flex flex-row ms-5  ">
-                                <div className="w-3/12 basis-1/4">
-                                    <h2 className="">Giá khác: </h2>
-                                </div>
-                                <div className="w-9/12  basis-3/4 border-0 border-b border-gray-500">
-                                    <div className="w-9/12 ">
-                                        {transaction.Invoice.priceOther}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex flex-row mb-3 ">
-                            <div className="basis-1/2 flex flex-row  ">
-                                <div className="w-3/12 basis-1/4">
                                     <h2 className="">Nhân viên: </h2>
                                 </div>
                                 <div className="w-9/12  basis-3/4 border-0 border-b border-gray-500">
@@ -99,6 +77,18 @@ function TransactionForm({ open, onClose, transaction, name }) {
                                 <div className="w-9/12  basis-3/4 border-b border-gray-500">
                                     <div className="w-9/12">
                                         {transaction.Invoice.note}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex flex-row mb-3 ">
+                            <div className="basis-1/2 flex flex-row   ">
+                                <div className="w-3/12 basis-1/4">
+                                    <h2 className="">Giá khác: </h2>
+                                </div>
+                                <div className="w-9/12  basis-3/4 border-0 border-b border-gray-500">
+                                    <div className="w-9/12 ">
+                                        {transaction.Invoice.priceOther}
                                     </div>
                                 </div>
                             </div>
@@ -137,24 +127,24 @@ function TransactionForm({ open, onClose, transaction, name }) {
                                                         </div>
                                                         <div className="basis-3/4">
                                                             <div className=" flex flex-row " key={index}>
-                                                                    <div className="basis-1/5 font-bold">Mã hàng</div>
-                                                                    <div className="basis-1/5 font-bold">Tên hàng</div>
-                                                                    <div className="basis-1/5 font-bold">Số lượng</div>
-                                                                    <div className="basis-1/5 font-bold">Đơn giá</div>
-                                                                    <div className="basis-1/5 font-bold">Thành tiền</div>
-                                                                </div>
-                                                                {
-                                                                    data.OrderDetail.map((data, index) => (
-                                                                        <div className=" flex flex-row" key={index}>
-                                                                            <div className="basis-1/5">{data.OrderDetail.goods.goodsId}</div>
-                                                                            <div className="basis-1/5">{data.OrderDetail.goods.goodsName}</div>
-                                                                            <div className="basis-1/5">{data.OrderDetail.quantity}</div>
-                                                                            <div className="basis-1/5">{data.OrderDetail.price.toLocaleString()}</div>
-                                                                            <div className="basis-1/5">{data.OrderDetail.price * data.OrderDetail.quantity}</div>
-                                                                        </div>
+                                                                <div className="basis-1/5 font-bold">Mã hàng</div>
+                                                                <div className="basis-1/5 font-bold">Tên hàng</div>
+                                                                <div className="basis-1/5 font-bold">Số lượng</div>
+                                                                <div className="basis-1/5 font-bold">Đơn giá</div>
+                                                                <div className="basis-1/5 font-bold">Thành tiền</div>
+                                                            </div>
+                                                            {
+                                                                data.OrderDetail.map((data, index) => (
+                                                                    <div className=" flex flex-row" key={index}>
+                                                                        <div className="basis-1/5">{data.OrderDetail.goods.goodsId}</div>
+                                                                        <div className="basis-1/5">{data.OrderDetail.goods.goodsName}</div>
+                                                                        <div className="basis-1/5">{data.OrderDetail.quantity}</div>
+                                                                        <div className="basis-1/5">{data.OrderDetail.price.toLocaleString()}</div>
+                                                                        <div className="basis-1/5">{data.OrderDetail.price * data.OrderDetail.quantity}</div>
+                                                                    </div>
 
-                                                                    ))
-                                                                }
+                                                                ))
+                                                            }
 
                                                         </div>
                                                     </div>

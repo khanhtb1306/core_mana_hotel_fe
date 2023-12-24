@@ -63,23 +63,23 @@ function TransactionManagementPage() {
 
   const rows = Array.isArray(transactions)
     ? transactions
-        .filter((transaction) => transaction.invoiceId !== "HD000000")
+        .filter((transaction) => transaction.invoice.invoiceId !== "HD000000")
         .map((transaction) => {
-          const dateNow = new Date(transaction.createdDate);
+          const dateNow = new Date(transaction.invoice.createdDate);
           const year = dateNow.getFullYear();
           const month = String(dateNow.getMonth() + 1).padStart(2, "0");
           const day = String(dateNow.getDate()).padStart(2, "0");
           const formattedDate = `${day}-${month}-${year}`;
 
           return {
-            id: transaction.invoiceId,
-            code: transaction.invoiceId,
+            id: transaction.invoice.invoiceId,
+            code: transaction.invoice.invoiceId,
             createDate: formattedDate,
-            custormer: transaction.customer.customerName,
-            discount: transaction.discount,
-            total: transaction.total.toLocaleString(),
-            status: transaction.status === "COMPLETE" ? "Hoàn thành" : transaction.status === "C" ? "Lưu tạm" : "Hủy",
-            paid_method: transaction.paidMethod
+            custormer: transaction.invoice.customer.customerName,
+            discount: transaction.invoice.discount,
+            total: transaction.invoice.total.toLocaleString(),
+            status: transaction.invoice.status === "COMPLETE" ? "Hoàn thành" : transaction.invoice.status === "C" ? "Lưu tạm" : "Hủy",
+            paid_method: transaction.fundBook.paidMethod
 
         };
     }) : [];

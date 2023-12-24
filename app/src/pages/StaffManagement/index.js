@@ -98,7 +98,7 @@ function StaffManagementPage() {
   const columns = [
     { field: "code", headerName: "Mã nhân viên", width: 50 },
     { field: "nameStaff", headerName: "Tên nhân viên", width: 200 },
-    { field: "status", headerName: "Tình trạng", width: 200 },
+    // { field: "status", headerName: "Tình trạng", width: 200 },
     { field: "email", headerName: "Email", width: 200 },
     { field: "phoneNumber", headerName: "Số điện thoại", width: 150 },
     { field: "department", headerName: "Phòng ban", width: 150 },
@@ -140,7 +140,7 @@ function StaffManagementPage() {
     },
   ];
 
-  const rows = staffByDepartment.map((staff) => {
+  const rows = staffByDepartment.filter((staff) => staff.status !== "NO_ACTIVE").map((staff) => {
     const gender = staff.gender ? "Nam giới" : "Nữ giới";
     const dateNow = new Date(staff.dob);
     const year = dateNow.getFullYear();

@@ -128,7 +128,7 @@ function FundBookForm({ name, open, onClose, method, fundBook, isIncome }) {
                                             minLength="1"
                                             maxLength="255"
                                             defaultValue={fundBook.note ? fundBook.note : ""}
-                                            required
+
                                         />
                                     </div>
                                 </div>

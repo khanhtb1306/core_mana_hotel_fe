@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import { DataGrid, GridActionsCellItem, GridToolbar } from "@mui/x-data-grid";
-import { useState, useEffect } from "react";
+import { useState, useEffect,useRef } from "react";
 import ButtonHover from "../../components/UI/ButtonHover";
 import dayjs from "dayjs";
 import { axiosConfig, axiosPrivate } from "../../utils/axiosConfig";
@@ -190,7 +190,7 @@ function FundBookManagementPage() {
     },
   ];
 
-  const rows = Array.isArray(fundBooks) ? fundBooks.filter((fundBook) => fundBook.role !== 'ROLE_MANAGER').map((fundBook) => {
+  const rows = Array.isArray(fundBooks) ? fundBooks.filter((fundBook) => fundBook.value > 0 && fundBook.value !==0).map((fundBook) => {
     const dateNow = new Date(fundBook.time);
     const year = dateNow.getFullYear();
     const month = String(dateNow.getMonth() + 1).padStart(2, "0");
@@ -203,7 +203,7 @@ function FundBookManagementPage() {
         time: formattedDate,
         note: fundBook.note,
         paidMethod: fundBook.paidMethod === "BANK" ? "Chuyển khoản" : "Tiền mặt",
-        valueIncome: fundBook.value.toLocaleString() + " VND",
+        valueIncome: fundBook.value + " VND",
         valueExpense: 0 + " VND",
         status: fundBook.status === "COMPLETE" ? "Hoàn tất" : "Hủy bỏ",
         payerReceiver: fundBook.payerReceiver
@@ -217,9 +217,9 @@ function FundBookManagementPage() {
       note: fundBook.note
       //  === "INCOME" ? 'Thu nhập' : fundBook.type === "OTHER_INCOME" ? 'Thu nhập khác' : fundBook.type === "OTHER_EXPENSE" ? 'Chi phí khác' : 'Chi phí'
       ,
-      paidMethod: fundBook.paidMethod,
+      paidMethod: fundBook.paidMethod === "BANK" ? "Chuyển khoản" : "Tiền mặt",
       valueIncome: 0 + " VND",
-      valueExpense: fundBook.value.toLocaleString() + " VND",
+      valueExpense: fundBook.value + " VND",
       status: fundBook.status === "COMPLETE" ? "Hoàn tất" : "",
       payerReceiver: fundBook.payerReceiver
     };
