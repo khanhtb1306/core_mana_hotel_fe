@@ -46,7 +46,7 @@ function CustomerForm({ name, open, onClose, method, customer }) {
   return (
     customer && (
       <Form method={method} onSubmit={onClose} encType="multipart/form-data">
-        <Modal open={open} onClose={onClose} size="w-8/12 h-.5/6" button={true}>
+        <Modal open={open} onClose={onClose} size="w-8/12 " button={true}>
           <div className="p-2 w-full">
             <div>
               <h1 className="text-lg pb-5 font-bold">{name}</h1>
@@ -224,7 +224,7 @@ function CustomerForm({ name, open, onClose, method, customer }) {
                       />
                     </td>
                   </tr>
-                  <tr>
+                  {/* <tr>
                     <td className="w-3/12">
                       <h2>Mã số thuế</h2>
                     </td>
@@ -236,7 +236,7 @@ function CustomerForm({ name, open, onClose, method, customer }) {
                         defaultValue={customer.taxCode ? customer.taxCode : ""}
                       />
                     </td>
-                  </tr>
+                  </tr> */}
                   <tr>
                     <td className="w-3/12">
                       <h2>Giới tính</h2>

@@ -150,7 +150,7 @@ function CategoryManagementPage() {
   const rows = categories.map((row) => {
     const cateRoom = row.roomCategory;
     const status = cateRoom.status === 1 ? "Đang hoạt động" : "Ngừng hoạt động";
-    const emptyRoom = row.ListRoom.filter((room) => room.bookingStatus === 0);
+    const emptyRoom = row.ListRoom.filter((room) => room.bookingStatus === "ROOM_EMPTY");
     return {
       id: cateRoom.roomCategoryId,
       idCateRoom: cateRoom.roomCategoryId,

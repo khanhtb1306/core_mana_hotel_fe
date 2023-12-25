@@ -111,7 +111,6 @@ function CustomerManagementPage() {
     { field: "DOB", headerName: "Năm sinh", width: 150 },
     { field: "gender", headerName: "Giới tính", width: 100 },
     { field: "email", headerName: "Thư điện tử", width: 200 },
-    { field: "taxCode", headerName: "Mã số thuế", width: 150 },
     {
       field: "actions",
       headerName: "Hoạt động",
@@ -564,7 +563,6 @@ export async function action({ request }) {
             timer: 1500,
           });
         }
-
       })
       .catch((e) => {
         Swal.fire({

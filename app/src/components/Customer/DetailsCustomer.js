@@ -66,7 +66,7 @@ function DetailsCustomer(props) {
         onClose={props.onClose}
         reset={props.onClose}
         button={true}
-        size="w-8/12 h-4/6"
+        size="w-8/12 h-5/6"
       >
         <div className="p-2 w-full">
           <div className="mb-5">
@@ -142,10 +142,6 @@ function DetailsCustomer(props) {
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Giới tính:</td>
                         <td className="w-7/12 pt-2">{gender ? "Nam giới" : "Nữ giới"}</td>
-                      </tr>
-                      <tr className="border-0 border-b">
-                        <td className="w-5/12 pt-2">Mã số thuế</td>
-                        <td className="w-7/12 pt-2">{customer.taxCode}</td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Thư điện tử</td>

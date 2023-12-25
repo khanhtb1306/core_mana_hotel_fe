@@ -250,10 +250,10 @@ function RoomManagementPage() {
           >
             Tất cả khu vực
           </button>
-          <div className="overflow-y-auto h-max-40">
+          <div className="overflow-y-auto h-40">
             {filteredFloors.map((floor, index) => (
               <div
-                className="w-full p-1 border border-gray-300 rounded bg-gray-200 hover:bg-gray-500"
+                className=" p-1 border border-gray-300 rounded bg-gray-200 hover:bg-gray-500"
                 key={index}
                 style={{
                   display: "flex",

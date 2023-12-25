@@ -15,8 +15,10 @@ import DepartmentForm from "../../components/UI/DepartmentForm";
 import DeleteDepartment from "../../components/Department/DeleteDepartment";
 import NewDepartment from "../../components/Department/NewDeparment";
 import EditDepartment from "../../components/Department/EditDepartment";
+import { jwtDecode } from "jwt-decode";
+
 function StaffManagementPage() {
-  const { staffs, departments } = useLoaderData();
+  const { staffs, user, departments } = useLoaderData();
 
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openNewStaffModal, setOpenNewStaffModal] = useState(false);
@@ -96,9 +98,8 @@ function StaffManagementPage() {
   };
 
   const columns = [
-    { field: "code", headerName: "Mã nhân viên", width: 50 },
+    { field: "code", headerName: "Mã nhân viên", width: 150 },
     { field: "nameStaff", headerName: "Tên nhân viên", width: 200 },
-    // { field: "status", headerName: "Tình trạng", width: 200 },
     { field: "email", headerName: "Email", width: 200 },
     { field: "phoneNumber", headerName: "Số điện thoại", width: 150 },
     { field: "department", headerName: "Phòng ban", width: 150 },
@@ -107,40 +108,57 @@ function StaffManagementPage() {
       headerName: "Hoạt động",
       type: "actions",
       width: 200,
-      getActions: ({ id }) => {
+      getActions: (params) => {
+        const row = params.row;
         return [
-          <GridActionsCellItem
-            icon={<i className="fa-solid fa-eye"></i>}
-            label="Xem chi tiết"
-            onClick={() => handleDetailsStaff(id)}
-          />,
-          <GridActionsCellItem
-            icon={<i className="fa-solid fa-pen-to-square"></i>}
-            label="Sửa đổi"
-            onClick={() => handleEditStaff(id)}
-          />,
-          <GridActionsCellItem
-            icon={<i className="fa-solid fa-trash"></i>}
-            label="Xoá"
-            onClick={() => {
-              setSelectedStaffId(id);
-              deleteStaffHandler();
-            }}
-          />,
-          <GridActionsCellItem
-            icon={<i className="bi bi-person-gear"></i>}
-            label="Admin"
-            onClick={() => {
-              setSelectedStaffId(id);
-              adminStaffHandler();
-            }}
-          />,
+          <>
+            {user.staffId === 0 && (
+              <>
+                <GridActionsCellItem
+                  icon={<i className="fa-solid fa-eye"></i>}
+                  label="Xem chi tiết"
+                  onClick={() => handleDetailsStaff(params.id)}
+                />
+                <GridActionsCellItem
+                  icon={<i className="fa-solid fa-pen-to-square"></i>}
+                  label="Sửa đổi"
+                  onClick={() => handleEditStaff(params.id)}
+                />
+                <GridActionsCellItem
+                  icon={<i className="fa-solid fa-trash"></i>}
+                  label="Xoá"
+                  onClick={() => {
+                    setSelectedStaffId(params.id);
+                    deleteStaffHandler();
+                  }}
+                />
+                <GridActionsCellItem
+                  icon={<i className="bi bi-person-gear"></i>}
+                  label="Admin"
+                  onClick={() => {
+                    setSelectedStaffId(params.id);
+                    adminStaffHandler();
+                  }}
+                />
+              </>
+            )}
+            {user.staffId !== 0 && (
+              <>
+                <GridActionsCellItem
+                  icon={<i className="fa-solid fa-eye"></i>}
+                  label="Xem chi tiết"
+                  onClick={() => handleDetailsStaff(params.id)}
+                />
+              </>
+            )}
+
+          </>
         ];
       },
     },
   ];
 
-  const rows = staffByDepartment.filter((staff) => staff.status !== "NO_ACTIVE").map((staff) => {
+  const rows = staffByDepartment.filter((staff) => staff.status !== "NO_ACTIVE" && staff.staffId !== 0).map((staff) => {
     const gender = staff.gender ? "Nam giới" : "Nữ giới";
     const dateNow = new Date(staff.dob);
     const year = dateNow.getFullYear();
@@ -207,8 +225,27 @@ function StaffManagementPage() {
           >
             Tất cả phòng ban
           </button>
-          <div className="overflow-y-auto h-40">
-            {filteredDepartment.map((departments, index) => (
+          <div className="overflow-y-auto h-40 ">
+          {filteredDepartment.filter((department) => department.departmentId === "PB000001").map((departments, index) => (
+              <div
+                className="flex flex-row custom-button "
+                key={index}
+                onMouseEnter={() =>
+                  setHoveredDepartment(departments.departmentName)
+                }
+                onMouseLeave={() => setHoveredDepartment(null)}
+              >
+                <button
+                  className="pt-1 ms-3 basis-3/4 text-left "
+                  onClick={() =>
+                    handleDepartmentSelection(departments.departmentName)
+                  }
+                >
+                  {departments.departmentName}
+                </button>
+              </div>
+            ))}
+            {filteredDepartment.filter((department) => department.departmentId !== "PB000001").map((departments, index) => (
               <div
                 className="flex flex-row custom-button "
                 key={index}
@@ -362,6 +399,17 @@ function StaffManagementPage() {
 
 export default StaffManagementPage;
 
+async function loadUser() {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return redirect("/login");
+  }
+  const decoded = jwtDecode(token);
+  const response = await axiosPrivate.get("account/" + decoded.staff_id);
+  console.log(response.data.result);
+  return response.data.result;
+}
+
 async function loadStaffs() {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -370,6 +418,7 @@ async function loadStaffs() {
   const response = await axiosPrivate.get("staff");
   return response.data.result;
 }
+
 async function loadDepartments() {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -390,6 +439,7 @@ export async function loader() {
     // demo: await loadStaffs(),
     staffs: await loadStaffs(),
     departments: await loadDepartments(),
+    user: await loadUser()
   });
 }
 
@@ -441,7 +491,7 @@ export async function action({ request }) {
               timer: 1500,
             });
           }
-          else{
+          else {
             Swal.fire({
               position: "center",
               icon: "error",
@@ -466,10 +516,12 @@ export async function action({ request }) {
     if (data.get("staffId") != null) {
       formData.append("staffId", data.get("staffId"));
     }
+    else{
+      formData.append("role", "ROLE_RECEPTIONIST");
+    }
     formData.append("staffName", data.get("staffName"));
     formData.append("username", data.get("userName"));
     formData.append("phoneNumber", data.get("phoneNumber"));
-    formData.append("role", "ROLE_RECEPTIONIST");
     formData.append("dob", new Date(data.get("dob")).toISOString());
     formData.append("email", data.get("email"));
     formData.append("address", data.get("address"));
