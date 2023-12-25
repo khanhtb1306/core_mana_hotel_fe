@@ -267,76 +267,113 @@ const OverviewPage = () => {
     ];
 
     useEffect(() => {
-      async function fetchListHorizontalBarChartDataInvoices() {
-          try {
-              if (selectedValueHorizontalBarChartData1 === "1") {
-                  setSelectedQuarter1("");
-                  setSelectedQuarter2("");
-                  setSelectedQuarter3("");
-                  setSelectedQuarter4("");
-                  // Gọi api month
-                  if(selectedDataType === "1"){
-                      const response = await axiosPrivate.get(
-                          "/overview/get_top_room_class_by_month_or_year?datestring=" + monthHorizontalBarChartData.format('YYYY/MM/DD').toString() + "&isMonth=" + true + "&isTotalRevenues=" + false
-                      );
-                      setReportTopRoomClassHorizontalBarChartData(response.data.result);
-                  }else if(selectedDataType === "2") {
-                      const response = await axiosPrivate.get(
-                          "/overview/get_top_room_class_by_month_or_year?datestring=" + monthHorizontalBarChartData.format('YYYY/MM/DD').toString() + "&isMonth=" + true + "&isTotalRevenues=" + true
-                      );
-                      setReportTopRoomClassHorizontalBarChartData(response.data.result);
-                  }
-              }
-              else if (selectedValueHorizontalBarChartData1 === "2") {
-                  setSelectedQuarter1("Quý 1");
-                  setSelectedQuarter2("Quý 2");
-                  setSelectedQuarter3("Quý 3");
-                  setSelectedQuarter4("Quý 4");
-                  if(selectedQuarterData === "1"){
-                      const response = await axiosPrivate.get(
-                          "/overview/get_top_room_class_by_quarter?year=" + monthHorizontalBarChartData.year() + "&quarter=1&isTotalRevenues=" + (selectedDataType === "2" ? true : false)
-                      );
-                      setReportTopRoomClassHorizontalBarChartData(response.data.result);
-                  }else if(selectedQuarterData ==="2"){
-                      const response = await axiosPrivate.get(
-                          "/overview/get_top_room_class_by_quarter?year=" + monthHorizontalBarChartData.year() + "&quarter=2&isTotalRevenues=" + (selectedDataType === "2" ? true : false)
-                      );
-                      setReportTopRoomClassHorizontalBarChartData(response.data.result);
-                  }else if(selectedQuarterData ==="3"){
-                      const response = await axiosPrivate.get(
-                          "/overview/get_top_room_class_by_quarter?year=" + monthHorizontalBarChartData.year() + "&quarter=3&isTotalRevenues=" + (selectedDataType === "2" ? true : false)
-                      );
-                      setReportTopRoomClassHorizontalBarChartData(response.data.result);
-                  }else if(selectedQuarterData ==="4"){
-                      const response = await axiosPrivate.get(
-                          "/overview/get_top_room_class_by_quarter?year=" + monthHorizontalBarChartData.year() + "&quarter=4&isTotalRevenues=" + (selectedDataType === "2" ? true : false)
-                      );
-                      setReportTopRoomClassHorizontalBarChartData(response.data.result);
-                  }
-              } else if (selectedValueHorizontalBarChartData1 === "3") {
-                  setSelectedQuarter1("");
-                  setSelectedQuarter2("");
-                  setSelectedQuarter3("");
-                  setSelectedQuarter4("");
-                  // Gọi api year
-                  if(selectedDataType === "1"){
-                      const response = await axiosPrivate.get(
-                          "/overview/get_top_room_class_by_month_or_year?datestring=" + monthHorizontalBarChartData.format('YYYY/MM/DD').toString() + "&isMonth=" + false + "&isTotalRevenues=" + false
-                      );
-                      setReportTopRoomClassHorizontalBarChartData(response.data.result);
-                  }else if(setSelectedDataType === "2") {
-                      const response = await axiosPrivate.get(
-                          "/overview/get_top_room_class_by_month_or_year?datestring=" + monthHorizontalBarChartData.format('YYYY/MM/DD').toString() + "&isMonth=" + false + "&isTotalRevenues=" + true
-                      );
-                      setReportTopRoomClassHorizontalBarChartData(response.data.result);
-                  }
-              }
-          } catch (error) {
-              console.log(error);
-          }
-      }
-      fetchListHorizontalBarChartDataInvoices();
-    }, [monthHorizontalBarChartData, yearHorizontalBarChartData, selectedValueHorizontalBarChartData1, selectedQuarterData]);
+        async function fetchListHorizontalBarChartDataInvoices() {
+            try {
+                if (selectedValueHorizontalBarChartData1 === "1") {
+                    setSelectedQuarter1("");
+                    setSelectedQuarter2("");
+                    setSelectedQuarter3("");
+                    setSelectedQuarter4("");
+                    // Gọi api month
+                    if (selectedDataType === "1") {
+                        const response = await axiosPrivate.get(
+                            "/overview/get_top_room_class_by_month_or_year?datestring=" +
+                            monthHorizontalBarChartData.format("YYYY/MM/DD").toString() +
+                            "&isMonth=" +
+                            true +
+                            "&isTotalRevenues=" +
+                            true
+                        );
+                        setReportTopRoomClassHorizontalBarChartData(response.data.result);
+                    } else if (selectedDataType === "2") {
+                        const response = await axiosPrivate.get(
+                            "/overview/get_top_room_class_by_month_or_year?datestring=" +
+                            monthHorizontalBarChartData.format("YYYY/MM/DD").toString() +
+                            "&isMonth=" +
+                            true +
+                            "&isTotalRevenues=" +
+                            false
+                        );
+                        setReportTopRoomClassHorizontalBarChartData(response.data.result);
+                    }
+                } else if (selectedValueHorizontalBarChartData1 === "2") {
+                    setSelectedQuarter1("Quý 1");
+                    setSelectedQuarter2("Quý 2");
+                    setSelectedQuarter3("Quý 3");
+                    setSelectedQuarter4("Quý 4");
+                    if (selectedQuarterData === "1") {
+                        const response = await axiosPrivate.get(
+                            "/overview/get_top_room_class_by_quarter?year=" +
+                            monthHorizontalBarChartData.year() +
+                            "&quarter=1&isTotalRevenues=" +
+                            (selectedDataType === "2" ? false : true)
+                        );
+                        setReportTopRoomClassHorizontalBarChartData(response.data.result);
+                    } else if (selectedQuarterData === "2") {
+                        const response = await axiosPrivate.get(
+                            "/overview/get_top_room_class_by_quarter?year=" +
+                            monthHorizontalBarChartData.year() +
+                            "&quarter=2&isTotalRevenues=" +
+                            (selectedDataType === "2" ? false : true)
+                        );
+                        setReportTopRoomClassHorizontalBarChartData(response.data.result);
+                    } else if (selectedQuarterData === "3") {
+                        const response = await axiosPrivate.get(
+                            "/overview/get_top_room_class_by_quarter?year=" +
+                            monthHorizontalBarChartData.year() +
+                            "&quarter=3&isTotalRevenues=" +
+                            (selectedDataType === "2" ? false : true)
+                        );
+                        setReportTopRoomClassHorizontalBarChartData(response.data.result);
+                    } else if (selectedQuarterData === "4") {
+                        const response = await axiosPrivate.get(
+                            "/overview/get_top_room_class_by_quarter?year=" +
+                            monthHorizontalBarChartData.year() +
+                            "&quarter=4&isTotalRevenues=" +
+                            (selectedDataType === "2" ? false : true)
+                        );
+                        setReportTopRoomClassHorizontalBarChartData(response.data.result);
+                    }
+                } else if (selectedValueHorizontalBarChartData1 === "3") {
+                    setSelectedQuarter1("");
+                    setSelectedQuarter2("");
+                    setSelectedQuarter3("");
+                    setSelectedQuarter4("");
+                    // Gọi api year
+                    if (selectedDataType === "1") {
+                        const response = await axiosPrivate.get(
+                            "/overview/get_top_room_class_by_month_or_year?datestring=" +
+                            monthHorizontalBarChartData.format("YYYY/MM/DD").toString() +
+                            "&isMonth=" +
+                            false +
+                            "&isTotalRevenues=" +
+                            true
+                        );
+                        setReportTopRoomClassHorizontalBarChartData(response.data.result);
+                    } else if (setSelectedDataType === "2") {
+                        const response = await axiosPrivate.get(
+                            "/overview/get_top_room_class_by_month_or_year?datestring=" +
+                            monthHorizontalBarChartData.format("YYYY/MM/DD").toString() +
+                            "&isMonth=" +
+                            false +
+                            "&isTotalRevenues=" +
+                            false
+                        );
+                        setReportTopRoomClassHorizontalBarChartData(response.data.result);
+                    }
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        fetchListHorizontalBarChartDataInvoices();
+    }, [
+        monthHorizontalBarChartData,
+        yearHorizontalBarChartData,
+        selectedValueHorizontalBarChartData1,
+        selectedQuarterData,
+        selectedDataType,
+    ]);
 
 
     const horizontalBarChartData = reportTopRoomClassHorizontalBarChartData ? {
@@ -372,7 +409,7 @@ const OverviewPage = () => {
       case "thực hiện kiểm kho":
         return "fa-solid fa-box";
       default:
-        return "fa-solid fa-question";
+        return "fa-solid fa-box";
     }
   };
   return (

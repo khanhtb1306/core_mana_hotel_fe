@@ -330,7 +330,7 @@ const OverviewPage = () => {
                 "&isMonth=" +
                 true +
                 "&isTotalRevenues=" +
-                false
+                true
             );
             setReportTopRoomClassHorizontalBarChartData(response.data.result);
           } else if (selectedDataType === "2") {
@@ -340,7 +340,7 @@ const OverviewPage = () => {
                 "&isMonth=" +
                 true +
                 "&isTotalRevenues=" +
-                true
+                false
             );
             setReportTopRoomClassHorizontalBarChartData(response.data.result);
           }
@@ -354,7 +354,7 @@ const OverviewPage = () => {
               "/overview/get_top_room_class_by_quarter?year=" +
                 monthHorizontalBarChartData.year() +
                 "&quarter=1&isTotalRevenues=" +
-                (selectedDataType === "2" ? true : false)
+                (selectedDataType === "2" ? false : true)
             );
             setReportTopRoomClassHorizontalBarChartData(response.data.result);
           } else if (selectedQuarterData === "2") {
@@ -362,7 +362,7 @@ const OverviewPage = () => {
               "/overview/get_top_room_class_by_quarter?year=" +
                 monthHorizontalBarChartData.year() +
                 "&quarter=2&isTotalRevenues=" +
-                (selectedDataType === "2" ? true : false)
+                (selectedDataType === "2" ? false : true)
             );
             setReportTopRoomClassHorizontalBarChartData(response.data.result);
           } else if (selectedQuarterData === "3") {
@@ -370,7 +370,7 @@ const OverviewPage = () => {
               "/overview/get_top_room_class_by_quarter?year=" +
                 monthHorizontalBarChartData.year() +
                 "&quarter=3&isTotalRevenues=" +
-                (selectedDataType === "2" ? true : false)
+                (selectedDataType === "2" ? false : true)
             );
             setReportTopRoomClassHorizontalBarChartData(response.data.result);
           } else if (selectedQuarterData === "4") {
@@ -378,7 +378,7 @@ const OverviewPage = () => {
               "/overview/get_top_room_class_by_quarter?year=" +
                 monthHorizontalBarChartData.year() +
                 "&quarter=4&isTotalRevenues=" +
-                (selectedDataType === "2" ? true : false)
+                (selectedDataType === "2" ? false : true)
             );
             setReportTopRoomClassHorizontalBarChartData(response.data.result);
           }
@@ -395,7 +395,7 @@ const OverviewPage = () => {
                 "&isMonth=" +
                 false +
                 "&isTotalRevenues=" +
-                false
+                true
             );
             setReportTopRoomClassHorizontalBarChartData(response.data.result);
           } else if (setSelectedDataType === "2") {
@@ -405,7 +405,7 @@ const OverviewPage = () => {
                 "&isMonth=" +
                 false +
                 "&isTotalRevenues=" +
-                true
+                false
             );
             setReportTopRoomClassHorizontalBarChartData(response.data.result);
           }
@@ -420,6 +420,7 @@ const OverviewPage = () => {
     yearHorizontalBarChartData,
     selectedValueHorizontalBarChartData1,
     selectedQuarterData,
+    selectedDataType,
   ]);
 
   const horizontalBarChartData = reportTopRoomClassHorizontalBarChartData
@@ -463,7 +464,7 @@ const OverviewPage = () => {
       case "thực hiện kiểm kho":
         return "fa-solid fa-box";
       default:
-        return "fa-solid fa-question";
+        return "fa-solid fa-box";
     }
   };
   return (
