@@ -129,4 +129,56 @@ export async function action({ request }) {
       return { success: false };
     }
   }
+  if (data.get("newMainCustomer")) {
+    const formData = new FormData();
+    formData.append("customerName", data.get("customerName"));
+    formData.append("customerGroupId", data.get("customerGroupId"));
+    formData.append("phoneNumber", data.get("phoneNumber"));
+    formData.append("dob", new Date(data.get("dob")).toISOString());
+    formData.append("email", data.get("email"));
+    formData.append("address", data.get("address"));
+    formData.append("identity", data.get("identity"));
+    formData.append("nationality", data.get("nationality"));
+    formData.append("taxCode", data.get("taxCode"));
+    formData.append("gender", data.get("gender"));
+    formData.append("image", data.get("image"));
+    formData.append("customer", true);
+    const response = await axiosPrivate
+      .post("customer", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+    console.log(response);
+    return { success: true, addCustomer: response.data };
+  }
+  if (data.get("editMainCustomer")) {
+    const formData = new FormData();
+    formData.append("customerName", data.get("customerName"));
+    formData.append("customerGroupId", data.get("customerGroupId"));
+    formData.append("phoneNumber", data.get("phoneNumber"));
+    formData.append("dob", new Date(data.get("dob")).toISOString());
+    formData.append("email", data.get("email"));
+    formData.append("address", data.get("address"));
+    formData.append("identity", data.get("identity"));
+    formData.append("nationality", data.get("nationality"));
+    formData.append("taxCode", data.get("taxCode"));
+    formData.append("gender", data.get("gender"));
+    formData.append("image", data.get("image"));
+    formData.append("customer", data.get("isCustomer"));
+    const response = await axiosPrivate
+      .put("customer/" + data.get("customerId"), formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+    console.log(response);
+    return { success: true, editCustomer: response.data };
+  }
 }

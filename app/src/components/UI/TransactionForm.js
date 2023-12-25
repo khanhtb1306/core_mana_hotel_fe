@@ -111,7 +111,7 @@ function TransactionForm({ open, onClose, transaction, name }) {
                                                 <div className="">Tên phòng: {data.reservationDetail.room.roomName}</div>
                                                 <div className="">Hạng phòng: {data.reservationDetail.room.roomCategory.roomCategoryName}</div>
                                                 <div className=""></div>
-                                                <div className="">Tổng tiền: {data.reservationDetail.price.toLocaleString()}</div>
+                                                <div className="">Tổng tiền: {data.reservationDetail.price.toLocaleString()+ " VND "}</div>
 
                                             </div>
                                             {
@@ -139,7 +139,7 @@ function TransactionForm({ open, onClose, transaction, name }) {
                                                                         <div className="basis-1/5">{data.OrderDetail.goods.goodsId}</div>
                                                                         <div className="basis-1/5">{data.OrderDetail.goods.goodsName}</div>
                                                                         <div className="basis-1/5">{data.OrderDetail.quantity}</div>
-                                                                        <div className="basis-1/5">{data.OrderDetail.price.toLocaleString()}</div>
+                                                                        <div className="basis-1/5">{data.OrderDetail.price.toLocaleString()+ " VND "}</div>
                                                                         <div className="basis-1/5">{data.OrderDetail.price * data.OrderDetail.quantity}</div>
                                                                     </div>
 
@@ -165,7 +165,7 @@ function TransactionForm({ open, onClose, transaction, name }) {
                                                                         <div className="basis-1/4">{data.policy.policyId}</div>
                                                                         <div className="basis-1/4">{data.policy.note}</div>
                                                                         <div className="basis-1/4">{data.typeValue}</div>
-                                                                        <div className="basis-1/4">{data.value.toLocaleString()}</div>
+                                                                        <div className="basis-1/4">{data.value.toLocaleString()+ " VND "}</div>
                                                                     </div>
 
                                                                 ))

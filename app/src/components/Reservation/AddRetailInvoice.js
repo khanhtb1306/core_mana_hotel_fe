@@ -16,7 +16,8 @@ import { useReactToPrint } from "react-to-print";
 import dayjs from "dayjs";
 
 function AddRetailInvoice() {
-  const { listQR, otherFees, customers, goodsUnit, points } = useLoaderData();
+  const { listQR, otherFees, customers, goodsUnit } = useLoaderData();
+  const goodsActiveUnit = goodsUnit.filter((unit) => unit.goods.status === 1);
   const actionData = useActionData();
   const printQRRef = useRef();
   const [products, setProducts] = useState([]);
@@ -35,8 +36,10 @@ function AddRetailInvoice() {
       : []
   );
   const [isGoods, setIsGoods] = useState(true);
-  const productUnit = goodsUnit.filter((unit) => unit.goods.goodsCategory);
-  const service = goodsUnit.filter((unit) => !unit.goods.goodsCategory);
+  const productUnit = goodsActiveUnit.filter(
+    (unit) => unit.goods.goodsCategory
+  );
+  const service = goodsActiveUnit.filter((unit) => !unit.goods.goodsCategory);
   const [banks, setBanks] = useState([]);
   const [openPaymentModal, setOpenPaymentModal] = useState(false);
   const [openOtherFeeModal, setOpenOtherFeeModal] = useState(false);
@@ -158,7 +161,7 @@ function AddRetailInvoice() {
       const updateProducts = [
         ...products,
         {
-          ...goodsUnit.find((unit) => unit.goodsUnitId === goodsUnitId),
+          ...goodsActiveUnit.find((unit) => unit.goodsUnitId === goodsUnitId),
           number: 1,
         },
       ];
@@ -252,7 +255,7 @@ function AddRetailInvoice() {
           <div className="flex">
             <div className="w-4/12 bg-white rounded-lg p-4">
               <SearchProduct
-                goodsUnit={goodsUnit}
+                goodsUnit={goodsActiveUnit}
                 handleProductClick={handleProductClick}
               />
               <div className="flex my-4">

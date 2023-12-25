@@ -9,6 +9,7 @@ export function getTimePrice(typeTime, fromTime, toTime, timeUsing, listPrice) {
   const timeBonusHour = timeUsing.timeBonusHour;
   let price = 0;
   let time = 0;
+  let list = [];
   if (typeTime === 1) {
     const hoursList = [];
     let currentHour = fromTime;
@@ -40,6 +41,11 @@ export function getTimePrice(typeTime, fromTime, toTime, timeUsing, listPrice) {
             price += priceDetails.PriceListDetail.priceByHour;
           }
         }
+        list.push(
+          hour.format("DD/MM/YYYY HH:mm:ss") +
+            "|" +
+            priceDetails.PriceListDetail.priceByHour
+        );
       });
     });
   } else if (typeTime === 2) {
@@ -85,6 +91,11 @@ export function getTimePrice(typeTime, fromTime, toTime, timeUsing, listPrice) {
             price += priceDetails.PriceListDetail.priceByDay;
           }
         }
+        list.push(
+          day.format("DD/MM/YYYY HH:mm:ss") +
+            "|" +
+            priceDetails.PriceListDetail.priceByHour
+        );
       });
     });
   } else {
@@ -104,11 +115,17 @@ export function getTimePrice(typeTime, fromTime, toTime, timeUsing, listPrice) {
           price = priceDetails.PriceListDetail.priceByNight;
         }
       }
+      list.push(
+        fromTime.hour(priceNightStart).format("DD/MM/YYYY HH:mm:ss") +
+          "|" +
+          priceDetails.PriceListDetail.priceByHour
+      );
     });
   }
   return {
     price: price,
     time: time,
+    list: list,
   };
 }
 

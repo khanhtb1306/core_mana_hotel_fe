@@ -182,8 +182,8 @@ function ProductManagementPage() {
       goodsName: product.goods.goodsName,
       unitDefault: unitDefault.goodsUnitName,
       goodsCategory: category,
-      sellingPrice: unitDefault.price,
-      capitalPrice: product.goods.goodsCategory ? unitDefault.cost : "...",
+      sellingPrice: unitDefault.price.toLocaleString()+ " VND ",
+      capitalPrice: product.goods.goodsCategory.toLocaleString()+ " VND " ? unitDefault.cost.toLocaleString()+ " VND " : "...",
       quantityInStock: product.goods.goodsCategory
         ? (product.goods.inventory * defaultCost) / unitDefault.cost
         : "...",

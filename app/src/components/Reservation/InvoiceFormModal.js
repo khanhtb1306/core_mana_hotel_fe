@@ -6,19 +6,20 @@ import Swal from "sweetalert2";
 
 function InvoiceFormModal(props) {
   const { goodsUnit } = useLoaderData();
+  const goodsActiveUnit = goodsUnit.filter((unit) => unit.goods.status === 1);
   const [isGoods, setIsGoods] = useState(true);
   const invoice = props.invoice;
   const reservationDetail = props.reservationDetail;
   // console.log(reservationDetail);
   // console.log(invoice);
-  // console.log(goodsUnit);
-  const productUnit = goodsUnit.filter(
+  // console.log(goodsActiveUnit);
+  const productUnit = goodsActiveUnit.filter(
     (unit) => unit.goods.inventory > 0 && unit.goods.goodsCategory
   );
-  const service = goodsUnit.filter((unit) => !unit.goods.goodsCategory);
+  const service = goodsActiveUnit.filter((unit) => !unit.goods.goodsCategory);
   let array = [];
   if (invoice) {
-    array = goodsUnit
+    array = goodsActiveUnit
       .filter((unit) => {
         for (const stock of invoice.listOrderDetailByOrder) {
           if (stock.orderDetail.goodsUnit.goodsUnitId === unit.goodsUnitId) {
@@ -52,7 +53,7 @@ function InvoiceFormModal(props) {
       const updateProducts = [
         ...products,
         {
-          ...goodsUnit.find((unit) => unit.goodsUnitId === goodsUnitId),
+          ...goodsActiveUnit.find((unit) => unit.goodsUnitId === goodsUnitId),
           number: 1,
         },
       ];
@@ -68,7 +69,7 @@ function InvoiceFormModal(props) {
   };
 
   const groupDefautProduct = products.reduce((product, cur) => {
-    const defaultGood = goodsUnit.find(
+    const defaultGood = goodsActiveUnit.find(
       (unit) => unit.isDefault && unit.goods.goodsId === cur.goods.goodsId
     );
     const exchange = cur.cost / defaultGood.cost;
@@ -92,7 +93,7 @@ function InvoiceFormModal(props) {
       ];
     }
   }, []);
-  console.log(groupDefautProduct);
+  // console.log(groupDefautProduct);
 
   let check = false;
 
@@ -151,7 +152,7 @@ function InvoiceFormModal(props) {
           <div className="flex">
             <div className="w-5/12 bg-gray-200 rounded-lg p-2">
               <SearchProduct
-                goodsUnit={goodsUnit.filter(
+                goodsUnit={goodsActiveUnit.filter(
                   (unit) =>
                     unit.goods.inventory > 0 || unit.goods.inventory === null
                 )}

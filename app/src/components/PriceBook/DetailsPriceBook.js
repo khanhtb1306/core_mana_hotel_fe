@@ -147,11 +147,11 @@ function DetailsPriceBook(props) {
                       </td>
                       <td className="py-2 px-4 w-4/12">
                         <div className="pb-4">
-                          {priceBook.RoomClass.priceByHour}
+                          {priceBook.RoomClass.priceByHour.toLocaleString()+ " VND "}
                         </div>
-                        <div>{priceBook.RoomClass.priceByDay}</div>
+                        <div>{priceBook.RoomClass.priceByDay.toLocaleString()+ " VND "}</div>
                         <div className="pt-4">
-                          {priceBook.RoomClass.priceByNight}
+                          {priceBook.RoomClass.priceByNight.toLocaleString()+ " VND "}
                         </div>
                       </td>
                     </tr>
@@ -182,11 +182,11 @@ function DetailsPriceBook(props) {
                         </td>
                         <td className="py-2 px-4 w-2/12 border-t">
                           <div className="pb-4">
-                            {prices.PriceListDetail.priceByHour}
+                            {prices.PriceListDetail.priceByHour.toLocaleString()+ " VND "}
                           </div>
-                          <div>{prices.PriceListDetail.priceByDay}</div>
+                          <div>{prices.PriceListDetail.priceByDay.toLocaleString()+ " VND "}</div>
                           <div className="pt-4">
-                            {prices.PriceListDetail.priceByNight}
+                            {prices.PriceListDetail.priceByNight.toLocaleString()+ " VND "}
                           </div>
                         </td>
                       </tr>

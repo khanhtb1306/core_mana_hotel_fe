@@ -28,23 +28,24 @@ function PayRoomModal(props) {
   useEffect(() => {
     setToTime(dayjs(roomActive.checkOutEstimate));
   }, [roomActive]);
+  console.log(roomActive);
   let time = 0;
-  let price = 0;
+  // let price = 0;
   let surchargeTime = 0;
   if (roomActive.reservationType === "HOURLY") {
     let timePrice = getTimePrice(1, fromTime, toTime, timeUsing, listPrice);
     time = timePrice.time;
-    price = timePrice.price;
+    // price = timePrice.price;
   } else if (roomActive.reservationType === "DAILY") {
     let timePrice = getTimePrice(2, fromTime, toTime, timeUsing, listPrice);
     time = timePrice.time;
-    price = timePrice.price;
+    // price = timePrice.price;
     surchargeTime += getSoonCheckin(2, fromTime, timeUsing);
     surchargeTime += getlateCheckout(2, fromTime, toTime, timeUsing);
   } else {
     let timePrice = getTimePrice(3, fromTime, toTime, timeUsing, listPrice);
     time = timePrice.time;
-    price = timePrice.price;
+    // price = timePrice.price;
     surchargeTime += getSoonCheckin(3, fromTime, timeUsing);
     surchargeTime += getlateCheckout(3, fromTime, toTime, timeUsing);
   }
@@ -90,7 +91,7 @@ function PayRoomModal(props) {
             <input
               type="hidden"
               name="price"
-              value={price}
+              value={roomActive.price}
               onChange={() => console.log()}
             />
           </div>

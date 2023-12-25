@@ -85,7 +85,7 @@ function DetailsFundBook(props) {
                                     <div className="w-9/12  basis-3/4">
                                         <div
                                             className="w-9/12 border-0 border-b border-gray-500  focus:border-b-2 focus:border-green-500 focus:ring-0">
-                                            {fundBook.value ? fundBook.value : ""}
+                                            {fundBook.value ? fundBook.value.toLocaleString()+ " VND " : ""}
                                         </div>
 
                                     </div>

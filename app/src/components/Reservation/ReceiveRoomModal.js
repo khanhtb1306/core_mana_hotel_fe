@@ -39,7 +39,6 @@ function ReceiveRoomModal(props) {
   } else if (roomActive.reservationType === "DAILY") {
     let timePrice = getTimePrice(2, fromTime, toTime, timeUsing, listPrice);
     time = timePrice.time;
-    price = timePrice.price;
     surchargeTime += getSoonCheckin(2, fromTime, timeUsing);
     surchargeTime += getlateCheckout(2, fromTime, toTime, timeUsing);
   } else {

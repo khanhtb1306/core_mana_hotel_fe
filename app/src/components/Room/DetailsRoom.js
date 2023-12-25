@@ -74,7 +74,7 @@ function DetailsRoom(props) {
                   Thông tin
                 </button>
               </div>
-              <div className="w-6/12">
+              {/* <div className="w-6/12">
                 <button
                   className={`border-0 border-b border-gray-500 w-full ${
                     openReservation ? "border-b-2 border-green-500 ring-0" : ""
@@ -83,7 +83,7 @@ function DetailsRoom(props) {
                 >
                   Lịch sử đặt phòng
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
           {openInfo ? (
@@ -114,19 +114,19 @@ function DetailsRoom(props) {
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Giá theo giờ:</td>
                         <td className="w-7/12 pt-2">
-                          {room.roomCategory.priceByHour.toLocaleString()}
+                          {room.roomCategory.priceByHour.toLocaleString() + " VND "}
                         </td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Giá theo ngày:</td>
                         <td className="w-7/12 pt-2">
-                          {room.roomCategory.priceByDay.toLocaleString()}
+                          {room.roomCategory.priceByDay.toLocaleString() + " VND "}
                         </td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Giá theo đêm:</td>
                         <td className="w-7/12 pt-2">
-                          {room.roomCategory.priceByNight.toLocaleString()}
+                          {room.roomCategory.priceByNight.toLocaleString() + " VND "}
                         </td>
                       </tr>
                       <tr className="border-0 border-b">

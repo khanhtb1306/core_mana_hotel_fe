@@ -17,7 +17,7 @@ function EditCustomerModal({ open, onClose, customer }) {
   const [dob, setDob] = useState(
     customer.dob
       ? dayjs(customer.dob).format("YYYY-MM-DD")
-      : dayjs().add(-1, "year").format("YYYY-MM-DD")
+      : dayjs().add(-18, "year").format("YYYY-MM-DD")
   );
   const [phone, setPhone] = useState(
     customer.phoneNumber ? customer.phoneNumber : ""
@@ -35,10 +35,7 @@ function EditCustomerModal({ open, onClose, customer }) {
     phone.trim() === "" ||
     phone.length > 50 ||
     (customers.some((cus) => cus.phoneNumber === phone) &&
-      customer.phoneNumber !== phone) ||
-    email.trim() === "" ||
-    email.length > 50 ||
-    (customers.some((cus) => cus.email === email) && customer.email !== email)
+      customer.phoneNumber !== phone)
   ) {
     check = false;
   } else {
@@ -200,9 +197,7 @@ function EditCustomerModal({ open, onClose, customer }) {
                   </tr>
                   <tr>
                     <td className="w-3/12">
-                      <h2>
-                        <span className="text-red-500">*</span> Email
-                      </h2>
+                      <h2>Email</h2>
                     </td>
                     <td className="w-9/12">
                       <input
@@ -326,15 +321,6 @@ function EditCustomerModal({ open, onClose, customer }) {
                       customer.phoneNumber !== phone
                     ) {
                       message = "Không được trùng số điện thoại với người khác";
-                    } else if (email.trim() === "") {
-                      message = "Không được để trống email";
-                    } else if (email.length > 50) {
-                      message = "Email không được vượt quá 50 ký tự";
-                    } else if (
-                      customers.some((cus) => cus.email === email) &&
-                      customer.email !== email
-                    ) {
-                      message = "Không được trùng email với người khác";
                     }
                     Swal.fire({
                       position: "bottom",

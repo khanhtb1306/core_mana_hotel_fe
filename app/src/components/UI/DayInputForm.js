@@ -29,9 +29,10 @@ function DayInputForm(props) {
   ];
   const [dayList, setDayList] = useState(listDay);
   const [time, setTime] = useState(timeApply);
-  const [dayWeek, setDayWeek] = useState(
-    listDays.filter((day) => !list.includes(day.value))
-  );
+  // const [dayWeek, setDayWeek] = useState(
+  //   listDays.filter((day) => !list.includes(day.value))
+  // );
+  const dayWeek = listDays.filter((day) => !list.includes(day.value));
   const handleChangeDay = (event) => {
     const { value } = event.target;
     setDayList(value);
@@ -79,7 +80,7 @@ function DayInputForm(props) {
               <td className="w-2/12 pt-5">
                 <h2>Ngày</h2>
               </td>
-              <td className="w-10/12 pt-5">
+              <td className="flex w-10/12 pt-5">
                 <LocalizationProvider
                   dateAdapter={AdapterDayjs}
                   localeText={
@@ -96,6 +97,13 @@ function DayInputForm(props) {
                     format="DD/MM/YYYY"
                   />
                 </LocalizationProvider>
+                <button
+                  type="button"
+                  className="my-auto px-2 my-1 rounded-full ml-5 text-red-500 hover:bg-red-100"
+                  onClick={() => setTime(null)}
+                >
+                  <i className="fa-regular fa-x"></i>
+                </button>
               </td>
             </tr>
           </tbody>

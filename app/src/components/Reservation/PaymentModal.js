@@ -37,12 +37,17 @@ function PaymentModal(props) {
   const invoices = props.invoices;
   let priceAll = 0;
   let priceCheckout = 0;
+  let paidOtherPrice = 0;
+  let receivedDiscount = 0;
+  invoiceReservation.map((invoice) => {
+    paidOtherPrice += invoice.Invoice.priceOther;
+    receivedDiscount += invoice.Invoice.discount;
+  });
   reservation.listReservationDetails.map((reservationDetail, index) => {
     let priceRoom = reservationDetail.price;
     if (reservationDetail.status === "CHECK_OUT") {
       priceCheckout += reservationDetail.price;
     }
-    // console.log(listSurchage);
     const surcharge = listSurchage[index];
     if (surcharge.length > 0) {
       surcharge.map((sur) => {
@@ -77,33 +82,25 @@ function PaymentModal(props) {
   const isDone = reservation.listReservationDetails.every(
     (details) => details.status === "DONE"
   );
-  // console.log(priceAll);
   const requireDeposit =
     deposit.LIST_SETUP_DEPOSIT_DETAIL.length > 0
       ? deposit.LIST_SETUP_DEPOSIT_DETAIL[0].policyValue
       : 0;
-  // console.log(deposit);
-  // console.log(invoiceReservation);
-  // console.log(otherFees);
-  // console.log(reservation);
-  // console.log(invoices);
   const [openCreateInvoice, setOpenCreateInvoice] = useState(false);
   const [openDetailsInvoiceModal, setOpenDetailsInvoiceModal] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [selectedInvoiceReservationId, setSelectedInvoiceReservationId] =
     useState(null);
-  // console.log(selectedInvoiceReservationId);
   const [payType, setPayType] = useState("2");
   const [openNewAccBankModal, setOpenNewAccBankModal] = useState(false);
   const [openOtherFeeModal, setOpenOtherFeeModal] = useState(false);
   const [openFundBooksModal, setOpenFundBooksModal] = useState(false);
+  const [openConfirmModal, setOpenConfirmModal] = useState(false);
 
   const [selectedAcc, setSelectedAcc] = useState(
     listQR.length > 0 ? listQR[0].bankAccountId : 0
   );
-  // console.log(listQR);
   const account = listQR.find((acc) => acc.bankAccountId === selectedAcc);
-  // console.log(account);
 
   const [otherFeePrice, setOtherFeePrice] = useState(
     otherFees && listNotCheckOut.length === 0
@@ -345,7 +342,6 @@ function PaymentModal(props) {
                                         "Đã trả"}
                                     </div>
                                   )}
-
                                   <div className="ml-auto mr-10">
                                     {details.price.toLocaleString() + " VND"}
                                   </div>
@@ -358,7 +354,7 @@ function PaymentModal(props) {
                                         <div>
                                           {sur.note +
                                             ": " +
-                                            sur.value.toLocaleString() +
+                                            Math.round(sur.value).toLocaleString() +
                                             " " +
                                             sur.typeValue}
                                         </div>
@@ -552,28 +548,29 @@ function PaymentModal(props) {
                   </div>
                   {listNotCheckOut.length === 0 && (
                     <>
-                      {!isDone && (
-                        <div className="flex mt-2">
-                          <div className="my-auto w-6/12">Sử dụng điểm</div>
-                          <input
-                            className="p-0 text-sm border-0 border-b border-gray-500 text-right w-6/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
-                            type="number"
-                            name="discountPrice"
-                            value={usePoint}
-                            onChange={(e) => {
-                              if (
-                                e.target.value > 0 &&
-                                e.target.value <=
-                                  reservation.reservation.customer.point
-                              ) {
-                                setUsePoint(e.target.value);
-                              } else {
-                                setUsePoint(0);
-                              }
-                            }}
-                          />
-                        </div>
-                      )}
+                      {!isDone &&
+                        reservation.reservation.customer.point > 0 && (
+                          <div className="flex mt-2">
+                            <div className="my-auto w-6/12">Sử dụng điểm</div>
+                            <input
+                              className="p-0 text-sm border-0 border-b border-gray-500 text-right w-6/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                              type="number"
+                              name=""
+                              value={usePoint}
+                              onChange={(e) => {
+                                if (
+                                  e.target.value > 0 &&
+                                  e.target.value <=
+                                    reservation.reservation.customer.point
+                                ) {
+                                  setUsePoint(e.target.value);
+                                } else {
+                                  setUsePoint(0);
+                                }
+                              }}
+                            />
+                          </div>
+                        )}
                       <div className="flex mt-2">
                         <div className="my-auto w-6/12">Giảm giá</div>
                         <div className="text-right w-6/12">
@@ -629,10 +626,28 @@ function PaymentModal(props) {
                             priceAll +
                             otherFeePrice -
                             depositPrice -
-                            discountPrice
+                            discountPrice -
+                            paidOtherPrice +
+                            receivedDiscount
                           ).toLocaleString()}
                     </div>
                   </div>
+                  {paidOtherPrice > 0 && (
+                    <div className="flex mt-2">
+                      <div className="mr-auto my-auto">Phí khác đã thu</div>
+                      <div className="ml-auto my-auto">
+                        {paidOtherPrice.toLocaleString()}
+                      </div>
+                    </div>
+                  )}
+                  {receivedDiscount > 0 && (
+                    <div className="flex mt-2">
+                      <div className="mr-auto my-auto">Giảm giá đã giảm</div>
+                      <div className="ml-auto my-auto">
+                        {receivedDiscount.toLocaleString()}
+                      </div>
+                    </div>
+                  )}
                   {isDone && (
                     <div className="flex mt-2">
                       <div className="mr-auto my-auto">Khách thanh toán</div>
@@ -654,7 +669,7 @@ function PaymentModal(props) {
                             e.target.value = 0;
                           }
                           const num = e.target.value.replace(/[^\d]/g, "");
-                          setPayPrice(num);
+                          setPayPrice(Number(num));
                           e.target.value = num
                             ? parseInt(num, 10).toLocaleString()
                             : "";
@@ -662,13 +677,14 @@ function PaymentModal(props) {
                       />
                     </div>
                   )}
-
                   {!isDone &&
                     payPrice -
                       (priceAll +
                         otherFeePrice -
                         depositPrice -
-                        discountPrice) >
+                        discountPrice -
+                        paidOtherPrice +
+                        receivedDiscount) >
                       0 && (
                       <div className="flex mt-2">
                         <div className="mr-auto my-auto">
@@ -680,7 +696,9 @@ function PaymentModal(props) {
                             (priceAll +
                               otherFeePrice -
                               depositPrice -
-                              discountPrice)
+                              discountPrice -
+                              paidOtherPrice +
+                              receivedDiscount)
                           ).toLocaleString()}
                         </div>
                       </div>
@@ -846,33 +864,41 @@ function PaymentModal(props) {
                       <button
                         type={
                           payPrice > 0 &&
+                          payPrice + depositPrice >=
+                            Math.floor((priceAll * requireDeposit) / 100) &&
                           ((payType === "2" && account) || payType === "1")
                             ? ""
                             : "button"
                         }
                         className="bg-white border border-green-500 text-green-500 py-2 px-6 rounded hover:bg-green-200"
                         onClick={() => {
-                          if (priceAll <= depositPrice) {
+                          if (priceAll > depositPrice) {
+                            if (payPrice <= 0) {
+                              Swal.fire({
+                                position: "bottom",
+                                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Xin hãy nhập tiền cọc!</button>`,
+                                showConfirmButton: false,
+                                background: "transparent",
+                                backdrop: "none",
+                                timer: 2500,
+                              });
+                            } else if (payType === "2" && !account) {
+                              Swal.fire({
+                                position: "bottom",
+                                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Không có tài khoản, xin hãy tạo tài khoản mới!</button>`,
+                                showConfirmButton: false,
+                                background: "transparent",
+                                backdrop: "none",
+                                timer: 2500,
+                              });
+                            } else if (
+                              payPrice + depositPrice <
+                              Math.floor((priceAll * requireDeposit) / 100)
+                            ) {
+                              setOpenConfirmModal(true);
+                            }
+                          } else {
                             props.onClose();
-                          }
-                          if (priceAll > depositPrice && payPrice <= 0) {
-                            Swal.fire({
-                              position: "bottom",
-                              html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Xin hãy nhập tiền cọc!</button>`,
-                              showConfirmButton: false,
-                              background: "transparent",
-                              backdrop: "none",
-                              timer: 2500,
-                            });
-                          } else if (payType === "2" && !account) {
-                            Swal.fire({
-                              position: "bottom",
-                              html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Không có tài khoản, xin hãy tạo tài khoản mới!</button>`,
-                              showConfirmButton: false,
-                              background: "transparent",
-                              backdrop: "none",
-                              timer: 2500,
-                            });
                           }
                         }}
                       >
@@ -885,6 +911,18 @@ function PaymentModal(props) {
                       >
                         Huỷ bỏ
                       </button>
+                      {openConfirmModal && (
+                        <Modal
+                          open={openConfirmModal}
+                          onClose={() => setOpenConfirmModal(false)}
+                          size="w-6/12 h-.5/6"
+                        >
+                          <h2>
+                            Bạn chắc chắn muốn thêm tiền cọc khi khách chưa cả
+                            đủ tiền cọc không?
+                          </h2>
+                        </Modal>
+                      )}
                     </div>
                   </div>
                 )

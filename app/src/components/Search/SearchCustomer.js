@@ -4,7 +4,10 @@ import EditCustomerModal from "../Customer/EditMoreInfoCustomer";
 
 function SearchCustomer(props) {
   const customers = props.customers;
-  const [rows, setRows] = useState(customers);
+  const activeCustomers = customers.filter(
+    (cus) => cus.isCustomer && cus.status === "ACTIVE"
+  );
+  const [rows, setRows] = useState(activeCustomers);
   const [openSearchModal, setOpenSearchModal] = useState(false);
   const [openNewCustomerModal, setOpenNewCustomerModal] = useState(false);
   const [openEditCustomerModal, setOpenEditCustomerModal] = useState(false);
@@ -12,7 +15,7 @@ function SearchCustomer(props) {
 
   const handleValueChange = (e) => {
     const value = e.target.value;
-    const newRows = customers.filter(
+    const newRows = activeCustomers.filter(
       (pro) =>
         pro.customerName.includes(value) || pro.customerId.includes(value)
     );

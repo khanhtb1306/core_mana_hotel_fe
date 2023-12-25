@@ -76,8 +76,8 @@ function DetailsProduct(props) {
       id: unit.goodsUnitId,
       code: unit.goodsUnitId,
       name: name,
-      cost: unit.cost,
-      price: unit.price,
+      cost: unit.cost.toLocaleString()+ " VND " ,
+      price: unit.price.toLocaleString()+ " VND ",
       inventory: inventory,
     };
   });
@@ -182,16 +182,16 @@ function DetailsProduct(props) {
                       <td className="w-5/12 pt-2">Giá bán:</td>
                       <td className="w-7/12 pt-2">
                         {product.listGoodsUnit[0].price
-                          ? product.listGoodsUnit[0].price
-                          : 0}
+                          ? product.listGoodsUnit[0].price.toLocaleString()+ " VND "
+                          : 0 + " VND "}
                       </td>
                     </tr>
                     <tr className="border-0 border-b">
                       <td className="w-5/12 pt-2">Giá vốn:</td>
                       <td className="w-7/12 pt-2">
                         {product.listGoodsUnit[0].cost
-                          ? product.listGoodsUnit[0].cost
-                          : 0}
+                          ? product.listGoodsUnit[0].cost.toLocaleString()+ " VND "
+                          : 0 + " VND "}
                       </td>
                     </tr>
                     <tr className="border-0 border-b">

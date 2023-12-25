@@ -302,25 +302,25 @@ function FundBookManagementPage() {
           <div className="mx-5">
             <div className="text-lg">Quỹ đầu kì:</div>
             <div className="text-lg text-gray-400">
-              {fundBooksSummary?.openingBalance.toLocaleString()}
+              {fundBooksSummary?.openingBalance.toLocaleString() + " VND "}
             </div>
           </div>
           <div className="mx-5">
             <div className="text-lg">Tổng thu:</div>
             <div className="text-lg text-green-400">
-              {fundBooksSummary?.allIncome.toLocaleString()}
+              {fundBooksSummary?.allIncome.toLocaleString() + " VND "}
             </div>
           </div>
           <div className="mx-5">
             <div className="text-lg">Tổng chi:</div>
             <div className="text-lg text-red-400">
-              {fundBooksSummary?.allExpense.toLocaleString()}
+              {fundBooksSummary?.allExpense.toLocaleString() + " VND "}
             </div>
           </div>
           <div className="mx-5">
             <div className="text-lg">Tồn quỹ:</div>
             <div className="text-lg text-blue-400">
-              {fundBooksSummary?.fundBalance.toLocaleString()}
+              {fundBooksSummary?.fundBalance.toLocaleString() + " VND "}
             </div>
           </div>
         </div>
@@ -424,7 +424,7 @@ function FundBookManagementPage() {
                     </p>
                     <p>
                       Giá trị :{" "}
-                      {fundBook ? (fundBook.value ? fundBook.value.toLocaleString() : "") : ""}
+                      {fundBook ? (fundBook.value ? fundBook.value.toLocaleString() + " VND " : "") : ""}
                     </p>
                     <p>
                       Người nộp :{" "}

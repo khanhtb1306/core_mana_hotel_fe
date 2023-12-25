@@ -208,6 +208,75 @@ function ReservationForm(props) {
       ? reservation.listReservationDetails[0]
       : null
   );
+
+  useEffect(() => {
+    async function fetchRoomActive() {
+      try {
+        if (actionData) {
+          //Notify edit customer
+          if (actionData.editCustomer) {
+            if (actionData.editCustomer) {
+              setCustomer(
+                customers.find(
+                  (cus) => cus.customerId === actionData.editCustomer.customerId
+                )
+              );
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-green-800 text-white">Chỉnh sửa thông tin khách hàng thành công</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            } else {
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Chỉnh sửa thông tin khách hàng thất bại</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            }
+          }
+
+          //Notify add customer
+          if (actionData.addCustomer) {
+            console.log(actionData);
+            if (actionData.addCustomer) {
+              setCustomer(
+                customers.find(
+                  (cus) => cus.customerId === actionData.addCustomer.customerId
+                )
+              );
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-green-800 text-white">Thêm thông tin khách hàng thành công</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            } else {
+              Swal.fire({
+                position: "bottom",
+                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Thêm thông tin khách hàng thất bại</button>`,
+                showConfirmButton: false,
+                background: "transparent",
+                backdrop: "none",
+                timer: 2500,
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchRoomActive();
+  }, [customers]);
+
   // console.log(roomActive);
   useEffect(() => {
     async function fetchRoomActive() {
@@ -428,62 +497,6 @@ function ReservationForm(props) {
               });
             }
           }
-          //Notify edit customer
-          if (actionData.editCustomer) {
-            if (actionData.editCustomer) {
-              setCustomer(
-                customers.find(
-                  (cus) => cus.customerId === actionData.editCustomer.customerId
-                )
-              );
-              Swal.fire({
-                position: "bottom",
-                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-green-800 text-white">Chỉnh sửa thông tin khách hàng thành công</button>`,
-                showConfirmButton: false,
-                background: "transparent",
-                backdrop: "none",
-                timer: 2500,
-              });
-            } else {
-              Swal.fire({
-                position: "bottom",
-                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Chỉnh sửa thông tin khách hàng thất bại</button>`,
-                showConfirmButton: false,
-                background: "transparent",
-                backdrop: "none",
-                timer: 2500,
-              });
-            }
-          }
-
-          //Notify add customer
-          if (actionData.addCustomer) {
-            console.log(actionData);
-            if (actionData.addCustomer) {
-              setCustomer(
-                customers.find(
-                  (cus) => cus.customerId === actionData.addCustomer.customerId
-                )
-              );
-              Swal.fire({
-                position: "bottom",
-                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-green-800 text-white">Thêm thông tin khách hàng thành công</button>`,
-                showConfirmButton: false,
-                background: "transparent",
-                backdrop: "none",
-                timer: 2500,
-              });
-            } else {
-              Swal.fire({
-                position: "bottom",
-                html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Thêm thông tin khách hàng thất bại</button>`,
-                showConfirmButton: false,
-                background: "transparent",
-                backdrop: "none",
-                timer: 2500,
-              });
-            }
-          }
 
           //Notify add deposit
           if (actionData.addDeposit) {
@@ -695,7 +708,7 @@ function ReservationForm(props) {
                   : allPrices[0].PriceList.priceListId
               }
               onChange={handlePriceBookChange}
-              disabled={isDone}
+              disabled={reservation && reservation.listReservationDetails.some((res) => res.status !== "BOOKING")}
             >
               {allPrices.map((price) => {
                 const details = price.PriceList;

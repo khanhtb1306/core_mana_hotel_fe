@@ -108,8 +108,8 @@ function ImportGoodsManagementPage() {
             code: listImport.importGoods.importGoodsId,
             timeImport: formattedDate,
             supplier: listImport.importGoods.supplier,
-            paid: listImport.importGoods.paid.toLocaleString(),
-            total: listImport.importGoods.total ? listImport.importGoods.total.toLocaleString():"",
+            paid: listImport.importGoods.paid.toLocaleString() + " VND ",
+            total: listImport.importGoods.total ? listImport.importGoods.total.toLocaleString() + " VND ": "" + " VND ",
             status: listImport.importGoods.status === 7 ? "Đã lưu" : listImport.importGoods.status === 4 ? "Lưu tạm" : "Hủy",
             price: listImport.importGoods.price
         };
@@ -217,7 +217,7 @@ function ImportGoodsManagementPage() {
                                 <div className="mt-4 border-t border-black border-dotted">
                                     Ngày xuất phiếu: {importGoods.importGoods.timeImport}
                                 </div>
-                                <p>Địa chỉ:</p>
+                                <p>Địa chỉ: </p>
                                 <div className="mt-4">
                                     <div className="font-bold text-center">
                                         <h2>HOÁ ĐƠN NHẬP HÀNG</h2>
@@ -225,7 +225,7 @@ function ImportGoodsManagementPage() {
                                     <div>
                                         <p>
                                             Mã nhập hàng:{" "}
-                                            {importGoods ? (importGoods.importGoods.importGoodsId ? importGoods.importGoods.importGoodsId : "") : ""}
+                                            {importGoods ? (importGoods.importGoods.importGoodsId  ? importGoods.importGoods.importGoodsId : "") : ""}
                                         </p>
                                         <p>
                                             Nhà cung cấp :{" "}
@@ -233,11 +233,11 @@ function ImportGoodsManagementPage() {
                                         </p>
                                         <p>
                                             Đã trả :{" "}
-                                            {importGoods ? (importGoods.importGoods.paid ? importGoods.importGoods.paid.toLocaleString() : "") : ""}
+                                            {importGoods ? (importGoods.importGoods.paid + " VND " ? importGoods.importGoods.paid.toLocaleString() + " VND " : "") : ""}
                                         </p>
                                         <p>
                                             Tổng :{" "}
-                                            {importGoods ? (importGoods.importGoods.price ? importGoods.importGoods.price.toLocaleString() : "") : ""}
+                                            {importGoods ? (importGoods.importGoods.price + " VND " ? importGoods.importGoods.price.toLocaleString() + " VND " : "") : ""}
                                         </p>
 
                                     </div>
@@ -253,8 +253,8 @@ function ImportGoodsManagementPage() {
                                         <div className="flex flex-row">
                                             <div className="basis-1/4">{detail.goods.goodsName}</div>
                                             <div className="basis-1/4">{detail.amount}</div>
-                                            <div className="basis-1/4">{detail.cost.toLocaleString()}</div>
-                                            <div className="basis-1/4">{detail.total.toLocaleString()}</div>
+                                            <div className="basis-1/4">{detail.cost.toLocaleString() + " VND "}</div>
+                                            <div className="basis-1/4">{detail.total.toLocaleString() + " VND "}</div>
                                         </div>
                                     ))}
                                 </div>

@@ -16,7 +16,7 @@ function CustomerForm({ name, open, onClose, method, customer }) {
   const [dob, setDob] = useState(
     customer.dob
       ? dayjs(customer.dob).format("YYYY-MM-DD")
-      : dayjs().add(-1, "year").format("YYYY-MM-DD")
+      : dayjs().add(-18, "year").format("YYYY-MM-DD")
   );
   const [phone, setPhone] = useState(
     customer.phoneNumber ? customer.phoneNumber : ""
@@ -34,10 +34,7 @@ function CustomerForm({ name, open, onClose, method, customer }) {
     phone.trim() === "" ||
     phone.length > 50 ||
     (customers.some((cus) => cus.phoneNumber === phone) &&
-      customer.phoneNumber !== phone) ||
-    email.trim() === "" ||
-    email.length > 50 ||
-    (customers.some((cus) => cus.email === email) && customer.email !== email)
+      customer.phoneNumber !== phone)
   ) {
     check = false;
   } else {
@@ -46,7 +43,7 @@ function CustomerForm({ name, open, onClose, method, customer }) {
   return (
     customer && (
       <Form method={method} onSubmit={onClose} encType="multipart/form-data">
-        <Modal open={open} onClose={onClose} size="w-8/12 " button={true}>
+        <Modal open={open} onClose={onClose} size="w-8/12 h-.5/6" button={true}>
           <div className="p-2 w-full">
             <div>
               <h1 className="text-lg pb-5 font-bold">{name}</h1>
@@ -195,9 +192,7 @@ function CustomerForm({ name, open, onClose, method, customer }) {
                   </tr>
                   <tr>
                     <td className="w-3/12">
-                      <h2>
-                        <span className="text-red-500">*</span> Email
-                      </h2>
+                      <h2>Email</h2>
                     </td>
                     <td className="w-9/12">
                       <input
@@ -321,15 +316,6 @@ function CustomerForm({ name, open, onClose, method, customer }) {
                       customer.phoneNumber !== phone
                     ) {
                       message = "Không được trùng số điện thoại với người khác";
-                    } else if (email.trim() === "") {
-                      message = "Không được để trống email";
-                    } else if (email.length > 50) {
-                      message = "Email không được vượt quá 50 ký tự";
-                    } else if (
-                      customers.some((cus) => cus.email === email) &&
-                      customer.email !== email
-                    ) {
-                      message = "Không được trùng email với người khác";
                     }
                     Swal.fire({
                       position: "bottom",

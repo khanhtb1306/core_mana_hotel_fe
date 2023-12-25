@@ -65,6 +65,34 @@ function ChangeRoomModal(props) {
     fetchCategory();
   }, []);
 
+  let price1 = 0;
+  if (dayjs().diff(fromTime, "date") > 0) {
+    price1 = getTimePrice(
+      roomActive.reservationType === "HOURLY"
+        ? 1
+        : roomActive.reservationType === "DAILY"
+        ? 2
+        : 3,
+      fromTime,
+      dayjs(),
+      timeUsing,
+      listPrice
+    ).price;
+  } else {
+    price1 = getTimePrice(1, fromTime, dayjs(), timeUsing, listPrice).price;
+  }
+  let price2 = getTimePrice(
+    roomActive.reservationType === "HOURLY"
+      ? 1
+      : roomActive.reservationType === "DAILY"
+      ? 2
+      : 3,
+    dayjs(),
+    toTime,
+    timeUsing,
+    listPrice
+  ).price;
+
   const handleCateRoomChange = (e) => {
     const categoryId = e.target.value;
     setSelectedCategory(categoryId);
@@ -170,37 +198,13 @@ function ChangeRoomModal(props) {
                     <input
                       type="hidden"
                       name="price1"
-                      value={
-                        getTimePrice(
-                          roomActive.reservationType === "HOURLY"
-                            ? 1
-                            : roomActive.reservationType === "DAILY"
-                            ? 2
-                            : 3,
-                          fromTime,
-                          dayjs(),
-                          timeUsing,
-                          listPrice
-                        ).price
-                      }
+                      value={price1}
                       onChange={() => console.log()}
                     />
                     <input
                       type="hidden"
                       name="price2"
-                      value={
-                        getTimePrice(
-                          roomActive.reservationType === "HOURLY"
-                            ? 1
-                            : roomActive.reservationType === "DAILY"
-                            ? 2
-                            : 3,
-                          dayjs(),
-                          toTime,
-                          timeUsing,
-                          listPrice
-                        ).price
-                      }
+                      value={price2}
                       onChange={() => console.log()}
                     />
                   </>

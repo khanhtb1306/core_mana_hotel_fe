@@ -117,7 +117,7 @@ function PriceManagementPage() {
                   iconAction="fa-solid fa-ellipsis-vertical"
                   names={[
                     {
-                      name: "Xoá khách hàng",
+                      name: "Xoá bảng giá",
                       icon: "fa-solid fa-trash",
                       action: deletePriceBookHandler,
                     },

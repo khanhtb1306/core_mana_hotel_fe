@@ -10,7 +10,6 @@ function NewDepartment(props) {
         departmentId: null,
         departmentName: null,
         status: null,
-      
       }}
     />
   );

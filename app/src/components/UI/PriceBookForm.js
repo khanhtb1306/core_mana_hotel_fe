@@ -407,7 +407,7 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
                                   return "Thứ " + day + ", ";
                                 })}
                               </div>
-                              <div>{dayjs(prices.timeApply).format("DD/MM/YYYY")}</div>
+                              <div>{prices.timeApply && dayjs(prices.timeApply).format("DD/MM/YYYY")}</div>
                             </td>
                             <td className="py-2 px-4 w-2/12 border-t">
                               <div className="pb-4">Giá giờ</div>

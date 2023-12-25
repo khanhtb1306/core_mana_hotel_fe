@@ -6,17 +6,26 @@ import dayjs from "dayjs";
 import Swal from "sweetalert2";
 
 function AddOrEditVisitor(props) {
-  const { customerGroups } = useLoaderData();
+  const { customers, customerGroups } = useLoaderData();
   const canAddAdult = props.canAddAdult;
   const canAddChildren = props.canAddChildren;
   const visitor = props.visitor;
   const reservationDetail = props.reservationDetail;
-  // console.log(visitor);
+  const activeCustomers = customers.filter((cus) => cus.status === "ACTIVE");
+  console.log(activeCustomers);
+  const [nameVisitor, setNameVisitor] = useState(
+    visitor ? visitor.customerName : ""
+  );
+  const [identity, setIdentity] = useState(visitor ? visitor.identity : "");
+  const [phoneNumber, setPhoneNumber] = useState(
+    visitor ? visitor.phoneNumber : ""
+  );
   const [dob, setDob] = useState(
     visitor ? dayjs(visitor.dob).format("YYYY-MM-DD") : dayjs()
   );
   let age = dayjs().diff(dob, "year");
   // console.log(age);
+
   return (
     <>
       <Form
@@ -95,21 +104,25 @@ function AddOrEditVisitor(props) {
                   )}
                   <tr>
                     <td className="w-3/12">
-                      <h2>Tên khách hàng</h2>
+                      <h2>
+                        <span className="text-red-500">*</span> Tên khách hàng
+                      </h2>
                     </td>
                     <td className="w-9/12">
                       <input
                         className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                         type="text"
                         name="customerName"
-                        defaultValue={visitor ? visitor.customerName : ""}
-                        required
+                        value={nameVisitor}
+                        onChange={(e) => setNameVisitor(e.target.value)}
                       />
                     </td>
                   </tr>
                   <tr>
                     <td className="w-3/12">
-                      <h2>Nhóm khách hàng</h2>
+                      <h2>
+                        <span className="text-red-500">*</span> Nhóm khách hàng
+                      </h2>
                     </td>
                     <td className="w-9/12">
                       <select
@@ -142,7 +155,8 @@ function AddOrEditVisitor(props) {
                         className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                         type="text"
                         name="identity"
-                        defaultValue={visitor ? visitor.identity : ""}
+                        value={identity}
+                        onChange={(e) => setIdentity(e.target.value)}
                       />
                     </td>
                   </tr>
@@ -168,13 +182,16 @@ function AddOrEditVisitor(props) {
                         className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                         type="text"
                         name="phoneNumber"
-                        defaultValue={visitor ? visitor.phoneNumber : ""}
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
                       />
                     </td>
                   </tr>
                   <tr>
                     <td className="w-3/12">
-                      <h2>Năm sinh</h2>
+                      <h2>
+                        <span className="text-red-500">*</span> Năm sinh
+                      </h2>
                     </td>
                     <td className="w-9/12">
                       <input
@@ -287,26 +304,97 @@ function AddOrEditVisitor(props) {
             <div className="ml-auto">
               <button
                 type={
-                  (canAddAdult && age >= 16 && age < 100) ||
-                  (canAddChildren && age < 16 && age > 0)
+                  (((canAddAdult ||
+                    (visitor &&
+                      dayjs().diff(dayjs(visitor.dob), "year") >= 16)) &&
+                    age >= 16 &&
+                    age < 100) ||
+                    ((canAddChildren ||
+                      (visitor &&
+                        dayjs().diff(dayjs(visitor.dob), "year") < 16)) &&
+                      age < 16 &&
+                      age > 0)) &&
+                  !(
+                    nameVisitor === "" ||
+                    (identity !== "" &&
+                      activeCustomers.some(
+                        (cus) => cus.identity === identity
+                      ) &&
+                      identity !== visitor.identity) ||
+                    (phoneNumber !== "" &&
+                      activeCustomers.some(
+                        (cus) => cus.phoneNumber === phoneNumber
+                      ) &&
+                      phoneNumber !== visitor.phoneNumber)
+                  )
                     ? ""
                     : "button"
                 }
                 className="bg-green-500 mr-2 py-2 px-6 text-white rounded hover:bg-green-600"
                 onClick={() => {
                   if (
-                    (canAddAdult && age >= 16 && age < 100) ||
-                    (canAddChildren && age < 16 && age > 0)
+                    (((canAddAdult ||
+                      (visitor &&
+                        dayjs().diff(dayjs(visitor.dob), "year") >= 16)) &&
+                      age >= 16 &&
+                      age < 100) ||
+                      ((canAddChildren ||
+                        (visitor &&
+                          dayjs().diff(dayjs(visitor.dob), "year") < 16)) &&
+                        age < 16 &&
+                        age > 0)) &&
+                    !(
+                      nameVisitor === "" ||
+                      (identity !== "" &&
+                        activeCustomers.some(
+                          (cus) => cus.identity === identity
+                        ) &&
+                        identity !== visitor.identity) ||
+                      (phoneNumber !== "" &&
+                        activeCustomers.some(
+                          (cus) => cus.phoneNumber === phoneNumber
+                        ) &&
+                        phoneNumber !== visitor.phoneNumber)
+                    )
                   ) {
                   } else {
                     let mes = "";
-                    if (!canAddAdult) {
+                    if (nameVisitor === "") {
+                      mes = "Không được để trống tên khách lưu trú";
+                    } else if (
+                      identity !== "" &&
+                      activeCustomers.some(
+                        (cus) => cus.identity === identity
+                      ) &&
+                      identity !== visitor.identity
+                    ) {
+                      mes =
+                        "Không được trùng chứng mình nhân dân với khách khác";
+                    } else if (
+                      phoneNumber !== "" &&
+                      activeCustomers.some(
+                        (cus) => cus.phoneNumber === phoneNumber
+                      ) &&
+                      phoneNumber !== visitor.phoneNumber
+                    ) {
+                      mes = "Không được trùng số điện thoại với khách khác";
+                    } else if (
+                      !(
+                        canAddAdult ||
+                        (visitor &&
+                          dayjs().diff(dayjs(visitor.dob), "year") >= 16)
+                      )
+                    ) {
                       mes = "Người lớn trong phòng đã đạt tối đa!";
-                    }
-                    if (!canAddChildren) {
+                    } else if (
+                      !(
+                        canAddChildren ||
+                        (visitor &&
+                          dayjs().diff(dayjs(visitor.dob), "year") < 16)
+                      )
+                    ) {
                       mes = "Trẻ em trong phòng đã đạt tối đa!";
-                    }
-                    if (age >= 100 || age <= 0) {
+                    } else if (age >= 100 || age <= 0) {
                       mes = "Xin hãy nhập đúng tuổi!";
                     }
                     Swal.fire({

@@ -158,11 +158,11 @@ function CategoryManagementPage() {
       amount: row.roomTotal,
       emptyRoom: emptyRoom.length,
       priceHour: cateRoom.priceByHour
-        ? cateRoom.priceByHour.toLocaleString()
+        ? cateRoom.priceByHour.toLocaleString() + " VND "
         : 0,
-      priceDay: cateRoom.priceByDay ? cateRoom.priceByDay.toLocaleString() : 0,
+      priceDay: cateRoom.priceByDay ? cateRoom.priceByDay.toLocaleString() + " VND " : 0 + " VND ",
       priceNight: cateRoom.priceByNight
-        ? cateRoom.priceByNight.toLocaleString()
+        ? cateRoom.priceByNight.toLocaleString() + " VND "
         : 0,
       status: status,
     };

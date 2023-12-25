@@ -110,13 +110,13 @@ function DetailsService(props) {
                     <tr className="border-0 border-b">
                       <td className="w-5/12 pt-2">Giá bán:</td>
                       <td className="w-7/12 pt-2">
-                        {defaultVal.price ? defaultVal.price : 0}
+                        {defaultVal.price ? defaultVal.price.toLocaleString()+ " VND " : 0+ " VND "}
                       </td>
                     </tr>
                     <tr className="border-0 border-b">
                       <td className="w-5/12 pt-2">Giá vốn:</td>
                       <td className="w-7/12 pt-2">
-                        {defaultVal.cost ? defaultVal.cost : 0}
+                        {defaultVal.cost ? defaultVal.cost.toLocaleString()+ " VND " : 0+ " VND "}
                       </td>
                     </tr>
                     <tr className="border-0 border-b">

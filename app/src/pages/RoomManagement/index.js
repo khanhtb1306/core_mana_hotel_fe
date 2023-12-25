@@ -167,14 +167,14 @@ function RoomManagementPage() {
           cateRoom: room.roomCategory.roomCategoryName,
           area: room.floor.floorName,
           priceHour: room.roomCategory.priceByHour
-            ? room.roomCategory.priceByHour.toLocaleString()
-            : 0,
+            ? room.roomCategory.priceByHour.toLocaleString() + " VND "
+            : 0 + " VND ",
           priceDay: room.roomCategory.priceByDay
-            ? room.roomCategory.priceByDay.toLocaleString()
-            : 0,
+            ? room.roomCategory.priceByDay.toLocaleString() + " VND "
+            : 0 + " VND ",
           priceNight: room.roomCategory.priceByNight
-            ? room.roomCategory.priceByNight.toLocaleString()
-            : 0,
+            ? room.roomCategory.priceByNight.toLocaleString() + " VND "
+            : 0 + " VND ",
           status: status,
         };
       })

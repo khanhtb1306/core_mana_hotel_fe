@@ -170,15 +170,15 @@ function DetailsCategoryRoom(props) {
                         <td className="w-5/12 pt-2">Giá theo giờ:</td>
                         <td className="w-7/12 pt-2">
                           {category.roomCategory.priceByHour
-                            ? category.roomCategory.priceByHour.toLocaleString()
-                            : 0}
+                            ? category.roomCategory.priceByHour.toLocaleString()+ " VND "
+                            : 0+ " VND "}
                         </td>
                       </tr>
                       <tr className="border-0 border-b">
                         <td className="w-5/12 pt-2">Giá theo ngày:</td>
                         <td className="w-7/12 pt-2">
                           {category.roomCategory.priceByDay
-                            ? category.roomCategory.priceByDay.toLocaleString()
+                            ? category.roomCategory.priceByDay.toLocaleString()+ " VND "
                             : 0}
                         </td>
                       </tr>
@@ -186,7 +186,7 @@ function DetailsCategoryRoom(props) {
                         <td className="w-5/12 pt-2">Giá theo đêm:</td>
                         <td className="w-7/12 pt-2">
                           {category.roomCategory.priceByNight
-                            ? category.roomCategory.priceByNight.toLocaleString()
+                            ? category.roomCategory.priceByNight.toLocaleString()+ " VND "
                             : 0}
                         </td>
                       </tr>

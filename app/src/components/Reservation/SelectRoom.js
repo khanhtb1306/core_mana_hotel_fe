@@ -127,11 +127,11 @@ function SelectRoom(props) {
         }
         if (isOverAdults.data.success && isOverAdults.data.result) {
           setIsPaidOverAdults(isOverAdults.data.result.status);
-          setPriceAdults(isOverAdults.data.result.value);
+          setPriceAdults(Math.round(isOverAdults.data.result.value));
         }
         if (isOverChildren.data.success && isOverChildren.data.result) {
           setIsPaidOverChildren(isOverChildren.data.result.status);
-          setPriceChildren(isOverChildren.data.result.value);
+          setPriceChildren(Math.round(isOverChildren.data.result.value));
         }
         setToTime(to);
         setFromTime(from);
@@ -329,7 +329,7 @@ function SelectRoom(props) {
             `reservation/calculate-early-surcharge?reservationDetailId=${room.reservationDetailId}&roomCategoryId=${room.room.roomCategory.roomCategoryId}&lateTime=${soonCheckin}&roomPrice=${roomPrice}&timeUse=${time}&status=${isPaidSoonCheckin}`
           );
           if (response.data.success) {
-            setPriceSoon(response.data.result);
+            setPriceSoon(Math.round(response.data.result));
           }
         }
       } catch (error) {
@@ -353,7 +353,7 @@ function SelectRoom(props) {
             `reservation/calculate-late-surcharge?reservationDetailId=${room.reservationDetailId}&roomCategoryId=${room.room.roomCategory.roomCategoryId}&lateTime=${lateCheckout}&roomPrice=${roomPrice}&status=${isPaidLateCheckout}`
           );
           if (response.data.success) {
-            setPriceLate(response.data.result);
+            setPriceLate(Math.round(response.data.result));
           }
         }
       } catch (error) {
@@ -383,7 +383,7 @@ function SelectRoom(props) {
             }&roomPrice=${roomPrice}&timeUse=${valueTime}&status=${isPaidOverAdults}`
           );
           if (response.data.success) {
-            setPriceAdults(response.data.result);
+            setPriceAdults(Math.round(response.data.result));
           }
         }
       } catch (error) {
@@ -421,8 +421,7 @@ function SelectRoom(props) {
             form
           );
           if (response.data.success) {
-            console.log(response);
-            setPriceChildren(response.data.result);
+            setPriceChildren(Math.round(response.data.result));
           }
         }
       } catch (error) {
@@ -478,6 +477,20 @@ function SelectRoom(props) {
     }
   }
 
+  let listPrices = getTimePrice(
+    typeTime,
+    fromTime,
+    toTime,
+    timeUsing,
+    props.price
+  ).list;
+  // if (room.status === "CHECK_IN" || room.status === "BOOKING") {
+  //   if (toTime.diff(to, "date") > 0) {
+  //     listPrices.push(
+  //       getTimePrice(typeTime, to, toTime, timeUsing, props.price).list
+  //     );
+  //   }
+  // }
   return (
     <div className="bg-white shadow-md rounded-lg border p-4">
       <div>
@@ -505,11 +518,8 @@ function SelectRoom(props) {
           ))}
         <input
           type="hidden"
-          name={`price${props.index}`}
-          value={
-            getTimePrice(typeTime, fromTime, toTime, timeUsing, props.price)
-              .price
-          }
+          name={`historyPrice${props.index}`}
+          value={listPrices}
           onChange={() => console.log()}
         />
         <input
@@ -820,33 +830,18 @@ function SelectRoom(props) {
           {typeTime === 1 ? "Giờ" : typeTime === 2 ? "Ngày" : "Đêm"})
         </p>
         <p className="w-1/12">{valueTime}</p>
-        {room.status === "CHECK_OUT" || room.status === "DONE" ? (
-          <>
-            <p className="w-2/12 text-right">{room.price.toLocaleString()}</p>
-            <p className="w-1/12"></p>
-          </>
-        ) : (
-          <>
-            <p className="w-2/12 text-right">
-              {getTimePrice(
-                typeTime,
-                fromTime,
-                toTime,
-                timeUsing,
-                props.price
-              ).price.toLocaleString()}
-            </p>
-            <p className="w-1/12">
-              <button
-                type="button"
-                className="ml-4"
-                onClick={() => setOpenPriceModal(true)}
-              >
-                <i className="fa-solid fa-comment-dollar fa-xl"></i>
-              </button>
-            </p>
-          </>
-        )}
+        <button
+          type="button"
+          className="w-2/12 text-right bg-green"
+          onClick={() => setOpenPriceModal(true)}
+        >
+          {listPrices
+            .reduce((total, cur) => {
+              return total + Number(cur.split("|")[1]);
+            }, 0)
+            .toLocaleString()}
+        </button>
+        <p className="w-1/12"></p>
       </div>
       {soonCheckin > 0 && isPaidSoonCheckin && (
         <div className="flex pt-2">
@@ -884,11 +879,7 @@ function SelectRoom(props) {
         <DetailsPriceInRoom
           open={openPriceModal}
           onClose={() => setOpenPriceModal(false)}
-          toTime={toTime}
-          fromTime={fromTime}
-          typeTime={typeTime}
-          price={props.price}
-          timeUsing={timeUsing}
+          listPrices={listPrices}
         />
       )}
     </div>

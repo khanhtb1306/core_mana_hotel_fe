@@ -130,6 +130,20 @@ async function loadDeposit() {
   }
 }
 
+async function loadListPriceRooms(id) {
+  const response = await axiosPrivate.get(
+    "reservation-detail/get_price_history_over_time?reservationId=" + id
+  );
+  console.log(response);
+  if (response.data.success) {
+    return response.data.result;
+  } else {
+    // Swal.close();
+    // window.location.href = "/error";
+    // return;
+  }
+}
+
 async function loadInvoiceReservation(id) {
   const response = await axiosPrivate.get("invoice/reservation/" + id);
   if (response.data.success) {
@@ -209,6 +223,7 @@ export async function loader({ request, params }) {
     const listQR = await loadListQR();
     const otherFees = await loadOtherRevenue();
     const deposit = await loadDeposit();
+    const listPriceRooms = await loadListPriceRooms(id);
     const check = await checkAddCustomerToVisitor(id);
     const listFunds = await loadListFundsById(id);
     const invoiceReservation = await loadInvoiceReservation(id);
@@ -227,6 +242,7 @@ export async function loader({ request, params }) {
         listQR,
         otherFees,
         deposit,
+        listPriceRooms,
         listFunds,
         invoiceReservation,
         listSurchage,
@@ -243,16 +259,6 @@ export async function loader({ request, params }) {
 }
 
 export async function action({ request }) {
-  Swal.fire({
-    didOpen: () => {
-      Swal.showLoading();
-    },
-    allowOutsideClick: false,
-    allowEscapeKey: false,
-    allowEnterKey: false,
-    showConfirmButton: false,
-    background: "transparent",
-  });
   const method = request.method;
   const data = await request.formData();
   const reservationId = data.get("reservationId");
@@ -280,13 +286,26 @@ export async function action({ request }) {
     const numberRoom = data.get("numberRoom");
     for (let i = 0; i < numberRoom; i++) {
       const formDetails = new FormData();
+      const formPrice = new FormData();
+      const listPrice = data.get(`historyPrice${i}`).split(",");
+      let price = 0;
+      for (let j = 0; j < listPrice.length; j++) {
+        const priceTime = listPrice[j].split("|");
+        formPrice.append(`timePrices[${j}].time`, priceTime[0]);
+        formPrice.append(`timePrices[${j}].price`, priceTime[1]);
+        price += priceTime[1];
+      }
+      formPrice.append(
+        "reservationDetailId",
+        data.get(`reservationDetailId${i}`)
+      );
       formDetails.append("reservationId", reservationId);
       formDetails.append("roomId", data.get(`roomId${i}`));
       formDetails.append("reservationType", data.get(`reservationType${i}`));
       if (data.get(`isBooking${i}`)) {
         formDetails.append("checkInEstimate", data.get(`fromTime${i}`));
         formDetails.append("checkOutEstimate", data.get(`toTime${i}`));
-        formDetails.append("price", Number(data.get(`price${i}`)));
+        formDetails.append("price", price);
         const response = await axiosPrivate
           .put(
             "reservation-detail/" + data.get(`reservationDetailId${i}`),
@@ -295,6 +314,14 @@ export async function action({ request }) {
           .catch((e) => {
             console.log(e);
           });
+        console.log(response);
+        if (response && response.data.success) {
+          const res = await axiosPrivate.post(
+            "reservation-detail/update_price_History_ver_time",
+            formPrice
+          );
+          console.log(res);
+        }
         listRoom = [...listRoom, response.data];
       }
       if (data.get(`isCheckin${i}`)) {
@@ -339,9 +366,10 @@ export async function action({ request }) {
       .catch((e) => {
         console.log(e);
       });
-    console.log(response);
+    // console.log(response);
     return { success: true, addCustomer: response.data };
   }
+
   if (data.get("editMainCustomer")) {
     const formData = new FormData();
     formData.append("customerName", data.get("customerName"));
@@ -887,12 +915,15 @@ export async function action({ request }) {
     };
   }
   if (data.get("isCancelReservation")) {
-    // const deposit = data.get("deposit");
-    // const number = data.get("number");
-    // const reservationId = data.get("reservationId");
-    // await axiosPrivate.get(
-    //   `reservation/calculate_deposit_cancel_reservation?deposit=${deposit}&number=${number}&reservationId=${reservationId}&checkFundBook=true`
-    // );
+    const deposit = data.get("deposit");
+    const number = data.get("number");
+    const reservationId = data.get("reservationId");
+    await axiosPrivate.get(
+      `reservation/calculate_deposit_cancel_reservation?deposit=${deposit}&number=${number}&reservationId=${reservationId}&checkFundBook=true`
+    );
+    const form = new FormData();
+    form.append("status", "DISCARD");
+    await axiosPrivate.put("reservation/" + reservationId, form);
     return redirect("/listRoom");
   }
   return { success: true };

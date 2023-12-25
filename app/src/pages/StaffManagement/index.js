@@ -290,7 +290,10 @@ function StaffManagementPage() {
               <EditDepartment
                 open={openEditDepartmentModal}
                 onClose={() => setOpenEditDepartmentModal(false)}
-                departmentId={selectedDepartmentId}
+                department={departments.find(
+                  (department) =>
+                    selectedDepartmentId === department.departmentId
+                )}
               />
             )}
             {openDeleteDepartmentModal && (
