@@ -203,7 +203,7 @@ function FundBookManagementPage() {
         time: formattedDate,
         note: fundBook.note,
         paidMethod: fundBook.paidMethod === "BANK" ? "Chuyển khoản" : "Tiền mặt",
-        valueIncome: fundBook.value + " VND",
+        valueIncome: fundBook.value.toLocaleString() + " VND",
         valueExpense: 0 + " VND",
         status: fundBook.status === "COMPLETE" ? "Hoàn tất" : "Hủy bỏ",
         payerReceiver: fundBook.payerReceiver
@@ -219,7 +219,7 @@ function FundBookManagementPage() {
       ,
       paidMethod: fundBook.paidMethod === "BANK" ? "Chuyển khoản" : "Tiền mặt",
       valueIncome: 0 + " VND",
-      valueExpense: fundBook.value + " VND",
+      valueExpense: fundBook.value.toLocaleString() + " VND",
       status: fundBook.status === "COMPLETE" ? "Hoàn tất" : "",
       payerReceiver: fundBook.payerReceiver
     };

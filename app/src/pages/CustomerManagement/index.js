@@ -547,13 +547,24 @@ export async function action({ request }) {
       .delete("customer/customerGroup/" + dataArray)
       .then((response) => {
         let message = "";
+        if(response.data.success){
+          Swal.fire({
+            position: "center",
+            icon: "success",
+            title: "Xóa nhóm khách hàng thành công",
+            showConfirmButton: true,
+          });
+        }
+        else{
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            title: response.data.displayMessage,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        }
 
-        Swal.fire({
-          position: "center",
-          icon: "success",
-          title: "Xóa nhóm khách hàng thành công",
-          showConfirmButton: true,
-        });
       })
       .catch((e) => {
         Swal.fire({

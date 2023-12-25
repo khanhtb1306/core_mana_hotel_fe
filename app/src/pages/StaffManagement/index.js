@@ -51,8 +51,8 @@ function StaffManagementPage() {
   useEffect(() => {
     const filtered = selectedDepartment
       ? staffs.filter(
-          (staff) => staff.department.departmentName === selectedDepartment
-        )
+        (staff) => staff.department.departmentName === selectedDepartment
+      )
       : staffs;
     setStaffByDepartment(filtered);
   }, [staffs, selectedDepartment]);
@@ -432,13 +432,24 @@ export async function action({ request }) {
       const response = await axiosPrivate
         .delete("staff/department/" + data.get("departmentId"))
         .then((response) => {
-          Swal.fire({
-            position: "center",
-            icon: "success",
-            title: "Nhân viên không còn hoạt động",
-            showConfirmButton: false,
-            timer: 1500,
-          });
+          if (response.data.success) {
+            Swal.fire({
+              position: "center",
+              icon: "success",
+              title: response.data.displayMessage,
+              showConfirmButton: false,
+              timer: 1500,
+            });
+          }
+          else{
+            Swal.fire({
+              position: "center",
+              icon: "error",
+              title: response.data.displayMessage,
+              showConfirmButton: false,
+              timer: 1500,
+            });
+          }
         })
         .catch((e) => {
           Swal.fire({

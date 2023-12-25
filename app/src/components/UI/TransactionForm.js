@@ -150,6 +150,30 @@ function TransactionForm({ open, onClose, transaction, name }) {
                                                     </div>
                                                 ))
                                             }
+                                            {
+                                                    <div  className=" mt-3 border border-slate-500 ">
+                                                        <div className="">
+                                                            <div className=" flex flex-row ">
+                                                                <div className="basis-1/4 font-bold">Mã chính sách</div>
+                                                                <div className="basis-1/4 font-bold">Tên chính sách</div>
+                                                                <div className="basis-1/4 font-bold">Loại chính sách</div>
+                                                                <div className="basis-1/4 font-bold">Thành tiền</div>
+                                                            </div>
+                                                            {
+                                                                data.ListControlPolicy.map((data, index) => (
+                                                                    <div className=" flex flex-row" key={index}>
+                                                                        <div className="basis-1/4">{data.policy.policyId}</div>
+                                                                        <div className="basis-1/4">{data.policy.note}</div>
+                                                                        <div className="basis-1/4">{data.typeValue}</div>
+                                                                        <div className="basis-1/4">{data.value.toLocaleString()}</div>
+                                                                    </div>
+
+                                                                ))
+                                                            }
+
+                                                        </div>
+                                                    </div>
+                                            }
                                         </>
 
                                     ))}
