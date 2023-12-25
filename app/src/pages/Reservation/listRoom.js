@@ -189,15 +189,34 @@ export async function action({ request }) {
   //Change status room to checkin
   if (data.get("isReceiveRoom")) {
     const formDetails = new FormData();
+    const listPrice = data.get(`historyPrice`).split(",");
+    let price = 0;
+    const formPrice = new FormData();
+    for (let k = 0; k < listPrice.length; k++) {
+      const priceTime = listPrice[k].split("|");
+      formPrice.append(`timePrices[${k}].time`, priceTime[0]);
+      formPrice.append(`timePrices[${k}].price`, priceTime[1]);
+      price += Number(priceTime[1]);
+    }
+    console.log(price);
     formDetails.append("checkInActual", data.get("fromTime"));
     formDetails.append("checkOutEstimate", data.get("toTime"));
-    formDetails.append("price", data.get("price"));
+    formDetails.append("price", price + "");
     formDetails.append("status", "CHECK_IN");
     const response = await axiosPrivate
       .put("reservation-detail/" + data.get("reservationDetailId"), formDetails)
       .catch((e) => {
         console.log(e);
       });
+    if (response && response.data.success) {
+      formPrice.append(
+        "reservationDetailId",
+        response.data.result.reservationDetailId
+      );
+      await axiosPrivate
+        .post("reservation-detail/update_price_History_ver_time", formPrice)
+        .catch((e) => console.log(e));
+    }
     return { success: true, checkinRoom: response.data };
   }
 
@@ -231,7 +250,16 @@ export async function action({ request }) {
       .catch((e) => {
         console.log(e);
       });
-    if (response.data.success) {
+    const listPrice = data.get(`historyPrice`).split(",");
+    let price = 0;
+    const formPrice = new FormData();
+    for (let k = 0; k < listPrice.length; k++) {
+      const priceTime = listPrice[k].split("|");
+      formPrice.append(`timePrices[${k}].time`, priceTime[0]);
+      formPrice.append(`timePrices[${k}].price`, priceTime[1]);
+      price += Number(priceTime[1]);
+    }
+    if (response && response.data.success) {
       //Add new room in reservation
       const formData = new FormData();
       formData.append("reservationId", response.data.result);
@@ -239,12 +267,21 @@ export async function action({ request }) {
       formData.append("checkOutEstimate", data.get("toTime"));
       formData.append("reservationType", data.get("reservationType"));
       formData.append("status", "BOOKING");
-      formData.append("price", data.get("price"));
+      formData.append("price", price);
       formData.append("roomId", data.get("roomId"));
-      await axiosPrivate
+      const responseDetail = await axiosPrivate
         .post("reservation-detail", formData)
         .catch((er) => console.log(er));
-      return { success: true };
+      if (responseDetail && responseDetail.data.success) {
+        formPrice.append(
+          "reservationDetailId",
+          responseDetail.data.result.reservationDetailId
+        );
+        await axiosPrivate
+          .post("reservation-detail/update_price_History_ver_time", formPrice)
+          .catch((e) => console.log(e));
+      }
+      return redirect("/editReservation/" + response.data.result);
     } else {
       return { success: false };
     }

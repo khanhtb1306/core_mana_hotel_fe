@@ -287,6 +287,7 @@ function PaymentModal(props) {
                     <tbody>
                       {reservation.listReservationDetails.map(
                         (details, index) => {
+                          console.log(details);
                           let priceRoom = details.price;
                           const invoiceByDetails = invoices.find(
                             (invoice) =>
@@ -354,7 +355,9 @@ function PaymentModal(props) {
                                         <div>
                                           {sur.note +
                                             ": " +
-                                            Math.round(sur.value).toLocaleString() +
+                                            Math.round(
+                                              sur.value
+                                            ).toLocaleString() +
                                             " " +
                                             sur.typeValue}
                                         </div>
@@ -656,7 +659,13 @@ function PaymentModal(props) {
                       </div>
                     </div>
                   )}
-                  {priceAll > depositPrice && (
+                  {priceAll +
+                    otherFeePrice -
+                    depositPrice -
+                    discountPrice -
+                    paidOtherPrice +
+                    receivedDiscount >
+                    0 && (
                     <div className="flex mt-2">
                       <div className="mr-auto my-auto">Khách thanh toán</div>
                       <input

@@ -134,13 +134,12 @@ async function loadListPriceRooms(id) {
   const response = await axiosPrivate.get(
     "reservation-detail/get_price_history_over_time?reservationId=" + id
   );
-  console.log(response);
   if (response.data.success) {
     return response.data.result;
   } else {
-    // Swal.close();
-    // window.location.href = "/error";
-    // return;
+    Swal.close();
+    window.location.href = "/error";
+    return;
   }
 }
 
@@ -293,7 +292,7 @@ export async function action({ request }) {
         const priceTime = listPrice[j].split("|");
         formPrice.append(`timePrices[${j}].time`, priceTime[0]);
         formPrice.append(`timePrices[${j}].price`, priceTime[1]);
-        price += priceTime[1];
+        price += Number(priceTime[1]);
       }
       formPrice.append(
         "reservationDetailId",
@@ -314,7 +313,6 @@ export async function action({ request }) {
           .catch((e) => {
             console.log(e);
           });
-        console.log(response);
         if (response && response.data.success) {
           const res = await axiosPrivate.post(
             "reservation-detail/update_price_History_ver_time",
@@ -327,7 +325,7 @@ export async function action({ request }) {
       if (data.get(`isCheckin${i}`)) {
         formDetails.append("checkInActual", data.get(`fromTime${i}`));
         formDetails.append("checkOutEstimate", data.get(`toTime${i}`));
-        formDetails.append("price", Number(data.get(`price${i}`)));
+        formDetails.append("price", price);
         const response = await axiosPrivate
           .put(
             "reservation-detail/" + data.get(`reservationDetailId${i}`),
@@ -336,6 +334,13 @@ export async function action({ request }) {
           .catch((e) => {
             console.log(e);
           });
+        if (response && response.data.success) {
+          const res = await axiosPrivate.post(
+            "reservation-detail/update_price_History_ver_time",
+            formPrice
+          );
+          console.log(res);
+        }
         listRoom = [...listRoom, response.data];
       }
     }
@@ -513,6 +518,15 @@ export async function action({ request }) {
     for (let i = 0; i < categories; i++) {
       const listCateRoomId = data.get("listCateRoomId" + i).split("|");
       const numberRoom = data.get("numberRoom" + i);
+      const listPrice = data.get(`historyPrice${i}`).split(",");
+      let price = 0;
+      const formPrice = new FormData();
+      for (let k = 0; k < listPrice.length; k++) {
+        const priceTime = listPrice[k].split("|");
+        formPrice.append(`timePrices[${k}].time`, priceTime[0]);
+        formPrice.append(`timePrices[${k}].price`, priceTime[1]);
+        price += Number(priceTime[1]);
+      }
       for (let j = 0; j < numberRoom; j++) {
         const formData = new FormData();
         formData.append("reservationId", reservationId);
@@ -520,15 +534,21 @@ export async function action({ request }) {
         formData.append("checkOutEstimate", data.get("toTime"));
         formData.append("reservationType", data.get("reservationType"));
         formData.append("status", "BOOKING");
-        formData.append("price", data.get("price" + i));
+        formData.append("price", price);
         formData.append("roomId", listCateRoomId[j]);
-        await axiosPrivate
+        const response = await axiosPrivate
           .post("reservation-detail", formData)
-          .then((res) => {
-            console.log(res);
-            listAddingRoom = [...listAddingRoom, res.data];
-          })
           .catch((er) => console.log(er));
+        if (response && response.data.success) {
+          listAddingRoom = [...listAddingRoom, response.data];
+          formPrice.append(
+            "reservationDetailId",
+            response.data.result.reservationDetailId
+          );
+          await axiosPrivate
+            .post("reservation-detail/update_price_History_ver_time", formPrice)
+            .catch((e) => console.log(e));
+        }
       }
     }
     return { success: true, listAddingRoom: listAddingRoom };
@@ -687,15 +707,30 @@ export async function action({ request }) {
   //Change status room to checkin
   if (data.get("isReceiveRoom")) {
     const formDetails = new FormData();
+    const listPrice = data.get(`historyPrice`).split(",");
+    let price = 0;
+    const formPrice = new FormData();
+    for (let k = 0; k < listPrice.length; k++) {
+      const priceTime = listPrice[k].split("|");
+      formPrice.append(`timePrices[${k}].time`, priceTime[0]);
+      formPrice.append(`timePrices[${k}].price`, priceTime[1]);
+      price += Number(priceTime[1]);
+    }
     formDetails.append("checkInActual", data.get("fromTime"));
     formDetails.append("checkOutEstimate", data.get("toTime"));
-    formDetails.append("price", data.get("price"));
+    formDetails.append("price", price);
     formDetails.append("status", "CHECK_IN");
     const response = await axiosPrivate
       .put("reservation-detail/" + data.get("reservationDetailId"), formDetails)
       .catch((e) => {
         console.log(e);
       });
+    if (response && response.data.success) {
+      formPrice.append("reservationDetailId", data.get("reservationDetailId"));
+      await axiosPrivate
+        .post("reservation-detail/update_price_History_ver_time", formPrice)
+        .catch((e) => console.log(e));
+    }
     return { success: true, checkinRoom: response.data };
   }
 

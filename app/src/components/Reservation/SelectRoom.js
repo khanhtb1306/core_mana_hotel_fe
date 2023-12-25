@@ -44,7 +44,6 @@ function SelectRoom(props) {
     (cate) =>
       cate.roomCategory.roomCategoryId === room.room.roomCategory.roomCategoryId
   );
-  // console.log(props.price);
 
   const [openPriceModal, setOpenPriceModal] = useState(false);
 
@@ -477,20 +476,80 @@ function SelectRoom(props) {
     }
   }
 
-  let listPrices = getTimePrice(
-    typeTime,
-    fromTime,
-    toTime,
-    timeUsing,
-    props.price
-  ).list;
-  // if (room.status === "CHECK_IN" || room.status === "BOOKING") {
-  //   if (toTime.diff(to, "date") > 0) {
-  //     listPrices.push(
-  //       getTimePrice(typeTime, to, toTime, timeUsing, props.price).list
-  //     );
-  //   }
-  // }
+  const [listPrices, setListPrices] = useState([]);
+
+  useEffect(() => {
+    let listPrice = [];
+    if (typeTime === type) {
+      if (room.status === "BOOKING") {
+        if (fromTime.diff(from) <= 0 && toTime.diff(to) >= 0) {
+          listPrice = [
+            ...props.listPriceRoom.PriceHistoryOverTime.map((priceRoom) => {
+              return priceRoom.time + "|" + priceRoom.price;
+            }),
+          ];
+          listPrice = [
+            ...getTimePrice(typeTime, fromTime, from, timeUsing, props.price)
+              .list,
+            ...listPrice,
+            ...getTimePrice(typeTime, to, toTime, timeUsing, props.price).list,
+          ];
+        } else if (fromTime.diff(from) > 0) {
+          listPrice = [
+            ...props.listPriceRoom.PriceHistoryOverTime.filter((priceRoom) =>
+              typeTime === 1
+                ? dayjs(priceRoom.time).diff(fromTime, "minute") >=
+                  -timeBonusHour
+                : dayjs(priceRoom.time).diff(fromTime, "date") >= -timeBonusDay
+            ).map((priceRoom) => {
+              return priceRoom.time + "|" + priceRoom.price;
+            }),
+          ];
+          console.log(listPrice);
+          console.log(
+            getTimePrice(typeTime, to, toTime, timeUsing, props.price)
+          );
+          listPrice = [
+            ...listPrice,
+            ...getTimePrice(typeTime, to, toTime, timeUsing, props.price).list,
+          ];
+        } else if (toTime.diff(to) < 0) {
+          listPrice = [
+            ...props.listPriceRoom.PriceHistoryOverTime.filter((priceRoom) =>
+              typeTime === 1
+                ? dayjs(toTime).diff(priceRoom.time, "minute") >= timeBonusHour
+                : dayjs(toTime).diff(priceRoom.time, "date") >= timeBonusDay
+            ).map((priceRoom) => {
+              return priceRoom.time + "|" + priceRoom.price;
+            }),
+          ];
+          listPrice = [
+            ...getTimePrice(typeTime, fromTime, from, timeUsing, props.price)
+              .list,
+            ...listPrice,
+          ];
+        }
+      } else if (room.status === "CHECK_IN") {
+        listPrice = [
+          ...props.listPriceRoom.PriceHistoryOverTime.map((priceRoom) => {
+            return priceRoom.time + "|" + priceRoom.price;
+          }),
+        ];
+        if (toTime.diff(to, "date") > 0) {
+          listPrice = [
+            ...listPrice,
+            ...getTimePrice(typeTime, to, toTime, timeUsing, props.price).list,
+          ];
+        }
+      }
+    } else {
+      listPrice = [
+        ...getTimePrice(typeTime, fromTime, toTime, timeUsing, props.price)
+          .list,
+      ];
+    }
+    setListPrices(listPrice);
+  }, [typeTime, fromTime, toTime]);
   return (
     <div className="bg-white shadow-md rounded-lg border p-4">
       <div>
@@ -830,17 +889,34 @@ function SelectRoom(props) {
           {typeTime === 1 ? "Giờ" : typeTime === 2 ? "Ngày" : "Đêm"})
         </p>
         <p className="w-1/12">{valueTime}</p>
-        <button
-          type="button"
-          className="w-2/12 text-right bg-green"
-          onClick={() => setOpenPriceModal(true)}
-        >
-          {listPrices
-            .reduce((total, cur) => {
-              return total + Number(cur.split("|")[1]);
-            }, 0)
-            .toLocaleString()}
-        </button>
+        {room.status === "BOOKING" || room.status === "CHECK_IN" ? (
+          <button
+            type="button"
+            className="w-2/12 text-right bg-green"
+            onClick={() => setOpenPriceModal(true)}
+          >
+            {listPrices
+              .reduce((total, cur) => {
+                return total + Number(cur.split("|")[1]);
+              }, 0)
+              .toLocaleString()}
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="w-2/12 text-right bg-green"
+            onClick={() => setOpenPriceModal(true)}
+          >
+            {props.listPriceRoom.PriceHistoryOverTime.map((priceRoom) => {
+              return priceRoom.time + "|" + priceRoom.price;
+            })
+              .reduce((total, cur) => {
+                return total + Number(cur.split("|")[1]);
+              }, 0)
+              .toLocaleString()}
+          </button>
+        )}
+
         <p className="w-1/12"></p>
       </div>
       {soonCheckin > 0 && isPaidSoonCheckin && (
@@ -879,7 +955,13 @@ function SelectRoom(props) {
         <DetailsPriceInRoom
           open={openPriceModal}
           onClose={() => setOpenPriceModal(false)}
-          listPrices={listPrices}
+          listPrices={
+            room.status === "BOOKING" || room.status === "CHECK_IN"
+              ? listPrices
+              : props.listPriceRoom.PriceHistoryOverTime.map((priceRoom) => {
+                  return priceRoom.time + "|" + priceRoom.price;
+                })
+          }
         />
       )}
     </div>

@@ -157,22 +157,22 @@ function AddRoomModal(props) {
       details.RoomClass.roomCategoryId === room.roomCategory.roomCategoryId
   ).PriceListDetailWithDayOfWeek;
   let time = 0;
-  let price = 0;
+  let listPricesRoom = [];
   let surchargeTime = 0;
   if (typeTime === 1) {
     let timePrice = getTimePrice(1, fromTime, toTime, timeUsing, listPrice);
     time = timePrice.time;
-    price = timePrice.price;
+    listPricesRoom = timePrice.list;
   } else if (typeTime === 2) {
     let timePrice = getTimePrice(2, fromTime, toTime, timeUsing, listPrice);
     time = timePrice.time;
-    price = timePrice.price;
+    listPricesRoom = timePrice.list;
     surchargeTime += getSoonCheckin(2, fromTime, timeUsing);
     surchargeTime += getlateCheckout(2, fromTime, toTime, timeUsing);
   } else {
     let timePrice = getTimePrice(3, fromTime, toTime, timeUsing, listPrice);
     time = timePrice.time;
-    price = timePrice.price;
+    listPricesRoom = timePrice.list;
     surchargeTime += getSoonCheckin(3, fromTime, timeUsing);
     surchargeTime += getlateCheckout(3, fromTime, toTime, timeUsing);
   }
@@ -244,8 +244,8 @@ function AddRoomModal(props) {
             />
             <input
               type="hidden"
-              name="price"
-              value={price}
+              name="historyPrice"
+              value={listPricesRoom}
               onChange={() => console.log()}
             />
           </div>

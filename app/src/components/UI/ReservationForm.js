@@ -29,6 +29,7 @@ function ReservationForm(props) {
     prices,
     categories,
     listSurchage,
+    listPriceRooms,
     check,
     invoices,
     invoiceReservation,
@@ -708,7 +709,12 @@ function ReservationForm(props) {
                   : allPrices[0].PriceList.priceListId
               }
               onChange={handlePriceBookChange}
-              disabled={reservation && reservation.listReservationDetails.some((res) => res.status !== "BOOKING")}
+              disabled={
+                reservation &&
+                reservation.listReservationDetails.some(
+                  (res) => res.status !== "BOOKING"
+                )
+              }
             >
               {allPrices.map((price) => {
                 const details = price.PriceList;
@@ -925,6 +931,12 @@ function ReservationForm(props) {
                                 room.room.roomCategory.roomCategoryId
                             ).PriceListDetailWithDayOfWeek
                           }
+                          listPriceRoom={listPriceRooms.find(
+                            (priceRoom) =>
+                              priceRoom.ReservationDetail
+                                .reservationDetailId ===
+                              room.reservationDetailId
+                          )}
                           visitors={listCustomers}
                           handleVisitModalOpen={() => setOpenVisitorModal(true)}
                         />
@@ -1351,18 +1363,21 @@ function ReservationForm(props) {
                               Ký tên xác nhận
                             </div>
                           </div>
-                          <div className="flex mt-10">
-                            <img
-                              className="mx-auto w-90 h-96"
-                              src={`https://img.vietqr.io/image/${
-                                listQR[0].bankId
-                              }-${
-                                listQR[0].bankAccountNumber
-                              }-print.jpg?amount=${
-                                invoice.order.totalPay
-                              }&addInfo=${"MGD" + invoice.order.orderId}`}
-                            />
-                          </div>
+                          {listQR.length > 0 && (
+                            <div className="flex mt-10">
+                              <img
+                                className="mx-auto w-90 h-96"
+                                src={`https://img.vietqr.io/image/${
+                                  listQR[0].bankId
+                                }-${
+                                  listQR[0].bankAccountNumber
+                                }-print.jpg?amount=${
+                                  invoice.order.totalPay
+                                }&addInfo=${"MGD" + invoice.order.orderId}`}
+                              />
+                            </div>
+                          )}
+
                           <div className="text-center text-sm">
                             Cảm ơn và hẹn gặp lại
                           </div>
@@ -1676,6 +1691,11 @@ function ReservationForm(props) {
           open={openReceiveModal}
           onClose={() => setOpenReceiveModal(false)}
           roomActive={roomActive}
+          listPriceRoom={listPriceRooms.find(
+            (priceRoom) =>
+              priceRoom.ReservationDetail.reservationDetailId ===
+              roomActive.reservationDetailId
+          )}
           price={
             priceBook.ListPriceListDetail.find(
               (details) =>

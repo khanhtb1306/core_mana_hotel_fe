@@ -110,6 +110,15 @@ export async function action({ request }) {
       for (let i = 0; i < categories; i++) {
         const listCateRoomId = data.get("listCateRoomId" + i).split("|");
         const numberRoom = data.get("numberRoom" + i);
+        const listPrice = data.get(`historyPrice${i}`).split(",");
+        let price = 0;
+        const formPrice = new FormData();
+        for (let k = 0; k < listPrice.length; k++) {
+          const priceTime = listPrice[k].split("|");
+          formPrice.append(`timePrices[${k}].time`, priceTime[0]);
+          formPrice.append(`timePrices[${k}].price`, priceTime[1]);
+          price += Number(priceTime[1]);
+        }
         for (let j = 0; j < numberRoom; j++) {
           const formData = new FormData();
           formData.append("reservationId", response.data.result);
@@ -117,11 +126,23 @@ export async function action({ request }) {
           formData.append("checkOutEstimate", data.get("toTime"));
           formData.append("reservationType", data.get("reservationType"));
           formData.append("status", "BOOKING");
-          formData.append("price", data.get("price" + i));
+          formData.append("price", price);
           formData.append("roomId", listCateRoomId[j]);
-          await axiosPrivate
+          const responseDetail = await axiosPrivate
             .post("reservation-detail", formData)
             .catch((er) => console.log(er));
+          if (responseDetail && responseDetail.data.success) {
+            formPrice.append(
+              "reservationDetailId",
+              responseDetail.data.result.reservationDetailId
+            );
+            await axiosPrivate
+              .post(
+                "reservation-detail/update_price_History_ver_time",
+                formPrice
+              )
+              .catch((e) => console.log(e));
+          }
         }
       }
       return redirect("/editReservation/" + response.data.result);

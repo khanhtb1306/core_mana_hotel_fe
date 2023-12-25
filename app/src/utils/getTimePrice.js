@@ -21,15 +21,15 @@ export function getTimePrice(typeTime, fromTime, toTime, timeUsing, listPrice) {
       currentHour = currentHour.add(1, "hour");
     }
     time = hoursList.length;
-    if (time === 0 && toTime.diff(fromTime, "seconds") > 0) {
-      time = 1;
-      hoursList.push(fromTime);
-    }
+    // if (time === 0 && toTime.diff(fromTime, "minute") > timeBonusHour) {
+    //   time = 1;
+    //   hoursList.push(fromTime);
+    // }
     hoursList.map((hour) => {
       listPrice.map((priceDetails) => {
         if (
           priceDetails.PriceListDetail.timeApply &&
-          dayjs(priceDetails.PriceListDetail.timeApply).isSame(hour)
+          dayjs(priceDetails.PriceListDetail.timeApply).diff(hour, "date") === 0
         ) {
           price += priceDetails.PriceListDetail.priceByHour;
           return;
@@ -42,7 +42,7 @@ export function getTimePrice(typeTime, fromTime, toTime, timeUsing, listPrice) {
           }
         }
         list.push(
-          hour.format("DD/MM/YYYY HH:mm:ss") +
+          hour.format("YYYY/MM/DD HH:mm:ss") +
             "|" +
             priceDetails.PriceListDetail.priceByHour
         );
@@ -71,15 +71,15 @@ export function getTimePrice(typeTime, fromTime, toTime, timeUsing, listPrice) {
       daysList.push(currentDay);
     }
     time = daysList.length;
-    if (time === 0 && toTime.diff(fromTime, "seconds") > 0) {
-      time = 1;
-      daysList.push(fromTime);
-    }
+    // if (time === 0 && toTime.diff(fromTime, "hour") > timeBonusDay) {
+    //   time = 1;
+    //   daysList.push(fromTime);
+    // }
     daysList.map((day) => {
       listPrice.map((priceDetails) => {
         if (
           priceDetails.PriceListDetail.timeApply &&
-          dayjs(priceDetails.PriceListDetail.timeApply).isSame(day)
+          dayjs(priceDetails.PriceListDetail.timeApply).diff(day, "date") === 0
         ) {
           price += priceDetails.PriceListDetail.priceByDay;
           return;
@@ -92,9 +92,9 @@ export function getTimePrice(typeTime, fromTime, toTime, timeUsing, listPrice) {
           }
         }
         list.push(
-          day.format("DD/MM/YYYY HH:mm:ss") +
+          day.format("YYYY/MM/DD HH:mm:ss") +
             "|" +
-            priceDetails.PriceListDetail.priceByHour
+            priceDetails.PriceListDetail.priceByDay
         );
       });
     });
@@ -103,7 +103,8 @@ export function getTimePrice(typeTime, fromTime, toTime, timeUsing, listPrice) {
     listPrice.map((priceDetails) => {
       if (
         priceDetails.PriceListDetail.timeApply &&
-        dayjs(priceDetails.PriceListDetail.timeApply).isSame(fromTime)
+        dayjs(priceDetails.PriceListDetail.timeApply).diff(fromTime, "date") ===
+          0
       ) {
         price = priceDetails.PriceListDetail.priceByNight;
         return;
@@ -116,9 +117,9 @@ export function getTimePrice(typeTime, fromTime, toTime, timeUsing, listPrice) {
         }
       }
       list.push(
-        fromTime.hour(priceNightStart).format("DD/MM/YYYY HH:mm:ss") +
+        fromTime.hour(priceNightStart).format("YYYY/MM/DD HH:mm:ss") +
           "|" +
-          priceDetails.PriceListDetail.priceByHour
+          priceDetails.PriceListDetail.priceByNight
       );
     });
   }

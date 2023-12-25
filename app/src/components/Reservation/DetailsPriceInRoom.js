@@ -15,7 +15,7 @@ function DetailsPriceInRoom(props) {
     return {
       id: index,
       time: priceTime[0],
-      price: priceTime[1].toLocaleString(),
+      price: Number(priceTime[1]).toLocaleString(),
     };
   });
 

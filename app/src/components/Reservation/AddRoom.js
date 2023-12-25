@@ -182,7 +182,7 @@ function AddRoom(props) {
                 />
                 <input
                   type="hidden"
-                  name={`price` + row.id}
+                  name={`historyPrice` + row.id}
                   value={
                     getTimePrice(
                       typeTime,
@@ -190,7 +190,7 @@ function AddRoom(props) {
                       toTime,
                       timeUsing,
                       priceByCate
-                    ).price
+                    ).list
                   }
                 />
                 <input

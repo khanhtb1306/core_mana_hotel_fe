@@ -77,7 +77,7 @@ function TransactionManagementPage() {
             createDate: formattedDate,
             custormer: transaction.invoice.customer.customerName,
             discount: transaction.invoice.discount,
-            total: transaction.invoice.total.toLocaleString() + " VND ",
+            total: (transaction.invoice.total + transaction.invoice.priceOther -  transaction.invoice.discount).toLocaleString()  + " VND ",
             status: transaction.invoice.status === "COMPLETE" ? "Hoàn thành" : transaction.invoice.status === "C" ? "Lưu tạm" : "Hủy",
             paid_method: transaction.fundBook.paidMethod
 

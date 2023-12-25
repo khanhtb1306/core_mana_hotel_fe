@@ -23,19 +23,71 @@ function ReceiveRoomModal(props) {
   const roomActive = props.roomActive;
   // console.log(roomActive);
   const listPrice = props.price;
-  const [fromTime, setFromTime] = useState(dayjs(roomActive.checkInEstimate));
-  const [toTime, setToTime] = useState(dayjs(roomActive.checkOutEstimate));
+  const from = dayjs(roomActive.checkInEstimate);
+  const to = dayjs(roomActive.checkOutEstimate);
+  const type =
+    roomActive.reservationType === "HOURLY"
+      ? 1
+      : roomActive.reservationType === "DAILY"
+      ? 2
+      : 3;
+  const [fromTime, setFromTime] = useState(from);
+  const [toTime, setToTime] = useState(to);
   useEffect(() => {
     setFromTime(dayjs(roomActive.checkInEstimate));
     setToTime(dayjs(roomActive.checkOutEstimate));
   }, [roomActive]);
   let time = 0;
-  let price = 0;
+  const [listPrices, setListPrices] = useState([]);
+  useEffect(() => {
+    let listPrice = [];
+    if (fromTime.diff(from) <= 0 && toTime.diff(to) >= 0) {
+      listPrice = [
+        ...props.listPriceRoom.PriceHistoryOverTime.map((priceRoom) => {
+          return priceRoom.time + "|" + priceRoom.price;
+        }),
+      ];
+      listPrice = [
+        ...getTimePrice(type, fromTime, from, timeUsing, props.price).list,
+        ...listPrice,
+        ...getTimePrice(type, to, toTime, timeUsing, props.price).list,
+      ];
+    } else if (fromTime.diff(from) > 0) {
+      listPrice = [
+        ...props.listPriceRoom.PriceHistoryOverTime.filter((priceRoom) =>
+          type === 1
+            ? dayjs(priceRoom.time).diff(fromTime, "minute") >= -timeBonusHour
+            : dayjs(priceRoom.time).diff(fromTime, "date") >= -timeBonusDay
+        ).map((priceRoom) => {
+          return priceRoom.time + "|" + priceRoom.price;
+        }),
+      ];
+      listPrice = [
+        ...listPrice,
+        ...getTimePrice(type, to, toTime, timeUsing, props.price).list,
+      ];
+    } else if (toTime.diff(to) < 0) {
+      listPrice = [
+        ...props.listPriceRoom.PriceHistoryOverTime.filter((priceRoom) =>
+          type === 1
+            ? dayjs(toTime).diff(priceRoom.time, "minute") >= timeBonusHour
+            : dayjs(toTime).diff(priceRoom.time, "date") >= timeBonusDay
+        ).map((priceRoom) => {
+          return priceRoom.time + "|" + priceRoom.price;
+        }),
+      ];
+      listPrice = [
+        ...getTimePrice(type, fromTime, from, timeUsing, props.price).list,
+        ...listPrice,
+      ];
+    }
+    console.log(listPrice);
+    setListPrices(listPrice);
+  }, [fromTime, toTime]);
   let surchargeTime = 0;
   if (roomActive.reservationType === "HOURLY") {
     let timePrice = getTimePrice(1, fromTime, toTime, timeUsing, listPrice);
     time = timePrice.time;
-    price = timePrice.price;
   } else if (roomActive.reservationType === "DAILY") {
     let timePrice = getTimePrice(2, fromTime, toTime, timeUsing, listPrice);
     time = timePrice.time;
@@ -44,7 +96,6 @@ function ReceiveRoomModal(props) {
   } else {
     let timePrice = getTimePrice(3, fromTime, toTime, timeUsing, listPrice);
     time = timePrice.time;
-    price = timePrice.price;
     surchargeTime += getSoonCheckin(3, fromTime, timeUsing);
     surchargeTime += getlateCheckout(3, fromTime, toTime, timeUsing);
   }
@@ -99,8 +150,8 @@ function ReceiveRoomModal(props) {
             />
             <input
               type="hidden"
-              name="price"
-              value={price}
+              name="historyPrice"
+              value={listPrices}
               onChange={() => console.log()}
             />
           </div>
