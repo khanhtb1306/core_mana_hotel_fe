@@ -216,7 +216,6 @@ function CreateInvoiceRoomModal(props) {
       return listInvoice.concat(curList.listOrderByReservationDetailId);
     }, [])
     .filter((invoices) => invoices.order.status === "CONFIRMED");
-  console.log(changeStatusInvoices);
 
   const rows = listCheckout.map((checkout, index) => {
     const listInvoices = invoices.find(
@@ -225,7 +224,10 @@ function CreateInvoiceRoomModal(props) {
     let price = checkout.price;
     if (listInvoices) {
       listInvoices.listOrderByReservationDetailId.map((invoice) => {
-        if (invoice.order.status === "CONFIRMED") {
+        if (
+          invoice.order.status === "CONFIRMED" ||
+          invoice.order.status === "PAID"
+        ) {
           price += invoice.order.totalPay;
         }
       });
@@ -318,7 +320,7 @@ function CreateInvoiceRoomModal(props) {
   const [imageUrl, setImageUrl] = useState("");
   const account = listQR.find((acc) => acc.bankAccountId === selectedAcc);
   useEffect(() => {
-    if (payPrice > 0) {
+    if (account && payPrice > 0) {
       setImageUrl(
         `https://img.vietqr.io/image/${account.bankId}-${account.bankAccountNumber}-print.jpg?amount=${payPrice}&addInfo=${transactionCode}`
       );

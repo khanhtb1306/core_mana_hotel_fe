@@ -674,7 +674,6 @@ function ReservationForm(props) {
     content: () => printBookingRef.current,
   });
 
-  // console.log(customers);
   return (
     <>
       <div className="px-4 w-full py-2 print:hidden">
@@ -715,12 +714,7 @@ function ReservationForm(props) {
                   : allPrices[0].PriceList.priceListId
               }
               onChange={handlePriceBookChange}
-              disabled={
-                reservation &&
-                reservation.listReservationDetails.some(
-                  (res) => res.status !== "BOOKING"
-                )
-              }
+              disabled={reservation}
             >
               {allPrices.map((price) => {
                 const details = price.PriceList;

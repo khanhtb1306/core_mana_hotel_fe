@@ -77,7 +77,6 @@ function ProductManagementPage() {
       getActions: (params) => {
         const row = params.row;
         let options = null;
-        console.log(row.listUnit);
         if (row.listUnit.length > 1) {
           options = row.listUnit.map((unit) => {
             return (
@@ -181,8 +180,10 @@ function ProductManagementPage() {
       goodsName: product.goods.goodsName,
       unitDefault: unitDefault.goodsUnitName,
       goodsCategory: category,
-      sellingPrice: unitDefault.price.toLocaleString()+ " VND ",
-      capitalPrice: product.goods.goodsCategory.toLocaleString()+ " VND " ? unitDefault.cost.toLocaleString()+ " VND " : "...",
+      sellingPrice: unitDefault.price.toLocaleString() + " VND ",
+      capitalPrice: product.goods.goodsCategory
+        ? unitDefault.cost.toLocaleString() + " VND "
+        : "...",
       quantityInStock: product.goods.goodsCategory
         ? (product.goods.inventory * defaultCost) / unitDefault.cost
         : "...",
@@ -451,36 +452,29 @@ export async function action({ request }) {
       if (response) {
         if (units >= 0) {
           const goodsId = data.get("goodsId");
-          await axiosPrivate
-            .delete("goods-unit/" + goodsId, {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-            })
-            .then((response) => console.log(response))
-            .catch((e) => {
-              console.log(e);
-            });
+          const formUnit = new FormData();
           for (let i = 0; i < units; i++) {
             const cost = data.get("cost") * data.get("amount" + i);
             const unit = data.get("unit" + i);
             const price = data.get("price" + i);
-            const formUnit = new FormData();
-            formUnit.append("goodsUnitName", unit);
-            formUnit.append("goodsId", goodsId);
-            formUnit.append("cost", cost);
-            formUnit.append("price", price);
-            await axiosPrivate
-              .post("goods-unit", formUnit, {
-                headers: {
-                  "Content-Type": "multipart/form-data",
-                },
-              })
-              .then((response) => console.log(response))
-              .catch((e) => {
-                console.log(e);
-              });
+            const goodsUnitId = data.get("goodsUnitId" + i);
+            if (goodsUnitId) {
+              formUnit.append(`goodsUnitDTOs[${i}].goodsUnitId`, goodsUnitId);
+            }
+            formUnit.append(`goodsUnitDTOs[${i}].goodsUnitName`, unit);
+            formUnit.append(`goodsUnitDTOs[${i}].goodsId`, goodsId);
+            formUnit.append(`goodsUnitDTOs[${i}].cost`, cost);
+            formUnit.append(`goodsUnitDTOs[${i}].price`, price);
           }
+          await axiosPrivate
+            .put("goods-unit", formUnit, {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            })
+            .catch((e) => {
+              console.log(e);
+            });
         }
         Swal.fire({
           position: "center",

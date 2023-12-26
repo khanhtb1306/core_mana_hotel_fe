@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { axiosPrivate } from "../../utils/axiosConfig";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
 import { Form, useLoaderData } from "react-router-dom";
+import Swal from "sweetalert2";
 import {
   getTimePrice,
   getSoonCheckin,
@@ -22,6 +23,8 @@ function AddRoom(props) {
   const timeBonusDay = timeUsing.timeBonusDay;
   const timeBonusHour = timeUsing.timeBonusHour;
   const [category, setCategory] = useState([]);
+  console.log(category);
+  const [listNumber, setListNumber] = useState([]);
   const [openHour, setOpenHour] = useState(false);
   const [openDay, setOpenDay] = useState(true);
   const [openNight, setOpenNight] = useState(false);
@@ -45,6 +48,13 @@ function AddRoom(props) {
             "&reservationId=" +
             props.reservationId
         );
+        if (response.data.result.length > 0) {
+          const list = [];
+          response.data.result.map((room) => {
+            list.push(0);
+          });
+          setListNumber(list);
+        }
         setCategory(response.data.result);
       } catch (error) {
         console.log(error);
@@ -54,7 +64,6 @@ function AddRoom(props) {
   }, [typeTime, fromTime, toTime]);
 
   const listPrice = props.listPrice;
-  // console.log(listPrice);
 
   let time = 0;
   let surchargeTime = 0;
@@ -195,11 +204,14 @@ function AddRoom(props) {
                 />
                 <input
                   type="number"
-                  name={`numberRoom` + row.id}
-                  defaultValue={0}
-                  min={0}
-                  max={row.emptyRoom}
                   className="w-32"
+                  name={`numberRoom` + row.id}
+                  value={listNumber[row.id]}
+                  onChange={(e) => {
+                    const list = [...listNumber];
+                    list[row.id] = Number(e.target.value);
+                    setListNumber(list);
+                  }}
                 />
               </>
             }
@@ -239,6 +251,18 @@ function AddRoom(props) {
         price: price,
       };
     });
+  }
+
+  let check = false;
+
+  if (
+    listNumber.some((number) => number < 0) ||
+    listNumber.every((number) => number === 0) ||
+    category.some((cate, index) => listNumber[index] > cate.listRoom.length)
+  ) {
+    check = false;
+  } else {
+    check = true;
   }
 
   return (
@@ -406,7 +430,35 @@ function AddRoom(props) {
         {category.length > 0 && (
           <div className="flex pt-5">
             <div className="ml-auto">
-              <button className="bg-green-500 mr-10 py-2 px-6 text-white rounded hover:bg-green-600">
+              <button
+                type={check ? "" : "button"}
+                className="bg-green-500 mr-10 py-2 px-6 text-white rounded hover:bg-green-600"
+                onClick={() => {
+                  if (!check) {
+                    let message = "";
+                    if (listNumber.some((number) => number < 0)) {
+                      message = "Số phòng đặt không thể âm";
+                    } else if (listNumber.every((number) => number === 0)) {
+                      message = "Số phòng đặt phải có phòng trên 0";
+                    } else if (
+                      category.some(
+                        (cate, index) =>
+                          listNumber[index] > cate.listRoom.length
+                      )
+                    ) {
+                      message = "Số phòng đặt không được quá phòng trống";
+                    }
+                    Swal.fire({
+                      position: "bottom",
+                      html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">${message}</button>`,
+                      showConfirmButton: false,
+                      background: "transparent",
+                      backdrop: "none",
+                      timer: 2000,
+                    });
+                  }
+                }}
+              >
                 Lưu
               </button>
               <button

@@ -4,16 +4,13 @@ import { axiosPrivate } from "../../utils/axiosConfig";
 
 function DetailsFundBook(props) {
     const [fundBook, setFundBook] = useState(null);
-    const [staff, setStaff] = useState(null);
 
     useEffect(() => {
         async function fetchFundBooks() {
             try {
                 let response = await axiosPrivate.get("fund-book/" + props.fundBookId);
                 setFundBook(response.data.result);
-                response = await axiosPrivate.get("staff/" + response.data.result.staff);
-                setStaff(response.data.result);
-                console.log(response.data.result);
+
             } catch (error) {
                 console.log(error);
             }
@@ -22,6 +19,8 @@ function DetailsFundBook(props) {
     }, []);
 
     let formattedDate = null;
+    let note = null;
+    let name = null;
     if (fundBook) {
         const dateNow = new Date(fundBook.time);
         const year = dateNow.getFullYear();
@@ -29,10 +28,23 @@ function DetailsFundBook(props) {
         const day = String(dateNow.getDate()).padStart(2, "0");
         formattedDate = `${year}-${month}-${day}`;
 
-    }
-    let nameStaff = null;
-    if (staff) {
-         nameStaff = staff.staffName;
+        if (fundBook.type === "OTHER_EXPENSE" || fundBook.type === "EXPENSE") {
+            name = "chi";
+        }
+        else {
+            name = "thu";
+        }
+
+        if (props.fundBookId.substring(2, 4) === "DH") {
+            note = "Phiếu " + name + " tự động được tạo gắn với hóa đơn " + props.fundBookId.substring(2, 10);
+        }
+        else if (props.fundBookId.substring(2, 4) === "HD") {
+            note = "Phiếu " + name + " tự động được tạo gắn với hóa đơn " + props.fundBookId.substring(2, 10);
+        }
+        else {
+            note = "Phiếu " + name + " tự động được tạo gắn với nhập hàng " + props.fundBookId.substring(2, 10);
+        }
+
     }
 
     return (
@@ -85,7 +97,7 @@ function DetailsFundBook(props) {
                                     <div className="w-9/12  basis-3/4">
                                         <div
                                             className="w-9/12 border-0 border-b border-gray-500  focus:border-b-2 focus:border-green-500 focus:ring-0">
-                                            {fundBook.value ? fundBook.value.toLocaleString()+ " VND " : ""}
+                                            {fundBook.value ? fundBook.value.toLocaleString() + " VND " : ""}
                                         </div>
 
                                     </div>
@@ -149,6 +161,9 @@ function DetailsFundBook(props) {
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                            <div className="italic">
+                                {note}
                             </div>
                         </div>
                     </div>

@@ -26,12 +26,14 @@ export function getTimePrice(typeTime, fromTime, toTime, timeUsing, listPrice) {
     //   hoursList.push(fromTime);
     // }
     hoursList.map((hour) => {
+      let priceRoom = 0;
       listPrice.map((priceDetails) => {
         if (
           priceDetails.PriceListDetail.timeApply &&
           dayjs(priceDetails.PriceListDetail.timeApply).diff(hour, "date") === 0
         ) {
           price += priceDetails.PriceListDetail.priceByHour;
+          priceRoom = priceDetails.PriceListDetail.priceByHour;
           return;
         } else {
           if (
@@ -39,14 +41,11 @@ export function getTimePrice(typeTime, fromTime, toTime, timeUsing, listPrice) {
             priceDetails.DayOfWeekList.includes(hour.day() + 8 + "")
           ) {
             price += priceDetails.PriceListDetail.priceByHour;
+            priceRoom = priceDetails.PriceListDetail.priceByHour;
           }
         }
-        list.push(
-          hour.format("YYYY/MM/DD HH:mm:ss") +
-            "|" +
-            priceDetails.PriceListDetail.priceByHour
-        );
       });
+      list.push(hour.format("YYYY/MM/DD HH:mm:ss") + "|" + priceRoom);
     });
   } else if (typeTime === 2) {
     const daysList = [];
@@ -76,12 +75,14 @@ export function getTimePrice(typeTime, fromTime, toTime, timeUsing, listPrice) {
     //   daysList.push(fromTime);
     // }
     daysList.map((day) => {
+      let priceRoom = 0;
       listPrice.map((priceDetails) => {
         if (
           priceDetails.PriceListDetail.timeApply &&
-          dayjs(priceDetails.PriceListDetail.timeApply).diff(day, "date") === 0
+          dayjs(priceDetails.PriceListDetail.timeApply).isSame(day, "date")
         ) {
           price += priceDetails.PriceListDetail.priceByDay;
+          priceRoom = priceDetails.PriceListDetail.priceByDay;
           return;
         } else {
           if (
@@ -89,14 +90,11 @@ export function getTimePrice(typeTime, fromTime, toTime, timeUsing, listPrice) {
             priceDetails.DayOfWeekList.includes(day.day() + 8 + "")
           ) {
             price += priceDetails.PriceListDetail.priceByDay;
+            priceRoom = priceDetails.PriceListDetail.priceByDay;
           }
         }
-        list.push(
-          day.format("YYYY/MM/DD HH:mm:ss") +
-            "|" +
-            priceDetails.PriceListDetail.priceByDay
-        );
       });
+      list.push(day.format("YYYY/MM/DD HH:mm:ss") + "|" + priceRoom);
     });
   } else {
     time = 1;

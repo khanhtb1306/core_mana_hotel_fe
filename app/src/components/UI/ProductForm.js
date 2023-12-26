@@ -16,6 +16,7 @@ function ProductForm({ name, open, onClose, method, product }) {
     newUnits = listUnit.map((unit, index) => {
       const exchange = unit.cost / defautUnit.cost;
       return {
+        goodsUnitId: unit.goodsUnitId,
         goodsUnitName: unit.goodsUnitName,
         exchange: exchange,
         price: unit.price,
@@ -183,7 +184,9 @@ function ProductForm({ name, open, onClose, method, product }) {
                     )}
                     <tr>
                       <td className="w-3/12">
-                        <h2><span className="text-red-500">*</span> Tên hàng hoá</h2>
+                        <h2>
+                          <span className="text-red-500">*</span> Tên hàng hoá
+                        </h2>
                       </td>
                       <td className="w-9/12">
                         <input
@@ -199,7 +202,9 @@ function ProductForm({ name, open, onClose, method, product }) {
                     </tr>
                     <tr>
                       <td>
-                        <h2><span className="text-red-500">*</span> Định mức tồn</h2>
+                        <h2>
+                          <span className="text-red-500">*</span> Định mức tồn
+                        </h2>
                       </td>
                       <td>
                         Ít nhất
@@ -226,7 +231,9 @@ function ProductForm({ name, open, onClose, method, product }) {
                   <tbody>
                     <tr>
                       <td>
-                        <h2><span className="text-red-500">*</span> Giá vốn</h2>
+                        <h2>
+                          <span className="text-red-500">*</span> Giá vốn
+                        </h2>
                       </td>
                       <td>
                         <input
@@ -240,7 +247,9 @@ function ProductForm({ name, open, onClose, method, product }) {
                     </tr>
                     <tr>
                       <td>
-                        <h2><span className="text-red-500">*</span> Giá bán</h2>
+                        <h2>
+                          <span className="text-red-500">*</span> Giá bán
+                        </h2>
                       </td>
                       <td>
                         <input
@@ -268,7 +277,9 @@ function ProductForm({ name, open, onClose, method, product }) {
               <div>
                 <h2 className="px-4 py-2 bg-gray-200">Đơn vị tính</h2>
                 <div className="flex m-2">
-                  <label className="my-auto pr-5 text-sm"><span className="text-red-500">*</span> Đơn vị cơ bản</label>
+                  <label className="my-auto pr-5 text-sm">
+                    <span className="text-red-500">*</span> Đơn vị cơ bản
+                  </label>
                   <input
                     className="border-0 border-b border-gray-500 w-40 focus:border-b-2 focus:border-green-500 focus:ring-0"
                     type="text"
@@ -281,15 +292,32 @@ function ProductForm({ name, open, onClose, method, product }) {
                   <table className="text-sm text-left p-2">
                     <tbody>
                       <tr>
-                        <th className="w-3/12"><span className="text-red-500">*</span> Tên đơn vị</th>
-                        <th className="w-2/12"><span className="text-red-500">*</span> Giá trị quy đổi</th>
+                        <th className="w-3/12">
+                          <span className="text-red-500">*</span> Tên đơn vị
+                        </th>
+                        <th className="w-2/12">
+                          <span className="text-red-500">*</span> Giá trị quy
+                          đổi
+                        </th>
                         <th className="w-3/12">Giá vốn</th>
-                        <th className="w-3/12"><span className="text-red-500">*</span> Giá bán</th>
+                        <th className="w-3/12">
+                          <span className="text-red-500">*</span> Giá bán
+                        </th>
                         <th className="w-1/12"></th>
                       </tr>
                       {units.map((unit, index) => (
                         <tr key={index}>
                           <td className="w-3/12">
+                            {units[index].goodsUnitId && (
+                              <input
+                                className="border-0 border-b border-gray-500 w-8/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
+                                type="hidden"
+                                name={`goodsUnitId${index}`}
+                                value={units[index].goodsUnitId}
+                                index={index}
+                                onChange={handleInputValue}
+                              />
+                            )}
                             <input
                               className="border-0 border-b border-gray-500 w-8/12 focus:border-b-2 focus:border-green-500 focus:ring-0"
                               type="text"
