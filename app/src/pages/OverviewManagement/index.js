@@ -126,6 +126,7 @@ const OverviewPage = () => {
           );
           setViewMonthOrDay("");
           setViewDayOfWeek("");
+          setViewByMonth("THEO CÁC NĂM");
           setReportRoomCapacity(response.data.result);
         }
       } catch (error) {
@@ -744,7 +745,7 @@ const OverviewPage = () => {
           <div className="bg-white p-4 mr-4 my-4 rounded">
             <div className="flex">
               <div className="w-7/12">
-                <p className="text-lg">DOANH THU THEO {viewByMonthBarChart}</p>
+                <p className="text-lg">DOANH THU {viewByMonthBarChart}</p>
               </div>
               <div className="w-5/12 flex">
                 <div className="w-6/12">
