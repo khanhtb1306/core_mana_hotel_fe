@@ -105,7 +105,11 @@ export async function action({ request }) {
     const status = data.get("status");
     formRoom.append("conditionStatus", status);
     const response = await axiosPrivate
-      .put("room/" + data.get("roomId"), formRoom)
+      .put("room/" + data.get("roomId"), formRoom, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
       .catch((e) => {
         console.log(e);
       });

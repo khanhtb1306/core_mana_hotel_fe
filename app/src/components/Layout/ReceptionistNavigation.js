@@ -65,7 +65,7 @@ function ReceptionistNavigation() {
           </li>
         </div>
         <div className="ml-auto my-auto mr-5 flex">
-          <p className="w-10 my-auto mr-5 text-white">Tien</p>
+          <p className="w-10 my-auto mr-5 text-white">{decodedToken.sub}</p>
           {/* <img src={user} className="w-10 mr-5 h-10" /> */}
           <div
             className="ml-auto relative"

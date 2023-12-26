@@ -614,7 +614,6 @@ export async function action({ request }) {
   if (data.get("status")) {
     formData.append("status", data.get("status"));
     if (method === "PUT") {
-      console.log(data.get("roomId"));
       const response = await axiosPrivate
         .put("room/" + data.get("roomId"), formData, {
           headers: {
