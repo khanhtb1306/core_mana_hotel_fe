@@ -48,14 +48,14 @@ function TransactionManagementPage() {
             label="Xem chi tiết"
             onClick={() => handleDetailsTransaction(id)}
           />,
-          <GridActionsCellItem
-            icon={<i className="fa-solid fa-trash"></i>}
-            label="Xoá"
-            onClick={() => {
-              setSelectedTransactionId(id);
-              deleteTransactionHandler();
-            }}
-          />,
+          // <GridActionsCellItem
+          //   icon={<i className="fa-solid fa-trash"></i>}
+          //   label="Xoá"
+          //   onClick={() => {
+          //     setSelectedTransactionId(id);
+          //     deleteTransactionHandler();
+          //   }}
+          // />,
         ];
       },
     },

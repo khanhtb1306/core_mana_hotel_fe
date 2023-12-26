@@ -108,9 +108,6 @@ function CustomerManagementPage() {
     { field: "IC", headerName: "CMND", width: 150 },
     { field: "address", headerName: "Địa chỉ", width: 200 },
     { field: "phoneNumber", headerName: "Số điện thoại", width: 150 },
-    { field: "DOB", headerName: "Năm sinh", width: 150 },
-    { field: "gender", headerName: "Giới tính", width: 100 },
-    { field: "email", headerName: "Thư điện tử", width: 200 },
     {
       field: "actions",
       headerName: "Hoạt động",

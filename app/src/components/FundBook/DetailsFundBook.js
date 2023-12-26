@@ -41,6 +41,9 @@ function DetailsFundBook(props) {
         else if (props.fundBookId.substring(2, 4) === "HD") {
             note = "Phiếu " + name + " tự động được tạo gắn với hóa đơn " + props.fundBookId.substring(2, 10);
         }
+        else if (props.fundBookId.substring(2, 4) === "DP") {
+            note = "Phiếu " + name + " tự động được tạo gắn với tiền cọc " + props.fundBookId.substring(2, 10);
+        }
         else {
             note = "Phiếu " + name + " tự động được tạo gắn với nhập hàng " + props.fundBookId.substring(2, 10);
         }

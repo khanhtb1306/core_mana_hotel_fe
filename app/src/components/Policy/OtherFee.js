@@ -74,7 +74,7 @@ function OtherFee() {
       id: index,
       policyDetailId: revenue.policyDetailId,
       type: revenue.type,
-      price: revenue.policyValue + " " + revenue.typeValue,
+      price: revenue.policyValue.toLocaleString() + " " + revenue.typeValue,
       status: status,
     };
   });

@@ -112,46 +112,85 @@ function StaffManagementPage() {
         const row = params.row;
         return [
           <>
-            {user.staffId === 0 && (
-              <>
-                <GridActionsCellItem
-                  icon={<i className="fa-solid fa-eye"></i>}
-                  label="Xem chi tiết"
-                  onClick={() => handleDetailsStaff(params.id)}
-                />
-                <GridActionsCellItem
-                  icon={<i className="fa-solid fa-pen-to-square"></i>}
-                  label="Sửa đổi"
-                  onClick={() => handleEditStaff(params.id)}
-                />
-                <GridActionsCellItem
-                  icon={<i className="fa-solid fa-trash"></i>}
-                  label="Xoá"
-                  onClick={() => {
-                    setSelectedStaffId(params.id);
-                    deleteStaffHandler();
-                  }}
-                />
-                <GridActionsCellItem
-                  icon={<i className="bi bi-person-gear"></i>}
-                  label="Admin"
-                  onClick={() => {
-                    setSelectedStaffId(params.id);
-                    adminStaffHandler();
-                  }}
-                />
-              </>
-            )}
-            {user.staffId !== 0 && (
-              <>
-                <GridActionsCellItem
-                  icon={<i className="fa-solid fa-eye"></i>}
-                  label="Xem chi tiết"
-                  onClick={() => handleDetailsStaff(params.id)}
-                />
-              </>
-            )}
+            <>
+              <GridActionsCellItem
+                icon={<i className="fa-solid fa-eye"></i>}
+                label="Xem chi tiết"
+                onClick={() => handleDetailsStaff(params.id)}
+              />
+              {
+                row.role === "ROLE_RECEPTIONIST" && user.staffId !== 0 && (
+                  <>
+                    <GridActionsCellItem
+                      icon={<i className="fa-solid fa-pen-to-square"></i>}
+                      label="Sửa đổi"
+                      onClick={() => handleEditStaff(params.id)}
+                    />
+                    <GridActionsCellItem
+                      icon={<i className="fa-solid fa-trash"></i>}
+                      label="Xoá"
+                      onClick={() => {
+                        setSelectedStaffId(params.id);
+                        deleteStaffHandler();
+                      }}
+                    />
+                  </>
+                )
+              }
+              {
+                row.role === "ROLE_MANAGER" && user.staffId === 0 && (
+                  <>
+                    <GridActionsCellItem
+                      icon={<i className="fa-solid fa-pen-to-square"></i>}
+                      label="Sửa đổi"
+                      onClick={() => handleEditStaff(params.id)}
+                    />
+                    <GridActionsCellItem
+                      icon={<i className="fa-solid fa-trash"></i>}
+                      label="Xoá"
+                      onClick={() => {
+                        setSelectedStaffId(params.id);
+                        deleteStaffHandler();
+                      }}
+                    />
+                    <GridActionsCellItem
+                      icon={<i className="bi bi-person-gear"></i>}
+                      label="Admin"
+                      onClick={() => {
+                        setSelectedStaffId(params.id);
+                        adminStaffHandler();
+                      }}
+                    />
+                  </>
 
+                )
+              }
+              {row.role === "ROLE_RECEPTIONIST" && user.staffId === 0 && (
+                <>
+                  <GridActionsCellItem
+                    icon={<i className="fa-solid fa-pen-to-square"></i>}
+                    label="Sửa đổi"
+                    onClick={() => handleEditStaff(params.id)}
+                  />
+                  <GridActionsCellItem
+                    icon={<i className="fa-solid fa-trash"></i>}
+                    label="Xoá"
+                    onClick={() => {
+                      setSelectedStaffId(params.id);
+                      deleteStaffHandler();
+                    }}
+                  />
+                  <GridActionsCellItem
+                    icon={<i className="bi bi-person"></i>}
+                    label="Receptionist"
+                    onClick={() => {
+                      setSelectedStaffId(params.id);
+                      adminStaffHandler();
+                    }}
+                  />
+                </>
+              )}
+            </>
           </>
         ];
       },
@@ -226,7 +265,7 @@ function StaffManagementPage() {
             Tất cả phòng ban
           </button>
           <div className="overflow-y-auto h-40 ">
-          {filteredDepartment.filter((department) => department.departmentId === "PB000001").map((departments, index) => (
+            {filteredDepartment.filter((department) => department.departmentId === "PB000001").map((departments, index) => (
               <div
                 className="flex flex-row custom-button "
                 key={index}
@@ -519,7 +558,7 @@ export async function action({ request }) {
     if (data.get("staffId") != null) {
       formData.append("staffId", data.get("staffId"));
     }
-    else{
+    else {
       formData.append("role", "ROLE_RECEPTIONIST");
     }
     formData.append("staffName", data.get("staffName"));

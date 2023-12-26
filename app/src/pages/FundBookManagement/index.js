@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import { DataGrid, GridActionsCellItem, GridToolbar } from "@mui/x-data-grid";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect,useRef } from "react";
 import ButtonHover from "../../components/UI/ButtonHover";
 import dayjs from "dayjs";
 import { axiosConfig, axiosPrivate } from "../../utils/axiosConfig";
@@ -141,10 +141,10 @@ function FundBookManagementPage() {
         const month = String(dateNow.getMonth() + 1).padStart(2, "0");
         const day = String(dateNow.getDate()).padStart(2, "0");
         const formattedDate = `${year}-${month}-${day}`;
-
+        let note = row.id.substring(2, 3);
         return [
           <>
-            {row.time === formattedDate && (
+            {(row.time === formattedDate && note === "K")&&(
               <>
                 <GridActionsCellItem
                   icon={<i className="fa-solid fa-eye"></i>}
@@ -169,7 +169,7 @@ function FundBookManagementPage() {
                 />
               </>
             )}
-            {row.time !== formattedDate && (
+            {(row.time !== formattedDate || note !== "K") && (
               <>
                 <GridActionsCellItem
                   icon={<i className="fa-solid fa-eye"></i>}
@@ -197,7 +197,7 @@ function FundBookManagementPage() {
     },
   ];
 
-  const rows = Array.isArray(fundBooks) ? fundBooks.filter((fundBook) => fundBook.value > 0 && fundBook.value !== 0).map((fundBook) => {
+  const rows = Array.isArray(fundBooks) ? fundBooks.filter((fundBook) => fundBook.value > 0 && fundBook.value !== 0).sort((a, b) => new Date(b.time) - new Date(a.time)).map((fundBook) => {
     const dateNow = new Date(fundBook.time);
     const year = dateNow.getFullYear();
     const month = String(dateNow.getMonth() + 1).padStart(2, "0");
@@ -213,7 +213,9 @@ function FundBookManagementPage() {
         valueIncome: fundBook.value.toLocaleString() + " VND",
         valueExpense: 0 + " VND",
         status: fundBook.status === "COMPLETE" ? "Hoàn tất" : "Hủy bỏ",
-        payerReceiver: fundBook.payerReceiver
+        payerReceiver: fundBook.payerReceiver,
+        transactionCode: fundBook.transactionCode
+
 
       };
     }
