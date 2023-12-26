@@ -177,7 +177,7 @@ export async function action({ request }) {
       newPassword: newPassword,
     };
     const response = await axiosPrivate
-      .put("staff/" + staffId, passwordData, {
+      .put("account/" + staffId, passwordData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
