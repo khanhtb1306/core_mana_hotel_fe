@@ -684,7 +684,13 @@ function ReservationForm(props) {
             customer={customer}
             handleCustomerClick={handleCustomerClick}
             handleCustomerRemove={handleCustomerRemove}
-            disable={isDone}
+            disable={
+              reservation && reservation.listReservationDetails.length > 0
+                ? reservation.listReservationDetails.some(
+                    (details) => details.status !== "BOOKING"
+                  )
+                : false
+            }
           />
           <button
             type="button"

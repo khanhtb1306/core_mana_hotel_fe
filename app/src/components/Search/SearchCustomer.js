@@ -54,7 +54,6 @@ function SearchCustomer(props) {
               onClick={() => {
                 setOpenEditCustomerModal(true);
               }}
-              disabled={props.disable}
             >
               {props.customer.customerName}
             </button>

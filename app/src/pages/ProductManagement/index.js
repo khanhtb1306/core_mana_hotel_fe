@@ -22,7 +22,6 @@ import { Tooltip } from "react-tooltip";
 
 function ProductManagementPage() {
   const { products } = useLoaderData();
-  console.log(products);
 
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openDeleteProductModal, setOpenDeleteProductModal] = useState(false);
