@@ -244,7 +244,7 @@ const OverviewPage = () => {
               yearBarChart.year()
           );
           setReportRoomCapacityBarChart(response.data.result);
-          setViewByMonthBarChart("THEO THÁNG CÁC NĂM ");
+          setViewByMonthBarChart("THEO CÁC NĂM ");
           setViewMonthOrDayBarChart("");
           setViewDayOfWeekBarChart("");
         }
