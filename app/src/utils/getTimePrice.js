@@ -32,6 +32,7 @@ export function getTimePrice(typeTime, fromTime, toTime, timeUsing, listPrice) {
           priceDetails.PriceListDetail.timeApply &&
           dayjs(priceDetails.PriceListDetail.timeApply).isSame(hour, "date")
         ) {
+          console.log(1);
           price += priceDetails.PriceListDetail.priceByHour;
           priceRoom = priceDetails.PriceListDetail.priceByHour;
           return;

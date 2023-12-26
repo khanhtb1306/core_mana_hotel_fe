@@ -65,66 +65,90 @@ function ChangeRoomModal(props) {
     }
     fetchCategory();
   }, []);
-
-  const listPriceRoom = props.listPriceRoom.PriceHistoryOverTime;
-  // console.log(listPriceRoom);
-  const listBefore = listPriceRoom.filter(
-    (priceRoom) => dayjs().diff(dayjs(priceRoom.time)) > 0
-  );
-  const listUpdateBefore = listBefore.map((priceRoom, index) => {
-    if (index === listBefore.length - 1) {
-      const price = Math.round(
-        (priceRoom.price / medium) * dayjs().diff(dayjs(priceRoom.time), "hour")
-      );
-      return priceRoom.time + "|" + price;
-    } else {
-      return priceRoom.time + "|" + priceRoom.price;
-    }
-  });
   let listUpdateAfter = [];
-  const listAfter = listPriceRoom.filter(
-    (priceRoom) => dayjs().diff(dayjs(priceRoom.time)) < 0
-  );
-  if (selectedType === "1") {
-    const price =
-      listBefore[listBefore.length - 1].price -
-      listUpdateBefore[listUpdateBefore.length - 1].split("|")[1];
-    listUpdateAfter = [
-      ...[dayjs().format("YYYY/MM/DD HH:mm:ss") + "|" + price],
-      ...listAfter.map((after) => {
-        return after.time + "|" + after.price;
-      }),
-    ];
+  let listUpdateBefore = [];
+  let historyPrice = [];
+  const listPriceRoom = props.listPriceRoom.PriceHistoryOverTime;
+  if (roomActive.status === "BOOKING") {
+    if (selectedType === "2") {
+      const listNewPrice = props.listAllPrice.find(
+        (details) => details.RoomClass.roomCategoryId === selectedCategory
+      ).PriceListDetailWithDayOfWeek;
+      if (roomActive.reservationType === "HOURLY") {
+        historyPrice = [
+          ...getTimePrice(1, fromTime, toTime, timeUsing, listNewPrice).list,
+        ];
+      } else if (roomActive.reservationType === "DAILY") {
+        historyPrice = [
+          ...getTimePrice(2, fromTime, toTime, timeUsing, listNewPrice).list,
+        ];
+      } else {
+        historyPrice = [
+          ...getTimePrice(3, fromTime, toTime, timeUsing, listNewPrice).list,
+        ];
+      }
+    } else {
+      historyPrice = [...listPriceRoom];
+    }
   } else {
-    const listNewPrice = props.listAllPrice.find(
-      (details) => details.RoomClass.roomCategoryId === selectedCategory
-    ).PriceListDetailWithDayOfWeek;
-    if (listAfter.length > 0) {
-      const price = Math.round(
-        (getTimePrice(
-          roomActive.reservationType === "DAILY" ? 2 : 1,
-          dayjs(),
-          dayjs(listAfter[0].time),
-          timeUsing,
-          listNewPrice
-        ).price /
-          medium) *
-          dayjs(listAfter[0].time).diff(dayjs(), "hour")
-      );
+    const listBefore = listPriceRoom.filter(
+      (priceRoom) => dayjs().diff(dayjs(priceRoom.time)) > 0
+    );
+    listUpdateBefore = listBefore.map((priceRoom, index) => {
+      if (index === listBefore.length - 1) {
+        const price = Math.round(
+          (priceRoom.price / medium) *
+            dayjs().diff(dayjs(priceRoom.time), "hour")
+        );
+        return priceRoom.time + "|" + price;
+      } else {
+        return priceRoom.time + "|" + priceRoom.price;
+      }
+    });
+    const listAfter = listPriceRoom.filter(
+      (priceRoom) => dayjs().diff(dayjs(priceRoom.time)) < 0
+    );
+    if (selectedType === "1") {
+      const price =
+        listBefore[listBefore.length - 1].price -
+        listUpdateBefore[listUpdateBefore.length - 1].split("|")[1];
       listUpdateAfter = [
         ...[dayjs().format("YYYY/MM/DD HH:mm:ss") + "|" + price],
+        ...listAfter.map((after) => {
+          return after.time + "|" + after.price;
+        }),
+      ];
+    } else {
+      const listNewPrice = props.listAllPrice.find(
+        (details) => details.RoomClass.roomCategoryId === selectedCategory
+      ).PriceListDetailWithDayOfWeek;
+      if (listAfter.length > 0) {
+        const price = Math.round(
+          (getTimePrice(
+            roomActive.reservationType === "DAILY" ? 2 : 1,
+            dayjs(),
+            dayjs(listAfter[0].time),
+            timeUsing,
+            listNewPrice
+          ).price /
+            medium) *
+            dayjs(listAfter[0].time).diff(dayjs(), "hour")
+        );
+        listUpdateAfter = [
+          ...[dayjs().format("YYYY/MM/DD HH:mm:ss") + "|" + price],
+        ];
+      }
+      listUpdateAfter = [
+        ...listUpdateAfter,
+        ...getTimePrice(
+          roomActive.reservationType === "DAILY" ? 2 : 1,
+          dayjs().hour(priceDayStart).minute(0),
+          toTime,
+          timeUsing,
+          listNewPrice
+        ).list,
       ];
     }
-    listUpdateAfter = [
-      ...listUpdateAfter,
-      ...getTimePrice(
-        roomActive.reservationType === "DAILY" ? 2 : 1,
-        dayjs().hour(priceDayStart).minute(0),
-        toTime,
-        timeUsing,
-        listNewPrice
-      ).list,
-    ];
   }
   console.log(listUpdateAfter);
 
@@ -143,29 +167,6 @@ function ChangeRoomModal(props) {
     const roomId = e.target.value;
     setSelectedRoom(roomId);
   };
-
-  let historyPrice = [];
-  if (selectedType === "2") {
-    const listNewPrice = props.listAllPrice.find(
-      (details) => details.RoomClass.roomCategoryId === selectedCategory
-    ).PriceListDetailWithDayOfWeek;
-    if (roomActive.reservationType === "HOURLY") {
-      historyPrice = [
-        ...getTimePrice(1, fromTime, toTime, timeUsing, listNewPrice).list,
-      ];
-    } else if (roomActive.reservationType === "DAILY") {
-      historyPrice = [
-        ...getTimePrice(2, fromTime, toTime, timeUsing, listNewPrice).list,
-      ];
-    } else {
-      historyPrice = [
-        ...getTimePrice(3, fromTime, toTime, timeUsing, listNewPrice).list,
-      ];
-    }
-  } else {
-    historyPrice = [...listPriceRoom];
-  }
-  console.log(historyPrice);
 
   return (
     <Form

@@ -530,10 +530,11 @@ function PaymentModal(props) {
                   {Math.floor((priceAll * requireDeposit) / 100) >
                     depositPrice && (
                     <div className="flex mt-2 text-red-500">
-                      <div className="mr-auto">Tiền đặt cọc tối thiểu</div>
+                      <div className="mr-auto">Tiền cọc còn thiếu</div>
                       <div className="ml-auto">
-                        {Math.floor(
-                          (priceAll * requireDeposit) / 100
+                        {(
+                          Math.floor((priceAll * requireDeposit) / 100) -
+                          depositPrice
                         ).toLocaleString()}
                       </div>
                     </div>
