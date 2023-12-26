@@ -1046,7 +1046,7 @@ function PaymentModal(props) {
                 >
                   <p>Tên khách sạn: Khách sạn Văn Lâm</p>
                   <p>Điện thoại: 0981987625</p>
-                  <p>Địa chỉ: </p>
+                  <p>Địa chỉ: Huyện Nga Sơn, tỉnh Thanh Hoá</p>
                   <div className="mt-4 border-t border-black border-dotted">
                     Ngày xuất HĐ: {dayjs().format("DD/MM/YYYY HH:mm")}
                   </div>

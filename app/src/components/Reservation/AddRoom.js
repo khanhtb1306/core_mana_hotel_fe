@@ -23,7 +23,6 @@ function AddRoom(props) {
   const timeBonusDay = timeUsing.timeBonusDay;
   const timeBonusHour = timeUsing.timeBonusHour;
   const [category, setCategory] = useState([]);
-  console.log(category);
   const [listNumber, setListNumber] = useState([]);
   const [openHour, setOpenHour] = useState(false);
   const [openDay, setOpenDay] = useState(true);

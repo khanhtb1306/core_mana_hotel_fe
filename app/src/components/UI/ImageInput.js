@@ -11,15 +11,9 @@ function Image(props) {
       <div className="flex items-center justify-center w-full">
         <div className="flex flex-col w-32 h-32 border-2 border-gray-300 border-dashed hover:bg-gray-100 hover:border-gray-300">
           {selectedImage ? (
-            <img
-              className="w-full w-full h-full object-cover"
-              src={selectedImage}
-            />
+            <img className="w-full h-full object-cover" src={selectedImage} />
           ) : props.src ? (
-            <img
-              className="w-full w-full h-full object-cover"
-              src={props.src}
-            />
+            <img className="w-full h-full object-cover" src={props.src} />
           ) : (
             <div className="flex flex-col items-center justify-center pt-7">
               <i className="fa-solid fa-mountain-sun"></i>

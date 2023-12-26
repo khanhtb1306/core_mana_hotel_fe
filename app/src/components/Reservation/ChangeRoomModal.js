@@ -18,15 +18,23 @@ import { axiosPrivate } from "../../utils/axiosConfig";
 
 function ChangeRoomModal(props) {
   const { timeUsing } = useLoaderData();
+  const roomActive = props.roomActive;
+  // console.log(roomActive);
+  const roomCategoryId = roomActive.room.roomCategory.roomCategoryId;
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(0);
   const [selectedRoom, setSelectedRoom] = useState(0);
   const [listRoom, setListRoom] = useState([]);
   const [selectedRadio, setSelectedRadio] = useState(1);
-  const roomActive = props.roomActive;
-  // console.log(roomActive);
+  const [selectedType, setSelectedType] = useState("1");
+  const priceNightStart = timeUsing.startTimeNight.split(":")[0];
+  const priceNightEnd = timeUsing.endTimeNight.split(":")[0];
+  const priceDayStart = timeUsing.startTimeDay.split(":")[0];
+  const priceDayEnd = timeUsing.endTimeDay.split(":")[0];
+  const timeBonusDay = timeUsing.timeBonusDay;
+  const timeBonusHour = timeUsing.timeBonusHour;
+  const medium = 24 - Math.abs(priceDayEnd - priceDayStart);
   const listPrice = props.price;
-  // console.log(listPrice);
   let fromTime = dayjs();
   let toTime = dayjs();
   if (roomActive.status === "BOOKING") {
@@ -50,13 +58,6 @@ function ChangeRoomModal(props) {
         );
         if (response.data.success) {
           setCategories(response.data.result);
-          if (response.data.result.length > 0) {
-            let listRoomByCate = [];
-            response.data.result.map((cate) => {
-              listRoomByCate = [...listRoomByCate, ...cate.listRoom];
-            });
-            setListRoom(listRoomByCate);
-          }
         }
       } catch (error) {
         console.log(error);
@@ -65,51 +66,72 @@ function ChangeRoomModal(props) {
     fetchCategory();
   }, []);
 
-  let price1 = 0;
-  if (dayjs().diff(fromTime, "date") > 0) {
-    price1 = getTimePrice(
-      roomActive.reservationType === "HOURLY"
-        ? 1
-        : roomActive.reservationType === "DAILY"
-        ? 2
-        : 3,
-      fromTime,
-      dayjs(),
-      timeUsing,
-      listPrice
-    ).price;
+  const listPriceRoom = props.listPriceRoom.PriceHistoryOverTime;
+  // console.log(listPriceRoom);
+  const listBefore = listPriceRoom.filter(
+    (priceRoom) => dayjs().diff(dayjs(priceRoom.time)) > 0
+  );
+  const listUpdateBefore = listBefore.map((priceRoom, index) => {
+    if (index === listBefore.length - 1) {
+      const price = Math.round(
+        (priceRoom.price / medium) * dayjs().diff(dayjs(priceRoom.time), "hour")
+      );
+      return priceRoom.time + "|" + price;
+    } else {
+      return priceRoom.time + "|" + priceRoom.price;
+    }
+  });
+  let listUpdateAfter = [];
+  const listAfter = listPriceRoom.filter(
+    (priceRoom) => dayjs().diff(dayjs(priceRoom.time)) < 0
+  );
+  if (selectedType === "1") {
+    const price =
+      listBefore[listBefore.length - 1].price -
+      listUpdateBefore[listUpdateBefore.length - 1].split("|")[1];
+    listUpdateAfter = [
+      ...[dayjs().format("YYYY/MM/DD HH:mm:ss") + "|" + price],
+      ...listAfter.map((after) => {
+        return after.time + "|" + after.price;
+      }),
+    ];
   } else {
-    price1 = getTimePrice(1, fromTime, dayjs(), timeUsing, listPrice).price;
+    const listNewPrice = props.listAllPrice.find(
+      (details) => details.RoomClass.roomCategoryId === selectedCategory
+    ).PriceListDetailWithDayOfWeek;
+    const price = Math.round(
+      (getTimePrice(
+        roomActive.reservationType === "DAILY" ? 2 : 1,
+        dayjs(),
+        dayjs(listAfter[0].time),
+        timeUsing,
+        listNewPrice
+      ).price /
+        medium) *
+        dayjs(listAfter[0].time).diff(dayjs(), "hour")
+    );
+    listUpdateAfter = [
+      ...[dayjs().format("YYYY/MM/DD HH:mm:ss") + "|" + price],
+      ...getTimePrice(
+        roomActive.reservationType === "DAILY" ? 2 : 1,
+        dayjs().hour(priceDayStart).minute(0),
+        toTime,
+        timeUsing,
+        listNewPrice
+      ).list,
+    ];
   }
-  let price2 = getTimePrice(
-    roomActive.reservationType === "HOURLY"
-      ? 1
-      : roomActive.reservationType === "DAILY"
-      ? 2
-      : 3,
-    dayjs(),
-    toTime,
-    timeUsing,
-    listPrice
-  ).price;
+  console.log(listUpdateAfter);
 
   const handleCateRoomChange = (e) => {
     const categoryId = e.target.value;
     setSelectedCategory(categoryId);
-    if (categoryId === 0) {
-      let listRoomByCate = [];
-      categories.map((cate) => {
-        listRoomByCate = [...listRoomByCate, ...cate.listRoom];
-      });
-      setListRoom(listRoomByCate);
-    } else {
-      setListRoom([
-        ...categories.find(
-          (cate) => cate.roomClass.roomCategoryId === categoryId
-        ).listRoom,
-      ]);
-    }
-    setSelectedRoom(0);
+    setListRoom([
+      ...categories.find((cate) => cate.roomClass.roomCategoryId === categoryId)
+        .listRoom,
+    ]);
+    setSelectedRoom("0");
+    setSelectedType("1");
   };
 
   const handleRoomChange = (e) => {
@@ -117,17 +139,28 @@ function ChangeRoomModal(props) {
     setSelectedRoom(roomId);
   };
 
-  let price = 0;
-  if (roomActive.reservationType === "HOURLY") {
-    let timePrice = getTimePrice(1, fromTime, toTime, timeUsing, listPrice);
-    price = timePrice.price;
-  } else if (roomActive.reservationType === "DAILY") {
-    let timePrice = getTimePrice(2, fromTime, toTime, timeUsing, listPrice);
-    price = timePrice.price;
+  let historyPrice = [];
+  if (selectedType === "2") {
+    const listNewPrice = props.listAllPrice.find(
+      (details) => details.RoomClass.roomCategoryId === selectedCategory
+    ).PriceListDetailWithDayOfWeek;
+    if (roomActive.reservationType === "HOURLY") {
+      historyPrice = [
+        ...getTimePrice(1, fromTime, toTime, timeUsing, listNewPrice).list,
+      ];
+    } else if (roomActive.reservationType === "DAILY") {
+      historyPrice = [
+        ...getTimePrice(2, fromTime, toTime, timeUsing, listNewPrice).list,
+      ];
+    } else {
+      historyPrice = [
+        ...getTimePrice(3, fromTime, toTime, timeUsing, listNewPrice).list,
+      ];
+    }
   } else {
-    let timePrice = getTimePrice(3, fromTime, toTime, timeUsing, listPrice);
-    price = timePrice.price;
+    historyPrice = [...listPriceRoom];
   }
+  console.log(historyPrice);
 
   return (
     <Form
@@ -197,14 +230,14 @@ function ChangeRoomModal(props) {
                   <>
                     <input
                       type="hidden"
-                      name="price1"
-                      value={price1}
+                      name="historyPrice1"
+                      value={listUpdateBefore}
                       onChange={() => console.log()}
                     />
                     <input
                       type="hidden"
-                      name="price2"
-                      value={price2}
+                      name="historyPrice2"
+                      value={listUpdateAfter}
                       onChange={() => console.log()}
                     />
                   </>
@@ -225,8 +258,10 @@ function ChangeRoomModal(props) {
             />
             <input
               type="hidden"
-              name="price"
-              value={price}
+              name="historyPrice"
+              value={historyPrice.map((price) => {
+                return price.time + "|" + price.price;
+              })}
               onChange={() => console.log()}
             />
           </div>
@@ -267,7 +302,6 @@ function ChangeRoomModal(props) {
                 value={selectedCategory}
                 onChange={handleCateRoomChange}
               >
-                <MenuItem value={0}>Tất cả hạng phòng</MenuItem>
                 {categories.map((cate) => {
                   return (
                     <MenuItem
@@ -284,7 +318,6 @@ function ChangeRoomModal(props) {
                 value={selectedRoom}
                 onChange={handleRoomChange}
               >
-                <MenuItem value={0}></MenuItem>
                 {listRoom.map((room) => {
                   return (
                     <MenuItem key={room.roomId} value={room.roomId}>
@@ -295,8 +328,40 @@ function ChangeRoomModal(props) {
               </Select>
             </div>
           </div>
+          {selectedCategory !== 0 && selectedCategory !== roomCategoryId && (
+            <div>
+              <h2 className="font-medium text-medium mt-2">
+                Có thay đổi về hạng phòng, bạn muốn:
+              </h2>
+              <RadioGroup
+                value={selectedType}
+                onChange={(e) => {
+                  setSelectedType(e.target.value);
+                }}
+                name="radio-buttons-group"
+              >
+                <FormControlLabel
+                  value={1}
+                  control={<Radio />}
+                  label="Giữ nguyên giá phòng cũ"
+                  sx={{
+                    "& .MuiFormControlLabel-label": { fontSize: "0.875rem" },
+                  }}
+                />
+                <FormControlLabel
+                  value={2}
+                  control={<Radio />}
+                  label="Sử dụng giá phòng mới"
+                  sx={{
+                    "& .MuiFormControlLabel-label": { fontSize: "0.875rem" },
+                  }}
+                />
+              </RadioGroup>
+            </div>
+          )}
         </div>
-        {selectedRoom !== 0 && (
+
+        {selectedRoom !== "0" && (
           <div className="flex pt-5 mr-2">
             <div className="ml-auto">
               <button className="bg-green-500 py-2 px-6 text-white rounded hover:bg-green-600">

@@ -733,7 +733,7 @@ function ReservationForm(props) {
       </div>
       {reservation ? (
         <>
-          <Form method="PUT" className="h-[50rem] px-5 print:hidden">
+          <Form method="PUT" className="h-[45rem] px-5 print:hidden">
             <div className="flex my-auto rounded-lg py-2">
               {reservation.listReservationDetails.length > 0 && roomActive && (
                 <div className="px-2 py-1 mr-2 rounded-lg bg-white">
@@ -1326,6 +1326,7 @@ function ReservationForm(props) {
                                   <tr>
                                     <td>Nội dung</td>
                                     <td>Đơn vị</td>
+                                    <td>Giá tiền</td>
                                     <td>SL</td>
                                     <td>Thành tiền</td>
                                   </tr>
@@ -1344,8 +1345,16 @@ function ReservationForm(props) {
                                                 .goodsUnitName
                                             }
                                           </td>
+                                          <td>
+                                            {goods.orderDetail.price.toLocaleString()}
+                                          </td>
                                           <td>{goods.orderDetail.quantity}</td>
-                                          <td>{goods.orderDetail.price}</td>
+                                          <td>
+                                            {(
+                                              goods.orderDetail.price *
+                                              goods.orderDetail.quantity
+                                            ).toLocaleString()}
+                                          </td>
                                         </tr>
                                       );
                                     }
@@ -1724,6 +1733,11 @@ function ReservationForm(props) {
           open={openChangeModal}
           onClose={() => setOpenChangeModal(false)}
           roomActive={roomActive}
+          listPriceRoom={listPriceRooms.find(
+            (priceRoom) =>
+              priceRoom.ReservationDetail.reservationDetailId ===
+              roomActive.reservationDetailId
+          )}
           price={
             priceBook.ListPriceListDetail.find(
               (details) =>
@@ -1731,6 +1745,7 @@ function ReservationForm(props) {
                 roomActive.room.roomCategory.roomCategoryId
             ).PriceListDetailWithDayOfWeek
           }
+          listAllPrice={priceBook.ListPriceListDetail}
         />
       )}
       {openCancelReservationModal && (

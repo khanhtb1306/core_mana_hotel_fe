@@ -3,7 +3,7 @@ import ServiceForm from "../UI/ServiceForm";
 function EditService(props) {
   return (
     <ServiceForm
-      name="Thêm dịch vụ mới"
+      name="Sửa dịch vụ mới"
       method="put"
       open={props.open}
       onClose={props.onClose}

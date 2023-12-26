@@ -13,10 +13,14 @@ import NewAccBankModal from "./NewAccBankModal";
 import Swal from "sweetalert2";
 import OtherFeeModal from "./OtherFeeModal";
 import { useReactToPrint } from "react-to-print";
+import { jwtDecode } from "jwt-decode";
 import dayjs from "dayjs";
 
 function AddRetailInvoice() {
   const { listQR, otherFees, customers, goodsUnit } = useLoaderData();
+  const token = localStorage.getItem("token");
+  const decodedToken = jwtDecode(token);
+  const printInvoiceRef = useRef();
   const goodsActiveUnit = goodsUnit.filter((unit) => unit.goods.status === 1);
   const actionData = useActionData();
   const printQRRef = useRef();
@@ -39,6 +43,7 @@ function AddRetailInvoice() {
   const productUnit = goodsActiveUnit.filter(
     (unit) => unit.goods.goodsCategory && unit.goods.inventory > 0
   );
+  console.log(products);
   const service = goodsActiveUnit.filter((unit) => !unit.goods.goodsCategory);
   const [banks, setBanks] = useState([]);
   const [openPaymentModal, setOpenPaymentModal] = useState(false);
@@ -242,6 +247,10 @@ function AddRetailInvoice() {
   } else {
     check = true;
   }
+
+  const handleInvoicePrint = useReactToPrint({
+    content: () => printInvoiceRef.current,
+  });
 
   return (
     <>
@@ -686,6 +695,13 @@ function AddRetailInvoice() {
                 <div className="flex pt-5 absolute bottom-0 right-0">
                   <div className="mr-10 mb-10 ml-auto">
                     <button
+                      type="button"
+                      className="bg-white text-green-500 border border-green-500 py-2 px-6 rounded hover:bg-green-200 mr-2"
+                      onClick={handleInvoicePrint}
+                    >
+                      In
+                    </button>
+                    <button
                       type={
                         priceAll + otherFeePrice > payPrice ||
                         (payType === "2" && !account)
@@ -717,6 +733,64 @@ function AddRetailInvoice() {
                     >
                       Hoàn thành
                     </button>
+                  </div>
+                </div>
+                <div className="hidden">
+                  <div ref={printInvoiceRef} className="p-10">
+                    <p>Tên khách sạn: Khách sạn Văn Lâm</p>
+                    <p>Điện thoại: 0981987625</p>
+                    <p>Địa chỉ: Thôn 6, huyện Nga Sơn, tỉnh Thanh Hoá</p>
+                    <div className="mt-4 border-t border-black border-dotted">
+                      Ngày xuất HĐ: {dayjs().format("DD/MM/YYYY HH:mm")}
+                    </div>
+                    <div className="mt-4">
+                      <div className="font-bold text-center">
+                        <h2>HOÁ ĐƠN BÁN HÀNG</h2>
+                      </div>
+                      <div>
+                        <p>
+                          Khách hàng:{" "}
+                          {customer ? customer.customerName : "Khách lẻ"}
+                        </p>
+                        <p>Lễ tân: {decodedToken.sub}</p>
+                      </div>
+                      {products.length > 0 && (
+                        <table className="my-5 text-center min-w-full border border-gray-300 divide-y divide-gray-300">
+                          <thead>
+                            <tr>
+                              <td>Nội dung</td>
+                              <td>Đơn vị</td>
+                              <td>Giá tiền</td>
+                              <td>SL</td>
+                              <td>Thành tiền</td>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {products.map((unit, index) => {
+                              return (
+                                <tr key={index}>
+                                  <td>{unit.goods.goodsName}</td>
+                                  <td>{unit.goodsUnitName}</td>
+                                  <td>{unit.price.toLocaleString()}</td>
+                                  <td>{unit.number}</td>
+                                  <td>
+                                    {(
+                                      unit.price * unit.number
+                                    ).toLocaleString()}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      )}
+                      <div className="flex">
+                        <div className="ml-auto mr-10">Tổng cộng: </div>
+                        <div className="w-32 text-right">
+                          {priceAll.toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 {openOtherFeeModal && (

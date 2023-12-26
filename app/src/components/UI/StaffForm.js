@@ -39,7 +39,6 @@ function StaffForm({ name, open, onClose, method, staff }) {
   if (
     staffName.trim() === "" ||
     staffName.length > 255 ||
-    username.trim() === "" ||
     username.length > 255 ||
     (staffs.some((cus) => cus.username === username) &&
       staff.username !== username) ||
@@ -294,8 +293,6 @@ function StaffForm({ name, open, onClose, method, staff }) {
                     message = "Không được để trống tên nhân viên";
                   } else if (staffName.length > 255) {
                     message = "Tên nhân viên không được vượt quá 255 ký tự";
-                  } else if (username.trim() === "") {
-                    message = "Không được để trống tên đăng nhập";
                   } else if (username.length > 255) {
                     message = "Tên đăng nhập không được vượt quá 255 ký tự";
                   } else if (

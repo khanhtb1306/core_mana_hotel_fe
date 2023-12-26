@@ -765,25 +765,52 @@ export async function action({ request }) {
       return { success: true, changeRoom: response.data.success };
     } else if (data.get("status") === "CHECK_IN") {
       if (data.get("radio") === "1") {
+        const listPrice = data.get(`historyPrice`).split(",");
+        let price = 0;
+        const formPrice = new FormData();
+        for (let k = 0; k < listPrice.length; k++) {
+          const priceTime = listPrice[k].split("|");
+          formPrice.append(`timePrices[${k}].time`, priceTime[0]);
+          formPrice.append(`timePrices[${k}].price`, priceTime[1]);
+          price += Number(priceTime[1]);
+        }
         const formDetails = new FormData();
         formDetails.append("reservationId", reservationId);
         formDetails.append("roomId", data.get("oldRoomId"));
         formDetails.append("reservationDetailDTO.roomId", data.get("roomId"));
-        formDetails.append("reservationDetailDTO.price", data.get("price"));
+        formDetails.append("reservationDetailDTO.price", price);
         const response = await axiosPrivate
           .put("reservation-detail/change-room", formDetails)
           .catch((e) => {
             console.log(e);
           });
+        if (response && response.data.success) {
+          formPrice.append(
+            "reservationDetailId",
+            response.data.result.reservationDetailId
+          );
+          await axiosPrivate
+            .post("reservation-detail/update_price_History_ver_time", formPrice)
+            .catch((e) => console.log(e));
+        }
         return { success: true, changeRoom: response.data.success };
       } else {
+        const listPrice1 = data.get(`historyPrice1`).split(",");
+        let price1 = 0;
+        const formPrice1 = new FormData();
+        for (let k = 0; k < listPrice1.length; k++) {
+          const priceTime = listPrice1[k].split("|");
+          formPrice1.append(`timePrices[${k}].time`, priceTime[0]);
+          formPrice1.append(`timePrices[${k}].price`, priceTime[1]);
+          price1 += Number(priceTime[1]);
+        }
         const formCheckout = new FormData();
         formCheckout.append("checkInActual", data.get("fromTime"));
         formCheckout.append(
           "checkOutActual",
           dayjs().format("YYYY-MM-DD HH:mm:ss")
         );
-        formCheckout.append("price", data.get("price1"));
+        formCheckout.append("price", price1);
         formCheckout.append("status", "CHECK_OUT");
         // return { success: true };
         const response1 = await axiosPrivate
@@ -794,23 +821,60 @@ export async function action({ request }) {
           .catch((e) => {
             console.log(e);
           });
+        if (response1 && response1.data.success) {
+          formPrice1.append(
+            "reservationDetailId",
+            response1.data.result.reservationDetailId
+          );
+          await axiosPrivate
+            .post(
+              "reservation-detail/update_price_History_ver_time",
+              formPrice1
+            )
+            .catch((e) => console.log(e));
+        }
         if (response1.data.success) {
+          const listPrice2 = data.get(`historyPrice2`).split(",");
+          let price2 = 0;
+          const formPrice2 = new FormData();
+          for (let k = 0; k < listPrice2.length; k++) {
+            const priceTime = listPrice2[k].split("|");
+            formPrice2.append(`timePrices[${k}].time`, priceTime[0]);
+            formPrice2.append(`timePrices[${k}].price`, priceTime[1]);
+            price2 += Number(priceTime[1]);
+          }
           const formCheckin = new FormData();
           formCheckin.append("reservationId", reservationId);
           formCheckin.append("roomId", data.get("roomId"));
           formCheckin.append("reservationType", data.get("reservationType"));
           formCheckin.append(
+            "checkInEstimate",
+            dayjs().format("YYYY-MM-DD HH:mm:ss")
+          );
+          formCheckin.append(
             "checkInActual",
             dayjs().format("YYYY-MM-DD HH:mm:ss")
           );
           formCheckin.append("checkOutEstimate", data.get("toTime"));
-          formCheckin.append("price", data.get("price2"));
+          formCheckin.append("price", price2);
           formCheckin.append("status", "CHECK_IN");
           const response2 = await axiosPrivate
             .post("reservation-detail", formCheckin)
             .catch((e) => {
               console.log(e);
             });
+          if (response2 && response2.data.success) {
+            formPrice2.append(
+              "reservationDetailId",
+              response2.data.result.reservationDetailId
+            );
+            await axiosPrivate
+              .post(
+                "reservation-detail/update_price_History_ver_time",
+                formPrice2
+              )
+              .catch((e) => console.log(e));
+          }
           return { success: true, changeRoom: response2.data.success };
         }
         return { success: true, changeRoom: false };

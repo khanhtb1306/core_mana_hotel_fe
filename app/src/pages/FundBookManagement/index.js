@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import { DataGrid, GridActionsCellItem, GridToolbar } from "@mui/x-data-grid";
-import { useState, useEffect,useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import ButtonHover from "../../components/UI/ButtonHover";
 import dayjs from "dayjs";
 import { axiosConfig, axiosPrivate } from "../../utils/axiosConfig";
@@ -404,7 +404,10 @@ function FundBookManagementPage() {
               >
                 <p>Tên khách sạn: Khách sạn Văn Lâm</p>
                 <p>Điện thoại: 0981987625</p>
-                <p>Địa chỉ:</p>
+                {/* <div className="mt-4 border-t border-black border-dotted">
+                  Ngày xuất phiếu: {dayjs().format("DD/MM/YYYY HH:mm")}
+                </div> */}
+                <p>Địa chỉ: Huyện Nga Sơn, tỉnh Thanh Hoá</p>
                 <div className="mt-4">
                   <div className="font-bold text-center">
                     {(fundBook.type === "INCOME" || fundBook.type === "OTHER_INCOME") && (

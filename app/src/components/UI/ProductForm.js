@@ -12,7 +12,9 @@ function ProductForm({ name, open, onClose, method, product }) {
   let defautUnit = product.listGoodsUnit.find((unit) => unit.isDefault);
   let newUnits = [];
   if (product.listGoodsUnit.length > 1) {
-    const listUnit = product.listGoodsUnit.filter((unit) => !unit.isDefault);
+    const listUnit = product.listGoodsUnit.filter(
+      (unit) => !unit.isDefault && unit.status === 1
+    );
     newUnits = listUnit.map((unit, index) => {
       const exchange = unit.cost / defautUnit.cost;
       return {
@@ -90,6 +92,19 @@ function ProductForm({ name, open, onClose, method, product }) {
     setOpenDetails(true);
   };
 
+  const hasDuplicatesInArray = (array, key) => {
+    const seen = new Set();
+    return array.reduce((hasDuplicates, item) => {
+      const value = item[key];
+      if (seen.has(value)) {
+        return true;
+      } else {
+        seen.add(value);
+        return hasDuplicates;
+      }
+    }, false);
+  };
+
   let check = false;
 
   if (
@@ -108,7 +123,8 @@ function ProductForm({ name, open, onClose, method, product }) {
     units.some((unit) => unit.goodsUnitName.trim() === "") ||
     units.find((uni) => uni.goodsUnitName.trim() === unit.trim()) ||
     units.some((unit) => unit.exchange < 2) ||
-    units.some((unit) => unit.price < formData.cost * unit.exchange)
+    units.some((unit) => unit.price < formData.cost * unit.exchange) ||
+    hasDuplicatesInArray(units, "goodsUnitName")
   ) {
     check = false;
   } else {
@@ -455,6 +471,8 @@ function ProductForm({ name, open, onClose, method, product }) {
                       )
                     ) {
                       message = "Giá bán phải lớn hơn giá vốn";
+                    } else if (hasDuplicatesInArray(units, "goodsUnitName")) {
+                      message = "Không được trùng tên đơn vị";
                     }
                     Swal.fire({
                       position: "bottom",
