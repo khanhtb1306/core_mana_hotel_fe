@@ -752,11 +752,20 @@ export async function action({ request }) {
   //Change room
   if (data.get("isChangeRoom")) {
     if (data.get("status") === "BOOKING") {
+      const listPrice = data.get(`historyPrice`).split(",");
+      let price = 0;
+      const formPrice = new FormData();
+      for (let k = 0; k < listPrice.length; k++) {
+        const priceTime = listPrice[k].split("|");
+        formPrice.append(`timePrices[${k}].time`, priceTime[0]);
+        formPrice.append(`timePrices[${k}].price`, priceTime[1]);
+        price += Number(priceTime[1]);
+      }
       const formDetails = new FormData();
       formDetails.append("reservationId", reservationId);
       formDetails.append("roomId", data.get("oldRoomId"));
       formDetails.append("reservationDetailDTO.roomId", data.get("roomId"));
-      formDetails.append("reservationDetailDTO.price", data.get("price"));
+      formDetails.append("reservationDetailDTO.price", price);
       const response = await axiosPrivate
         .put("reservation-detail/change-room", formDetails)
         .catch((e) => {

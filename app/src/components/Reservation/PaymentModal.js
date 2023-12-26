@@ -388,13 +388,7 @@ function PaymentModal(props) {
                                             invoice.order.status === "PAID" ||
                                             invoice.order.status === "CONFIRMED"
                                           ) {
-                                            if (
-                                              invoice.order.status ===
-                                              "CONFIRMED"
-                                            ) {
-                                              priceRoom +=
-                                                invoice.order.totalPay;
-                                            }
+                                            priceRoom += invoice.order.totalPay;
                                             return (
                                               <div className="flex mt-1">
                                                 <div className="w-3/12">

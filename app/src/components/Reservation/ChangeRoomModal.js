@@ -99,19 +99,24 @@ function ChangeRoomModal(props) {
     const listNewPrice = props.listAllPrice.find(
       (details) => details.RoomClass.roomCategoryId === selectedCategory
     ).PriceListDetailWithDayOfWeek;
-    const price = Math.round(
-      (getTimePrice(
-        roomActive.reservationType === "DAILY" ? 2 : 1,
-        dayjs(),
-        dayjs(listAfter[0].time),
-        timeUsing,
-        listNewPrice
-      ).price /
-        medium) *
-        dayjs(listAfter[0].time).diff(dayjs(), "hour")
-    );
+    if (listAfter.length > 0) {
+      const price = Math.round(
+        (getTimePrice(
+          roomActive.reservationType === "DAILY" ? 2 : 1,
+          dayjs(),
+          dayjs(listAfter[0].time),
+          timeUsing,
+          listNewPrice
+        ).price /
+          medium) *
+          dayjs(listAfter[0].time).diff(dayjs(), "hour")
+      );
+      listUpdateAfter = [
+        ...[dayjs().format("YYYY/MM/DD HH:mm:ss") + "|" + price],
+      ];
+    }
     listUpdateAfter = [
-      ...[dayjs().format("YYYY/MM/DD HH:mm:ss") + "|" + price],
+      ...listUpdateAfter,
       ...getTimePrice(
         roomActive.reservationType === "DAILY" ? 2 : 1,
         dayjs().hour(priceDayStart).minute(0),

@@ -30,7 +30,7 @@ export function getTimePrice(typeTime, fromTime, toTime, timeUsing, listPrice) {
       listPrice.map((priceDetails) => {
         if (
           priceDetails.PriceListDetail.timeApply &&
-          dayjs(priceDetails.PriceListDetail.timeApply).diff(hour, "date") === 0
+          dayjs(priceDetails.PriceListDetail.timeApply).isSame(hour, "date")
         ) {
           price += priceDetails.PriceListDetail.priceByHour;
           priceRoom = priceDetails.PriceListDetail.priceByHour;
@@ -101,8 +101,7 @@ export function getTimePrice(typeTime, fromTime, toTime, timeUsing, listPrice) {
     listPrice.map((priceDetails) => {
       if (
         priceDetails.PriceListDetail.timeApply &&
-        dayjs(priceDetails.PriceListDetail.timeApply).diff(fromTime, "date") ===
-          0
+        dayjs(priceDetails.PriceListDetail.timeApply).isSame(fromTime, "date")
       ) {
         price = priceDetails.PriceListDetail.priceByNight;
         return;
