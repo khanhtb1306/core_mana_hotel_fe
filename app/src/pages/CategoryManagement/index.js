@@ -91,9 +91,9 @@ function CategoryManagementPage() {
     { field: "name", headerName: "Tên hạng phòng", width: 200 },
     { field: "amount", headerName: "SL phòng", width: 100 },
     { field: "emptyRoom", headerName: "Phòng trống", width: 100 },
-    { field: "priceHour", headerName: "Giá theo giờ", width: 100 },
-    { field: "priceDay", headerName: "Giá theo ngày", width: 100 },
-    { field: "priceNight", headerName: "Giá theo đêm", width: 100 },
+    { field: "priceHour", headerName: "Giá theo giờ", width: 150 },
+    { field: "priceDay", headerName: "Giá theo ngày", width: 150 },
+    { field: "priceNight", headerName: "Giá theo đêm", width: 150 },
     { field: "status", headerName: "Trạng thái", width: 150 },
     {
       field: "actions",

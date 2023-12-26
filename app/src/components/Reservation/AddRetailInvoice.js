@@ -37,7 +37,7 @@ function AddRetailInvoice() {
   );
   const [isGoods, setIsGoods] = useState(true);
   const productUnit = goodsActiveUnit.filter(
-    (unit) => unit.goods.goodsCategory
+    (unit) => unit.goods.goodsCategory && unit.goods.inventory > 0
   );
   const service = goodsActiveUnit.filter((unit) => !unit.goods.goodsCategory);
   const [banks, setBanks] = useState([]);
@@ -193,7 +193,7 @@ function AddRetailInvoice() {
   const transactionCode = `MGDBL${dayjs().format("YYYYMMDDHHmmss")}`;
 
   useEffect(() => {
-    if (payPrice > 0) {
+    if (account && payPrice > 0) {
       setImageUrl(
         `https://img.vietqr.io/image/${account.bankId}-${account.bankAccountNumber}-print.jpg?amount=${payPrice}&addInfo=${transactionCode}`
       );
@@ -202,6 +202,46 @@ function AddRetailInvoice() {
   const handleQRPrint = useReactToPrint({
     content: () => printQRRef.current,
   });
+
+  const groupDefautProduct = products.reduce((product, cur) => {
+    const defaultGood = goodsActiveUnit.find(
+      (unit) => unit.isDefault && unit.goods.goodsId === cur.goods.goodsId
+    );
+    const exchange = cur.cost / defaultGood.cost;
+    const exist = product.find(
+      (pro) => pro.goods.goodsId === cur.goods.goodsId
+    );
+    if (exist) {
+      return [
+        {
+          ...exist,
+          number: exist.number + exchange * cur.number,
+        },
+      ];
+    } else {
+      return [
+        ...product,
+        {
+          ...defaultGood,
+          number: exchange * cur.number,
+        },
+      ];
+    }
+  }, []);
+
+  let check = false;
+
+  if (
+    products.length <= 0 ||
+    products.some((product) => product.number <= 0) ||
+    groupDefautProduct.some(
+      (product) => product.goods.inventory < product.number
+    )
+  ) {
+    check = false;
+  } else {
+    check = true;
+  }
 
   return (
     <>
@@ -224,7 +264,7 @@ function AddRetailInvoice() {
         <input
           type="hidden"
           name="paidMethod"
-          value={payType === 1 ? "CASH" : "TRANSFER"}
+          value={payType === "1" ? "CASH" : "TRANSFER"}
           onChange={() => 1}
         />
         <input
@@ -255,7 +295,10 @@ function AddRetailInvoice() {
           <div className="flex">
             <div className="w-4/12 bg-white rounded-lg p-4">
               <SearchProduct
-                goodsUnit={goodsActiveUnit}
+                goodsUnit={goodsActiveUnit.filter(
+                  (unit) =>
+                    unit.goods.inventory > 0 || unit.goods.inventory === null
+                )}
                 handleProductClick={handleProductClick}
               />
               <div className="flex my-4">
@@ -295,7 +338,7 @@ function AddRetailInvoice() {
                         >
                           <div className="flex">
                             <img
-                              src={unit.goods.image}
+                              src={`data:image/png;base64,${unit.goods.image}`}
                               alt={unit.goods.goodsName}
                               className="w-10 h-10"
                             />
@@ -327,7 +370,7 @@ function AddRetailInvoice() {
                         >
                           <div className="flex">
                             <img
-                              src={unit.goods.image}
+                              src={`data:image/png;base64,${unit.goods.image}`}
                               alt={unit.goods.goodsName}
                               className="w-10 h-10"
                             />
@@ -643,13 +686,27 @@ function AddRetailInvoice() {
                 <div className="flex pt-5 absolute bottom-0 right-0">
                   <div className="mr-10 mb-10 ml-auto">
                     <button
-                      type={priceAll + otherFeePrice > payPrice ? "button" : ""}
+                      type={
+                        priceAll + otherFeePrice > payPrice ||
+                        (payType === "2" && !account)
+                          ? "button"
+                          : ""
+                      }
                       className="bg-green-500 text-white py-2 px-6 rounded hover:bg-green-600"
                       onClick={() => {
                         if (priceAll + otherFeePrice > payPrice) {
                           Swal.fire({
                             position: "bottom",
                             html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Khách phải thanh toán đủ tiền!</button>`,
+                            showConfirmButton: false,
+                            background: "transparent",
+                            backdrop: "none",
+                            timer: 2500,
+                          });
+                        } else if (payType === "2" && !account) {
+                          Swal.fire({
+                            position: "bottom",
+                            html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">Không có tải khoản để chuyển khoản!</button>`,
                             showConfirmButton: false,
                             background: "transparent",
                             backdrop: "none",
@@ -683,7 +740,37 @@ function AddRetailInvoice() {
                 type="button"
                 className="px-4 py-2 bg-green-500 rounded-lg text-white mr-2 hover:bg-green-600"
                 onClick={() => {
-                  setOpenPaymentModal(true);
+                  if (!check) {
+                    let message = "";
+                    if (products.length <= 0) {
+                      message = "Cần thêm hàng hoá hoặc dịnh vụ để tạo đơn";
+                    } else if (
+                      products.some((product) => product.number <= 0)
+                    ) {
+                      message = "Số lượng hàng hoá hoặc dịch vụ phải lớn hơn 0";
+                    } else if (
+                      groupDefautProduct.some(
+                        (product) => product.goods.inventory < product.number
+                      )
+                    ) {
+                      message = "Đã quá số lượng trong kho đối với";
+                      groupDefautProduct.map((product) => {
+                        if (product.goods.inventory < product.number) {
+                          message += " " + product.goods.goodsName;
+                        }
+                      });
+                    }
+                    Swal.fire({
+                      position: "bottom",
+                      html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">${message}</button>`,
+                      showConfirmButton: false,
+                      background: "transparent",
+                      backdrop: "none",
+                      timer: 2000,
+                    });
+                  } else {
+                    setOpenPaymentModal(true);
+                  }
                 }}
               >
                 Thanh toán {priceAll.toLocaleString()}

@@ -9,7 +9,6 @@ function DetailsPriceBook(props) {
   const [openListPrice, setOpenListPrice] = useState(false);
 
   const priceBook = props.priceBook;
-  console.log(props.priceBook);
 
   const handleInfo = () => {
     setOpenInfo(true);

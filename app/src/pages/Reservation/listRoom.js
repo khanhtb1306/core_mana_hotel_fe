@@ -198,7 +198,6 @@ export async function action({ request }) {
       formPrice.append(`timePrices[${k}].price`, priceTime[1]);
       price += Number(priceTime[1]);
     }
-    console.log(price);
     formDetails.append("checkInActual", data.get("fromTime"));
     formDetails.append("checkOutEstimate", data.get("toTime"));
     formDetails.append("price", price + "");

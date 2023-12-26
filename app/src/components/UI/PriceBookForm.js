@@ -8,10 +8,15 @@ import { DatePicker, DateTimePicker } from "@mui/x-date-pickers";
 import SearchCateRoom from "../Search/SearchCateRoom";
 import { useState } from "react";
 import DayInputForm from "./DayInputForm";
+import Swal from "sweetalert2";
 require("dayjs/locale/vi");
 
 function PriceBookForm({ name, open, onClose, method, priceBook }) {
-  const { categories } = useLoaderData();
+  const { categories, dataPriceBooks } = useLoaderData();
+  const priceBooks = dataPriceBooks.result;
+  const [namePrice, setNamePrice] = useState(
+    priceBook ? priceBook.PriceList.priceListName : ""
+  );
   let priceList = [];
   if (priceBook) {
     priceList = priceBook.ListPriceListDetail.map((price) => {
@@ -157,10 +162,29 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
     );
   };
 
+  let check = false;
+
+  if (
+    namePrice === "" ||
+    (priceBooks.some((price) => price.PriceList.priceListName === namePrice) &&
+      ((priceBook && namePrice !== priceBook.PriceList.priceListName) ||
+        !priceBook)) ||
+    listPriceBook.every((priceBook) => priceBook.listPrice.length <= 0)
+  ) {
+    check = false;
+  } else {
+    check = true;
+  }
+
   return (
     <>
       <Form method={method} onSubmit={onClose}>
-        <Modal open={open} onClose={onClose} size="w-10/12 h-.5/6">
+        <Modal
+          open={open}
+          onClose={onClose}
+          size="w-10/12 h-.5/6"
+          button={true}
+        >
           <div className="p-2 w-full">
             <div>
               <h1 className="text-lg pb-5 font-bold">{name}</h1>
@@ -196,10 +220,8 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
                         className="border-0 border-b border-gray-500 w-full focus:border-b-2 focus:border-green-500 focus:ring-0"
                         type="text"
                         name="priceListName"
-                        defaultValue={
-                          priceBook ? priceBook.PriceList.priceListName : ""
-                        }
-                        required
+                        value={namePrice}
+                        onChange={(e) => setNamePrice(e.target.value)}
                       />
                     </td>
                   </tr>
@@ -220,7 +242,9 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
                           <input
                             type="hidden"
                             name="effectiveTimeStart"
-                            value={`${dateStart.year()}-${dateStart.month() + 1}-${dateStart.date()}`}
+                            value={`${dateStart.year()}-${
+                              dateStart.month() + 1
+                            }-${dateStart.date()}`}
                           />
                           <DatePicker
                             sx={{
@@ -234,7 +258,9 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
                           <input
                             type="hidden"
                             name="effectiveTimeEnd"
-                            value={`${dateEnd.year()}-${dateEnd.month() + 1}-${dateEnd.date()}`}
+                            value={`${dateEnd.year()}-${
+                              dateEnd.month() + 1
+                            }-${dateEnd.date()}`}
                           />
                           <DatePicker
                             sx={{
@@ -260,7 +286,6 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
                         type="text"
                         name="note"
                         defaultValue={priceBook ? priceBook.PriceList.note : ""}
-                        required
                       />
                     </td>
                   </tr>
@@ -407,7 +432,10 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
                                   return "Thứ " + day + ", ";
                                 })}
                               </div>
-                              <div>{prices.timeApply && dayjs(prices.timeApply).format("DD/MM/YYYY")}</div>
+                              <div>
+                                {prices.timeApply &&
+                                  dayjs(prices.timeApply).format("DD/MM/YYYY")}
+                              </div>
                             </td>
                             <td className="py-2 px-4 w-2/12 border-t">
                               <div className="pb-4">Giá giờ</div>
@@ -470,6 +498,56 @@ function PriceBookForm({ name, open, onClose, method, priceBook }) {
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+          <div className="flex pt-5">
+            <div className="ml-auto">
+              <button
+                type={check ? "" : "button"}
+                className="bg-green-500 mr-10 py-2 px-6 text-white rounded hover:bg-green-600"
+                onClick={() => {
+                  if (!check) {
+                    let message = "";
+                    if (namePrice === "") {
+                      message = "Không được để trống tên bảng giá";
+                    } else if (
+                      priceBooks.some(
+                        (price) => price.PriceList.priceListName === namePrice
+                      ) &&
+                      ((priceBook &&
+                        namePrice !== priceBook.PriceList.priceListName) ||
+                        !priceBook)
+                    ) {
+                      message = "Không được trùng tên với bảng giá";
+                    } else if (
+                      listPriceBook.every(
+                        (priceBook) => priceBook.listPrice.length <= 0
+                      )
+                    ) {
+                      message = "Chưa có bất kỳ thay đổi giá hạng phòng nào";
+                    }
+                    Swal.fire({
+                      position: "bottom",
+                      html: `<div class="text-sm"><button type="button" class="px-4 py-2 mt-2 rounded-lg bg-red-800 text-white">${message}</button>`,
+                      showConfirmButton: false,
+                      background: "transparent",
+                      backdrop: "none",
+                      timer: 2000,
+                    });
+                  }
+                }}
+              >
+                Lưu
+              </button>
+              <button
+                type="button"
+                className="bg-gray-400 py-2 px-6 text-white rounded hover:bg-gray-500"
+                onClick={() => {
+                  onClose();
+                }}
+              >
+                Bỏ qua
+              </button>
             </div>
           </div>
         </Modal>

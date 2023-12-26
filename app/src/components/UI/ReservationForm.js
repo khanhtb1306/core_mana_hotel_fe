@@ -733,7 +733,7 @@ function ReservationForm(props) {
       </div>
       {reservation ? (
         <>
-          <Form method="PUT" className="h-[45rem] px-5 print:hidden">
+          <Form method="PUT" className="h-[50rem] px-5 print:hidden">
             <div className="flex my-auto rounded-lg py-2">
               {reservation.listReservationDetails.length > 0 && roomActive && (
                 <div className="px-2 py-1 mr-2 rounded-lg bg-white">

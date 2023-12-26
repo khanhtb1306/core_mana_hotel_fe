@@ -7,10 +7,11 @@ import {
   getTimePrice,
   getlateCheckout,
 } from "../../utils/getTimePrice";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ChangeRoomModal from "../Reservation/ChangeRoomModal";
 import ReceiveRoomModal from "../Reservation/ReceiveRoomModal";
 import PayRoomModal from "../Reservation/PayRoomModal";
+import { axiosPrivate } from "../../utils/axiosConfig";
 
 function ViewDetailsModal(props) {
   const { timeUsing, prices, categories } = useLoaderData();
@@ -466,6 +467,11 @@ function ViewDetailsModal(props) {
           onCloseAll={() => props.onClose()}
           onClose={() => setOpenReceiveModal(false)}
           roomActive={reservationDetail}
+          listPriceRoom={listPriceRooms.find(
+            (priceRoom) =>
+              priceRoom.ReservationDetail.reservationDetailId ===
+              reservationDetail.reservationDetailId
+          )}
           price={
             priceById.ListPriceListDetail.find(
               (details) =>

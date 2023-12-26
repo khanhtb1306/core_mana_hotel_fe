@@ -104,9 +104,9 @@ function RoomManagementPage() {
     { field: "name", headerName: "Tên phòng", width: 100 },
     { field: "cateRoom", headerName: "Hạng phòng", width: 200 },
     { field: "area", headerName: "Khu vực", width: 120 },
-    { field: "priceHour", headerName: "Giá theo giờ", width: 120 },
-    { field: "priceDay", headerName: "Giá theo ngày", width: 120 },
-    { field: "priceNight", headerName: "Giá theo đêm", width: 120 },
+    { field: "priceHour", headerName: "Giá theo giờ", width: 130 },
+    { field: "priceDay", headerName: "Giá theo ngày", width: 130 },
+    { field: "priceNight", headerName: "Giá theo đêm", width: 130 },
     { field: "status", headerName: "Trạng thái", width: 150 },
     {
       field: "actions",

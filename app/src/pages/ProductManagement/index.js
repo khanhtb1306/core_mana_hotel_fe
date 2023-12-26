@@ -73,7 +73,7 @@ function ProductManagementPage() {
     {
       field: "goodsName",
       headerName: "Tên hàng",
-      width: 200,
+      width: 300,
       type: "actions",
       getActions: (params) => {
         const row = params.row;
@@ -120,8 +120,8 @@ function ProductManagementPage() {
       },
     },
     { field: "goodsCategory", headerName: "Loại hàng", width: 100 },
-    { field: "sellingPrice", headerName: "Giá bán", width: 100 },
-    { field: "capitalPrice", headerName: "Giá vốn", width: 100 },
+    { field: "sellingPrice", headerName: "Giá bán", width: 130 },
+    { field: "capitalPrice", headerName: "Giá vốn", width: 130 },
     { field: "quantityInStock", headerName: "Tồn kho", width: 100 },
     { field: "minStock", headerName: "Định mức tồn ít nhất", width: 100 },
     { field: "maxStock", headerName: "Định mức tồn nhiều nhất", width: 100 },

@@ -13,10 +13,8 @@ function CategoryRoomForm({
   cateRoom,
   categories,
 }) {
-  // console.log(categories);
   const [openInfo, setOpenInfo] = useState(true);
   const [openDetails, setOpenDetails] = useState(false);
-  // console.log(cateRoom);
   const [formData, setFormData] = useState({
     roomCategoryName: cateRoom.roomCategoryName
       ? cateRoom.roomCategoryName

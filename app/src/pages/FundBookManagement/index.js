@@ -122,8 +122,8 @@ function FundBookManagementPage() {
     { field: "time", headerName: "Ngày", width: 100 },
     { field: "note", headerName: "Diễn giải", width: 150 },
     { field: "paidMethod", headerName: "Hình thức thanh toán", width: 200 },
-    { field: "valueIncome", headerName: "Thu", width: 100 },
-    { field: "valueExpense", headerName: "Chi", width: 100 },
+    { field: "valueIncome", headerName: "Thu", width: 130 },
+    { field: "valueExpense", headerName: "Chi", width: 130 },
     { field: "status", headerName: "Trạng thái", width: 150 },
     { field: "payerReceiver", headerName: "Người nhận/nộp", width: 150 },
     {
