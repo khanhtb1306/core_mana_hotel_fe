@@ -19,7 +19,7 @@ function PriceManagementPage() {
   const { dataPriceBooks } = useLoaderData();
   const priceBooks = dataPriceBooks.result;
 
-  const [rowSelectionModel, setRowSelectionModel] = useState([]);
+  // const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openDetailsPriceBookModal, setOpenDetailsPriceBookModal] =
     useState(false);
   const [openNewPriceBookModal, setOpenNewPriceBookModal] = useState(false);
@@ -38,10 +38,6 @@ function PriceManagementPage() {
 
   const handleEditPriceBook = (id) => {
     setOpenEditPriceBookModal(true);
-    setSelectedPriceBookId(id);
-  };
-
-  const deletePriceBookHandler = (id) => {
     setSelectedPriceBookId(id);
   };
 
@@ -65,14 +61,6 @@ function PriceManagementPage() {
             icon={<i className="fa-solid fa-pen-to-square"></i>}
             label="Sửa đổi"
             onClick={() => handleEditPriceBook(id)}
-          />,
-          <GridActionsCellItem
-            icon={<i className="fa-solid fa-trash"></i>}
-            label="Xoá"
-            onClick={() => {
-              setSelectedPriceBookId(id);
-              deletePriceBookHandler(id);
-            }}
           />,
         ];
       },
@@ -110,21 +98,6 @@ function PriceManagementPage() {
         <div className="flex mb-10">
           <h1 className="text-4xl">Bảng giá</h1>
           <div className="ml-auto flex">
-            {rowSelectionModel.length > 0 ? (
-              <div className="mx-2">
-                <ButtonHover
-                  action="Thao tác"
-                  iconAction="fa-solid fa-ellipsis-vertical"
-                  names={[
-                    {
-                      name: "Xoá bảng giá",
-                      icon: "fa-solid fa-trash",
-                      action: deletePriceBookHandler,
-                    },
-                  ]}
-                />
-              </div>
-            ) : null}
             <div className="mx-2">
               <ButtonClick
                 name="Thêm mới bảng giá"
@@ -142,12 +115,7 @@ function PriceManagementPage() {
             pagination: { paginationModel: { pageSize: 5 } },
           }}
           pageSizeOptions={[5, 10, 25]}
-          checkboxSelection
           disableRowSelectionOnClick
-          onRowSelectionModelChange={(newRowSelectionModel) => {
-            setRowSelectionModel(newRowSelectionModel);
-          }}
-          rowSelectionModel={rowSelectionModel}
           localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
           slots={{ toolbar: GridToolbar }}
         />

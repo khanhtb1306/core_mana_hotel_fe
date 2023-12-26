@@ -25,6 +25,21 @@ function ViewDetailsModal(props) {
   const [openChangeModal, setOpenChangeModal] = useState(false);
   const [openReceiveModal, setOpenReceiveModal] = useState(false);
   const [openPayModal, setOpenPayModal] = useState(false);
+  const [listPriceRooms, setListPriceRooms] = useState([]);
+  useEffect(() => {
+    async function fetchListPriceRooms() {
+      try {
+        const reponse = await axiosPrivate.get(
+          "reservation-detail/get_price_history_over_time?reservationId=" +
+            reservationDetail.reservation.reservationId
+        );
+        setListPriceRooms(reponse.data.result);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchListPriceRooms();
+  }, []);
   // console.log(reservationDetail);
   const dayInWeek = ["2", "3", "4", "5", "6", "7", "8"];
   const pricesMore = prices.map((price) => {
