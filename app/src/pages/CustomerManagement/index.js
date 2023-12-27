@@ -160,6 +160,7 @@ function CustomerManagementPage() {
         gender: gender,
         email: cus.email,
         taxCode: cus.taxCode,
+        point:cus.point
       };
     });
 
