@@ -771,6 +771,15 @@ export async function action({ request }) {
         .catch((e) => {
           console.log(e);
         });
+      if (response && response.data.success) {
+        formPrice.append(
+          "reservationDetailId",
+          data.get("reservationDetailId")
+        );
+        await axiosPrivate
+          .post("reservation-detail/update_price_History_ver_time", formPrice)
+          .catch((e) => console.log(e));
+      }
       return { success: true, changeRoom: response.data.success };
     } else if (data.get("status") === "CHECK_IN") {
       if (data.get("radio") === "1") {
@@ -796,7 +805,7 @@ export async function action({ request }) {
         if (response && response.data.success) {
           formPrice.append(
             "reservationDetailId",
-            response.data.result.reservationDetailId
+            data.get("reservationDetailId")
           );
           await axiosPrivate
             .post("reservation-detail/update_price_History_ver_time", formPrice)
@@ -833,7 +842,7 @@ export async function action({ request }) {
         if (response1 && response1.data.success) {
           formPrice1.append(
             "reservationDetailId",
-            response1.data.result.reservationDetailId
+            data.get("reservationDetailId")
           );
           await axiosPrivate
             .post(

@@ -482,52 +482,60 @@ function SelectRoom(props) {
     let listPrice = [];
     if (typeTime === type) {
       if (room.status === "BOOKING") {
-        if (fromTime.diff(from) <= 0 && toTime.diff(to) >= 0) {
+        if (typeTime === 3) {
           listPrice = [
             ...props.listPriceRoom.PriceHistoryOverTime.map((priceRoom) => {
               return priceRoom.time + "|" + priceRoom.price;
             }),
           ];
-          listPrice = [
-            ...getTimePrice(typeTime, fromTime, from, timeUsing, props.price)
-              .list,
-            ...listPrice,
-            ...getTimePrice(typeTime, to, toTime, timeUsing, props.price).list,
-          ];
-        } else if (fromTime.diff(from) > 0) {
-          listPrice = [
-            ...props.listPriceRoom.PriceHistoryOverTime.filter((priceRoom) =>
-              typeTime === 1
-                ? dayjs(priceRoom.time).diff(fromTime, "minute") >=
-                  -timeBonusHour
-                : dayjs(priceRoom.time).diff(fromTime, "date") >= -timeBonusDay
-            ).map((priceRoom) => {
-              return priceRoom.time + "|" + priceRoom.price;
-            }),
-          ];
-          console.log(listPrice);
-          console.log(
-            getTimePrice(typeTime, to, toTime, timeUsing, props.price)
-          );
-          listPrice = [
-            ...listPrice,
-            ...getTimePrice(typeTime, to, toTime, timeUsing, props.price).list,
-          ];
-        } else if (toTime.diff(to) < 0) {
-          listPrice = [
-            ...props.listPriceRoom.PriceHistoryOverTime.filter((priceRoom) =>
-              typeTime === 1
-                ? dayjs(toTime).diff(priceRoom.time, "minute") >= timeBonusHour
-                : dayjs(toTime).diff(priceRoom.time, "date") >= timeBonusDay
-            ).map((priceRoom) => {
-              return priceRoom.time + "|" + priceRoom.price;
-            }),
-          ];
-          listPrice = [
-            ...getTimePrice(typeTime, fromTime, from, timeUsing, props.price)
-              .list,
-            ...listPrice,
-          ];
+        } else {
+          if (fromTime.diff(from) <= 0 && toTime.diff(to) >= 0) {
+            listPrice = [
+              ...props.listPriceRoom.PriceHistoryOverTime.map((priceRoom) => {
+                return priceRoom.time + "|" + priceRoom.price;
+              }),
+            ];
+            listPrice = [
+              ...getTimePrice(typeTime, fromTime, from, timeUsing, props.price)
+                .list,
+              ...listPrice,
+              ...getTimePrice(typeTime, to, toTime, timeUsing, props.price)
+                .list,
+            ];
+          } else if (fromTime.diff(from) > 0) {
+            listPrice = [
+              ...props.listPriceRoom.PriceHistoryOverTime.filter((priceRoom) =>
+                typeTime === 1
+                  ? dayjs(priceRoom.time).diff(fromTime, "minute") >=
+                    -timeBonusHour
+                  : dayjs(priceRoom.time).diff(fromTime, "date") >=
+                    -timeBonusDay
+              ).map((priceRoom) => {
+                return priceRoom.time + "|" + priceRoom.price;
+              }),
+            ];
+            listPrice = [
+              ...listPrice,
+              ...getTimePrice(typeTime, to, toTime, timeUsing, props.price)
+                .list,
+            ];
+          } else if (toTime.diff(to) < 0) {
+            listPrice = [
+              ...props.listPriceRoom.PriceHistoryOverTime.filter((priceRoom) =>
+                typeTime === 1
+                  ? dayjs(toTime).diff(priceRoom.time, "minute") >=
+                    timeBonusHour
+                  : dayjs(toTime).diff(priceRoom.time, "date") >= timeBonusDay
+              ).map((priceRoom) => {
+                return priceRoom.time + "|" + priceRoom.price;
+              }),
+            ];
+            listPrice = [
+              ...getTimePrice(typeTime, fromTime, from, timeUsing, props.price)
+                .list,
+              ...listPrice,
+            ];
+          }
         }
       } else if (room.status === "CHECK_IN") {
         listPrice = [
