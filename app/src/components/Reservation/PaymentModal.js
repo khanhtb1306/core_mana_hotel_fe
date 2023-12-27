@@ -54,7 +54,7 @@ function PaymentModal(props) {
         if (reservationDetail.status === "CHECK_OUT") {
           priceCheckout += sur.value;
         }
-        priceRoom += sur.value;
+        priceRoom += Math.floor(sur.value);
       });
     }
     const invoiceByDetails = invoices.find(
@@ -350,7 +350,7 @@ function PaymentModal(props) {
                                 {surcharge.length > 0 && (
                                   <div className="ml-2 mt-2">
                                     {surcharge.map((sur) => {
-                                      priceRoom += sur.value;
+                                      priceRoom += Math.floor(sur.value);
                                       return (
                                         <div>
                                           {sur.note +
@@ -370,7 +370,7 @@ function PaymentModal(props) {
                                     (invoice) =>
                                       invoice.order.status === "PAID" ||
                                       invoice.order.status === "CONFIRMED"
-                                  ) && (
+                                  ).length > 0 && (
                                     <div className="mt-2">
                                       <h3 className="ml-2 font-medium mb-1">
                                         Hoá đơn mua hàng
@@ -1117,7 +1117,7 @@ function PaymentModal(props) {
                                   {surcharge.length > 0 && (
                                     <div className="ml-2 mt-2 text-xs">
                                       {surcharge.map((sur) => {
-                                        priceRoom += sur.value;
+                                        priceRoom += Math.floor(sur.value);
                                         return (
                                           <div>
                                             {sur.note +
@@ -1150,7 +1150,6 @@ function PaymentModal(props) {
                                         </div>
                                       </div>
                                       {listGoods.map((good) => {
-                                        console.log(good);
                                         priceRoom +=
                                           good.goodsUnit.price * good.quantity;
                                         return (
@@ -1181,8 +1180,7 @@ function PaymentModal(props) {
                                   )}
                                 </td>
                                 <td className="px-2 py-1 font-bold text-right">
-                                  {Math.round(priceRoom).toLocaleString() +
-                                    " VND"}
+                                  {priceRoom.toLocaleString() + " VND"}
                                 </td>
                               </tr>
                             );
