@@ -370,7 +370,6 @@ export async function action({ request }) {
     const formData = new FormData();
     formData.append("goodsDTO.goodsName", data.get("goodsName"));
     formData.append("goodsDTO.goodsCategory", true);
-    formData.append("goodsDTO.inventory", 0);
     formData.append("goodsDTO.minInventory", data.get("minInventory"));
     formData.append("goodsDTO.maxInventory", data.get("maxInventory"));
     formData.append("goodsDTO.note", data.get("note"));
@@ -384,6 +383,7 @@ export async function action({ request }) {
     formData.append("goodsUnitDTO.price", defaultPrice);
     const units = data.get("numberUnit");
     if (method === "POST") {
+      formData.append("goodsDTO.inventory", 0);
       const response = await axiosPrivate
         .post("goods", formData, {
           headers: {
