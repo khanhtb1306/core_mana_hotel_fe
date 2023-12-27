@@ -41,47 +41,52 @@ function ReceiveRoomModal(props) {
   const [listPrices, setListPrices] = useState([]);
   useEffect(() => {
     let listPrice = [];
-    if (fromTime.diff(from) <= 0 && toTime.diff(to) >= 0) {
+    if (type === 3) {
       listPrice = [
-        ...props.listPriceRoom.PriceHistoryOverTime.map((priceRoom) => {
-          return priceRoom.time + "|" + priceRoom.price;
-        }),
+        ...getTimePrice(type, fromTime, toTime, timeUsing, props.price).list,
       ];
-      listPrice = [
-        ...getTimePrice(type, fromTime, from, timeUsing, props.price).list,
-        ...listPrice,
-        ...getTimePrice(type, to, toTime, timeUsing, props.price).list,
-      ];
-    } else if (fromTime.diff(from) > 0) {
-      listPrice = [
-        ...props.listPriceRoom.PriceHistoryOverTime.filter((priceRoom) =>
-          type === 1
-            ? dayjs(priceRoom.time).diff(fromTime, "minute") >= -timeBonusHour
-            : dayjs(priceRoom.time).diff(fromTime, "date") >= -timeBonusDay
-        ).map((priceRoom) => {
-          return priceRoom.time + "|" + priceRoom.price;
-        }),
-      ];
-      listPrice = [
-        ...listPrice,
-        ...getTimePrice(type, to, toTime, timeUsing, props.price).list,
-      ];
-    } else if (toTime.diff(to) < 0) {
-      listPrice = [
-        ...props.listPriceRoom.PriceHistoryOverTime.filter((priceRoom) =>
-          type === 1
-            ? dayjs(toTime).diff(priceRoom.time, "minute") >= timeBonusHour
-            : dayjs(toTime).diff(priceRoom.time, "date") >= timeBonusDay
-        ).map((priceRoom) => {
-          return priceRoom.time + "|" + priceRoom.price;
-        }),
-      ];
-      listPrice = [
-        ...getTimePrice(type, fromTime, from, timeUsing, props.price).list,
-        ...listPrice,
-      ];
+    } else {
+      if (fromTime.diff(from) <= 0 && toTime.diff(to) >= 0) {
+        listPrice = [
+          ...props.listPriceRoom.PriceHistoryOverTime.map((priceRoom) => {
+            return priceRoom.time + "|" + priceRoom.price;
+          }),
+        ];
+        listPrice = [
+          ...getTimePrice(type, fromTime, from, timeUsing, props.price).list,
+          ...listPrice,
+          ...getTimePrice(type, to, toTime, timeUsing, props.price).list,
+        ];
+      } else if (fromTime.diff(from) > 0) {
+        listPrice = [
+          ...props.listPriceRoom.PriceHistoryOverTime.filter((priceRoom) =>
+            type === 1
+              ? dayjs(priceRoom.time).diff(fromTime, "minute") >= -timeBonusHour
+              : dayjs(priceRoom.time).diff(fromTime, "date") >= -timeBonusDay
+          ).map((priceRoom) => {
+            return priceRoom.time + "|" + priceRoom.price;
+          }),
+        ];
+        listPrice = [
+          ...listPrice,
+          ...getTimePrice(type, to, toTime, timeUsing, props.price).list,
+        ];
+      } else if (toTime.diff(to) < 0) {
+        listPrice = [
+          ...props.listPriceRoom.PriceHistoryOverTime.filter((priceRoom) =>
+            type === 1
+              ? dayjs(toTime).diff(priceRoom.time, "minute") >= timeBonusHour
+              : dayjs(toTime).diff(priceRoom.time, "date") >= timeBonusDay
+          ).map((priceRoom) => {
+            return priceRoom.time + "|" + priceRoom.price;
+          }),
+        ];
+        listPrice = [
+          ...getTimePrice(type, fromTime, from, timeUsing, props.price).list,
+          ...listPrice,
+        ];
+      }
     }
-    console.log(listPrice);
     setListPrices(listPrice);
   }, [fromTime, toTime]);
   let surchargeTime = 0;
