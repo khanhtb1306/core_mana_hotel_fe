@@ -1181,7 +1181,8 @@ function PaymentModal(props) {
                                   )}
                                 </td>
                                 <td className="px-2 py-1 font-bold text-right">
-                                  {priceRoom.toLocaleString() + " VND"}
+                                  {Math.round(priceRoom).toLocaleString() +
+                                    " VND"}
                                 </td>
                               </tr>
                             );
