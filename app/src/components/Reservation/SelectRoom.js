@@ -538,16 +538,25 @@ function SelectRoom(props) {
           }
         }
       } else if (room.status === "CHECK_IN") {
-        listPrice = [
-          ...props.listPriceRoom.PriceHistoryOverTime.map((priceRoom) => {
-            return priceRoom.time + "|" + priceRoom.price;
-          }),
-        ];
-        if (toTime.diff(to, "date") > 0) {
+        if (typeTime === 3) {
           listPrice = [
-            ...listPrice,
-            ...getTimePrice(typeTime, to, toTime, timeUsing, props.price).list,
+            ...props.listPriceRoom.PriceHistoryOverTime.map((priceRoom) => {
+              return priceRoom.time + "|" + priceRoom.price;
+            }),
           ];
+        } else {
+          listPrice = [
+            ...props.listPriceRoom.PriceHistoryOverTime.map((priceRoom) => {
+              return priceRoom.time + "|" + priceRoom.price;
+            }),
+          ];
+          if (toTime.diff(to, "date") > 0) {
+            listPrice = [
+              ...listPrice,
+              ...getTimePrice(typeTime, to, toTime, timeUsing, props.price)
+                .list,
+            ];
+          }
         }
       }
     } else {
